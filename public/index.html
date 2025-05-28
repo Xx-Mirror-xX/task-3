@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio Y Registro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container"  id="SignUp" style="display: none;">
+        <h1 class="form-title">Registro</h1>
+        <form method="post" action="/register">
+        <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input type="text" name="fName" id="fName" placeholder="fName" required>
+            <label for="fName">Nombre</label>
+    </div>
+        <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input type="text" name="lName" id="lName" placeholder="lName" required>
+            <label for="lName">Apellido</label>
+    </div>
+            <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" name="email" id="email" placeholder="email" required>
+            <label for="email">email</label>
+    </div>
+            <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" name="password" id="password" placeholder="password" required>
+            <label for="password">contraseña</label>
+            </div>
+            <input type="submit" class="btn" value="SignUp" name="SignUp">
+    </form>
+    <p class="or">
+        ----------------- O -----------------
+        <div class="icons"> 
+            <i class="fab fa-google"></i>
+            <i class="fab fa-facebook"></i>
+        </div>
+        <div class="links">
+            <p> Tienes una Cuenta ?</p>
+            <button id="SignInButton">Sign In</button>
+        </div>
+    </p>
+    </div>
+
+        <div class="container"  id="SignIn">
+        <h1 class="form-title">Inicio</h1>
+        <form id="loginForm" method="post" action="/login">
+
+            <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" name="email" id="email" placeholder="email" required>
+            <label for="email">email</label>
+    </div>
+            <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" name="password" id="password" placeholder="password" required>
+            <label for="password">contraseña</label>
+            </div>
+            <p class="recover">
+                <a href="#">Olvidaste tu contraseña ?</a>
+            </p>
+            <input type="submit" class="btn" value="Sign in" name="Sign In">
+    </form>
+    <p class="or">
+        ------------- O -----------------
+        
+        <div class="icons"> 
+            <i class="fab fa-google"></i>
+            <i class="fab fa-facebook"></i>
+        </div>
+        <div class="links">
+            <p> No tienes una Cuenta ?</p>
+            <button id="SignUpButton">Sign Up</button>
+        </div>
+    </div>
+    <script src="scripts.js"></script>
+
+    <div style="text-align: center; margin-top: 20px;">
+
+
+
+<a href="/contactos.html" class="btn" id="showContactForm" style="display: block; margin: 20px auto; width: 200px; text-align: center;">
+    <i class="fas fa-envelope"></i> Formulario de Contacto
+</a>
+
+<a href="/pagos.html" class="btn" id="showPaymentForm" style="display: block; margin: 20px auto; width: 200px; text-align: center; text-decoration: none;">
+    <i class="fas fa-credit-card"></i> Realizar Pago
+</a>
+
+</body>
+
+</html>

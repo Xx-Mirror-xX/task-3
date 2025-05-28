@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Realizar Pago</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" id="paymentForm">
+        <h1 class="form-title">Realizar Pago</h1>
+        <form id="paymentFormData">
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" placeholder="Correo electrónico" required>
+                <label for="email">Correo electrónico</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="cardName" placeholder="Nombre del titular" required>
+                <label for="cardName">Nombre del titular</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-credit-card"></i>
+                <input type="text" name="cardNumber" placeholder="Número de tarjeta" required>
+                <label for="cardNumber">Número de tarjeta</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-calendar"></i>
+                <div style="display: flex; justify-content: space-between;">
+                    <select name="expiryMonth" required style="width: 48%;">
+                        <option value="">Mes</option>
+                        <option value="01">01</option>
+                        <option value="02">02</option>
+                        <option value="03">03</option>
+                        <option value="04">04</option>
+                        <option value="05">05</option>
+                        <option value="06">06</option>
+                        <option value="07">07</option>
+                        <option value="08">08</option>
+                        <option value="09">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
+                    <select name="expiryYear" required style="width: 48%;">
+                        <option value="">Año</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
+                        <option value="2027">2027</option>
+                        <option value="2028">2028</option>
+                        <option value="2029">2029</option>
+                        <option value="2030">2030</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="text" name="cvv" placeholder="CVV" required>
+                <label for="cvv">CVV</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-dollar-sign"></i>
+                <input type="number" name="amount" placeholder="Monto" required>
+                <label for="amount">Monto</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-money-bill-wave"></i>
+                <select name="currency" required>
+                    <option value="">Seleccione moneda</option>
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="MXN">MXN</option>
+                </select>
+                <label for="currency" style="top: -0.01em;">Moneda</label>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <a href="/index.html" class="btn" style="width: 48%; text-align: center;">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+                <button type="submit" class="btn" style="width: 48%;">
+                    Pagar <i class="fas fa-credit-card"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
