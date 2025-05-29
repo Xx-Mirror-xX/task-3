@@ -14,16 +14,14 @@
       gtag('config', 'G-DCK5HDLZ0N');
     </script>
     
+    <!-- reCAPTCHA Enterprise -->
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6LcKHk4rAAAAAHjcLw4w-tW_YDeizZiYt2zblDeo"></script>
     <script>
-      var onloadCallback = function() {
-        grecaptcha.render('payment-recaptcha', {
-          'sitekey': '6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ'
-        });
-      };
+      function onSubmitPayment(token) {
+        document.getElementById("paymentFormData").submit();
+      }
     </script>
-    <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
 </head>
-
 <body>
     <div class="container" id="paymentForm">
         <h1 class="form-title">Realizar Pago</h1>
@@ -95,13 +93,15 @@
                 <label for="currency" style="top: -0.01em;">Moneda</label>
             </div>
             
-            <div id="payment-recaptcha"></div>
-            
             <div style="display: flex; justify-content: space-between; margin-top: 20px;">
                 <a href="/index.html" class="btn" style="width: 48%; text-align: center;">
                     <i class="fas fa-arrow-left"></i> Volver
                 </a>
-                <button type="submit" class="btn" style="width: 48%;">
+                <button class="g-recaptcha btn"
+                    data-sitekey="6LcKHk4rAAAAAHjcLw4w-tW_YDeizZiYt2zblDeo"
+                    data-callback='onSubmitPayment'
+                    data-action='submit'
+                    style="width: 48%;">
                     Pagar <i class="fas fa-credit-card"></i>
                 </button>
             </div>
