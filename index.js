@@ -117,7 +117,7 @@ const logCaptcha = (data) => {
 const verifyRecaptcha = async (token, ipAddress, action = 'unknown') => {
     if (!token) {
         return { 
-            success: false, 
+            success: true,  // Cambiado a true para que no sea obligatorio
             error: "Token de reCAPTCHA faltante",
             'error-codes': ['missing-input-response'],
             action,
@@ -153,7 +153,7 @@ const verifyRecaptcha = async (token, ipAddress, action = 'unknown') => {
     } catch (error) {
         if (axios.isCancel(error)) {
             return {
-                success: false,
+                success: true,  // Cambiado a true para que no sea obligatorio
                 error: "Timeout al verificar reCAPTCHA",
                 'error-codes': ['timeout'],
                 action,
@@ -163,7 +163,7 @@ const verifyRecaptcha = async (token, ipAddress, action = 'unknown') => {
 
         console.error('Error al verificar reCAPTCHA:', error);
         return {
-            success: false,
+            success: true,  // Cambiado a true para que no sea obligatorio
             error: "Error al verificar reCAPTCHA",
             'error-codes': ['connection-error'],
             action,
@@ -193,16 +193,10 @@ app.post('/api/verify-recaptcha', async (req, res) => {
 // Rutas de autenticación optimizadas
 app.post('/register', async (req, res) => {
     try {
-        const { fName, lName, email, password, 'g-recaptcha-response': recaptchaToken } = req.body;
-        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        const { fName, lName, email, password } = req.body;
         
-        if (!fName || !lName || !email || !password || !recaptchaToken) {
+        if (!fName || !lName || !email || !password) {
             return res.status(400).json({ error: 'Todos los campos son requeridos' });
-        }
-
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'register');
-        if (!recaptchaResult.success) {
-            return res.status(400).json({ error: 'Verificación de reCAPTCHA fallida' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -228,24 +222,8 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     try {
-        const { email, password, 'g-recaptcha-response': recaptchaToken } = req.body;
-        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        const { email, password } = req.body;
         
-        if (!recaptchaToken) {
-            return res.status(400).json({ 
-                success: false,
-                message: 'Por favor completa el reCAPTCHA' 
-            });
-        }
-
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'login');
-        if (!recaptchaResult.success) {
-            return res.status(400).json({ 
-                success: false,
-                message: 'Verificación de reCAPTCHA fallida' 
-            });
-        }
-
         db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
             if (err) {
                 return res.status(500).json({ 
@@ -293,16 +271,11 @@ app.get('/logout', (req, res) => {
 // Rutas de contactos optimizadas
 app.post('/api/contact', async (req, res) => {
     try {
-        const { firstName, lastName, email, message, 'g-recaptcha-response': recaptchaToken } = req.body;
+        const { firstName, lastName, email, message } = req.body;
         const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-        if (!firstName || !lastName || !email || !message || !recaptchaToken) {
+        if (!firstName || !lastName || !email || !message) {
             return res.status(400).json({ error: "Todos los campos son requeridos" });
-        }
-
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'contact');
-        if (!recaptchaResult.success) {
-            return res.status(400).json({ error: "Verificación de reCAPTCHA fallida" });
         }
 
         // Obtener ubicación por IP (no bloqueante)
@@ -358,16 +331,10 @@ app.get('/api/contacts', requireAuth, (req, res) => {
 // Rutas de pagos optimizadas
 app.post('/api/payment', requireAuth, async (req, res) => {
     try {
-        const { email, cardName, cardNumber, expiryMonth, expiryYear, cvv, amount, currency, 'g-recaptcha-response': recaptchaToken } = req.body;
-        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        const { email, cardName, cardNumber, expiryMonth, expiryYear, cvv, amount, currency } = req.body;
 
-        if (!email || !cardName || !cardNumber || !expiryMonth || !expiryYear || !cvv || !amount || !currency || !recaptchaToken) {
+        if (!email || !cardName || !cardNumber || !expiryMonth || !expiryYear || !cvv || !amount || !currency) {
             return res.status(400).json({ error: "Todos los campos son requeridos" });
-        }
-
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'payment');
-        if (!recaptchaResult.success) {
-            return res.status(400).json({ error: "Verificación de reCAPTCHA fallida" });
         }
 
         db.run(
