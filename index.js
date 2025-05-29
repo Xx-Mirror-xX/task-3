@@ -85,19 +85,32 @@ app.post('/api/verify-recaptcha', async (req, res) => {
     try {
         const { token } = req.body;
         if (!token) {
-            return res.status(400).json({ success: false, error: "Token de reCAPTCHA faltante" });
+            return res.status(400).json({ 
+                success: false, 
+                error: "Token de reCAPTCHA faltante",
+                details: "No se recibió el token de reCAPTCHA" 
+            });
         }
 
         const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${token}`;
         const recaptchaResponse = await axios.get(verificationUrl);
         
+        if (!recaptchaResponse.data.success) {
+            console.log('Respuesta completa de reCAPTCHA:', recaptchaResponse.data);
+        }
+        
         res.json({
             success: recaptchaResponse.data.success,
-            errors: recaptchaResponse.data['error-codes']
+            errors: recaptchaResponse.data['error-codes'],
+            details: recaptchaResponse.data
         });
     } catch (error) {
         console.error('Error al verificar reCAPTCHA:', error);
-        res.status(500).json({ success: false, error: "Error al verificar reCAPTCHA" });
+        res.status(500).json({ 
+            success: false, 
+            error: "Error al verificar reCAPTCHA",
+            details: error.message 
+        });
     }
 });
 
