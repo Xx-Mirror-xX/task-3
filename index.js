@@ -8,8 +8,6 @@ const app = express();
 require('dotenv').config();
 
 const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY || '6Le1SE4rAAAAAB07BDfVTCNguDfhgyhJQucCvVYq';
-const ipv6 = '2803:c000:11:850f:4171:f09f:3fb5:73c1';
-const url = `https://ipapi.co/${ipv6}/json/`;
 
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
@@ -94,9 +92,6 @@ app.post('/api/verify-recaptcha', async (req, res) => {
 
         const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${token}`;
         const recaptchaResponse = await axios.post(verificationUrl);
-        
-        // Debug: muestra la respuesta completa en consola
-        console.log('Respuesta de reCAPTCHA:', recaptchaResponse.data);
         
         res.json({
             success: recaptchaResponse.data.success,
@@ -210,7 +205,6 @@ app.post('/api/contact', async (req, res) => {
     try {
         const { firstName, lastName, email, message, 'g-recaptcha-response': recaptchaToken } = req.body;
         const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-        const { country, city } = await getLocationByIp(ipAddress);
 
         if (!firstName || !lastName || !email || !message || !recaptchaToken) {
             return res.status(400).json({ error: "Todos los campos son requeridos" });
@@ -221,6 +215,17 @@ app.post('/api/contact', async (req, res) => {
         
         if (!recaptchaResponse.data.success) {
             return res.status(400).json({ error: "Verificación de reCAPTCHA fallida" });
+        }
+
+        // Obtener ubicación por IP
+        let country = 'Desconocido';
+        let city = 'Desconocido';
+        try {
+            const response = await axios.get(`https://ipapi.co/${ipAddress}/json/`);
+            country = response.data.country_name || 'Desconocido';
+            city = response.data.city || 'Desconocido';
+        } catch (error) {
+            console.error('Error al obtener geolocalización:', error.message);
         }
 
         db.run(
@@ -333,25 +338,6 @@ app.get('/indice', requireAuth, (req, res) => {
 app.get('/admin/contacts.html', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'contacts.html'));
 });
-
-// Función auxiliar para geolocalización
-async function getLocationByIp(ip) {
-    try {
-        if (ip === '::1' || ip === '127.0.0.1') {
-            ip = '2803:c000:11:850f:4171:f09f:3fb5:73c1'; 
-        }
-
-        const response = await axios.get(`https://ipapi.co/${ip}/json/`);
-        return {
-            country: response.data.country_name || 'Desconocido',
-            city: response.data.city || 'Desconocido'
-        };
-    } catch (error) {
-        console.error('Error al obtener geolocalización:', error.message);
-        return { country: 'Desconocido', city: 'Desconocido' };
-    }
-}
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
