@@ -7,7 +7,7 @@ const axios = require('axios');
 const app = express();
 require('dotenv').config();
 
-const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY || '6LdGP04rAAAAAFcmGWUz1AfLVJB8ulehEwOs3j0i';
+const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY || '6Ld6Qk4rAAAAAFIYjMby3XKY70QXNUGNhGFCCwM3';
 const ipv6 = '2803:c000:11:850f:4171:f09f:3fb5:73c1';
 const url = `https://ipapi.co/${ipv6}/json/`;
 
