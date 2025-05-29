@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,6 +10,7 @@
         <div class="error-message" id="errorMessage"></div>
     </div>
 
+    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -19,17 +19,16 @@
       gtag('config', 'G-DCK5HDLZ0N');
     </script>
 
+    <!-- reCAPTCHA Enterprise -->
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6LcKHk4rAAAAAHjcLw4w-tW_YDeizZiYt2zblDeo"></script>
     <script>
-      var onloadCallback = function() {
-        grecaptcha.render('signup-recaptcha', {
-          'sitekey': '6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ'
-        });
-        grecaptcha.render('signin-recaptcha', {
-          'sitekey': '6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ'
-        });
-      };
+      function onSubmitLogin(token) {
+        document.getElementById("loginForm").submit();
+      }
+      function onSubmitRegister(token) {
+        document.getElementById("registerForm").submit();
+      }
     </script>
-    <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
 </head>
 <body>
     <div class="container"  id="SignUp" style="display: none;">
@@ -55,10 +54,13 @@
                 <input type="password" name="password" id="password" placeholder="password" required>
                 <label for="password">contraseña</label>
             </div>
-
-            <div id="signup-recaptcha"></div>
             
-            <button type="submit" class="btn">Registrarse</button>
+            <button class="g-recaptcha btn"
+                data-sitekey="6LcKHk4rAAAAAHjcLw4w-tW_YDeizZiYt2zblDeo"
+                data-callback='onSubmitRegister'
+                data-action='submit'>
+                Registrarse
+            </button>
         </form>
         <p class="or">
             ----------------- O -----------------
@@ -90,9 +92,12 @@
                 <a href="#">¿Olvidaste tu contraseña?</a>
             </p>
 
-            <div id="signin-recaptcha"></div>
-
-            <button type="submit" class="btn">Iniciar Sesión</button>
+            <button class="g-recaptcha btn"
+                data-sitekey="6LcKHk4rAAAAAHjcLw4w-tW_YDeizZiYt2zblDeo"
+                data-callback='onSubmitLogin'
+                data-action='submit'>
+                Iniciar Sesión
+            </button>
         </form>
         <p class="or">
             ------------- O -----------------
