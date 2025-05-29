@@ -20,6 +20,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para mostrar errores
+    function onRecaptchaSuccess(token) {
+    console.log('reCAPTCHA completado con éxito');
+    // Puedes habilitar el botón de envío aquí si lo prefieres
+}
+
+function onRecaptchaExpired() {
+    console.log('reCAPTCHA expirado');
+    grecaptcha.reset();
+    showError('El reCAPTCHA ha expirado. Por favor, complétalo nuevamente.');
+}
+
+function onRecaptchaError() {
+    console.log('Error en reCAPTCHA');
+    showError('Hubo un error con el reCAPTCHA. Por favor, inténtalo de nuevo.');
+}
+    
     function showError(message, formId = null) {
         const errorContainer = document.getElementById('errorContainer');
         const errorMessage = document.getElementById('errorMessage');
@@ -48,25 +64,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    async function verifyRecaptcha(token) {
+async function verifyRecaptcha(token) {
     try {
         const response = await fetch('/api/verify-recaptcha', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ token })
         });
-        const result = await response.json();
         
-        if (!result.success) {
-            console.error('Error de reCAPTCHA:', result);
-            showError(`Error de reCAPTCHA: ${result.errors ? result.errors.join(', ') : 'Error desconocido'}`);
+        if (!response.ok) {
+            throw new Error('Error en la verificación');
         }
         
-        return result;
+        const data = await response.json();
+        
+        if (!data.success) {
+            console.error('Errores de reCAPTCHA:', data.errors);
+            return { 
+                success: false,
+                errors: data.errors 
+            };
+        }
+        
+        return { success: true };
     } catch (error) {
         console.error('Error verifying reCAPTCHA:', error);
-        showError('Error de conexión al verificar reCAPTCHA');
-        return { success: false };
+        return { 
+            success: false,
+            error: 'Error de conexión con el servidor de verificación' 
+        };
     }
 }
 
