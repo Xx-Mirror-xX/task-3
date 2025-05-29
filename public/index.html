@@ -6,8 +6,10 @@
     <title>Inicio Y Registro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <div class="error-container" id="errorContainer" style="display: none;">
+        <div class="error-message" id="errorMessage"></div>
+    </div>
 
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -16,83 +18,93 @@
       gtag('config', 'G-DCK5HDLZ0N');
     </script>
 
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+      var onloadCallback = function() {
+        grecaptcha.render('signup-recaptcha', {
+          'sitekey': '6Le1SE4rAAAAANvBxclNSX_kOKHsH2KZ8sayC3R7'
+        });
+        grecaptcha.render('signin-recaptcha', {
+          'sitekey': '6Le1SE4rAAAAANvBxclNSX_kOKHsH2KZ8sayC3R7'
+        });
+      };
+    </script>
+    <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
 </head>
 <body>
     <div class="container"  id="SignUp" style="display: none;">
         <h1 class="form-title">Registro</h1>
-        <form method="post" action="/register">
-        <div class="input-group">
-            <i class="fas fa-user"></i>
-            <input type="text" name="fName" id="fName" placeholder="fName" required>
-            <label for="fName">Nombre</label>
-    </div>
-        <div class="input-group">
-            <i class="fas fa-user"></i>
-            <input type="text" name="lName" id="lName" placeholder="lName" required>
-            <label for="lName">Apellido</label>
-    </div>
+        <form id="registerForm">
             <div class="input-group">
-            <i class="fas fa-envelope"></i>
-            <input type="email" name="email" id="email" placeholder="email" required>
-            <label for="email">email</label>
-    </div>
+                <i class="fas fa-user"></i>
+                <input type="text" name="fName" id="fName" placeholder="fName" required>
+                <label for="fName">Nombre</label>
+            </div>
             <div class="input-group">
-            <i class="fas fa-lock"></i>
-            <input type="password" name="password" id="password" placeholder="password" required>
-            <label for="password">contraseña</label>
+                <i class="fas fa-user"></i>
+                <input type="text" name="lName" id="lName" placeholder="lName" required>
+                <label for="lName">Apellido</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" id="email" placeholder="email" required>
+                <label for="email">email</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" id="password" placeholder="password" required>
+                <label for="password">contraseña</label>
             </div>
 
             <div id="signup-recaptcha"></div>
             
-            <input type="submit" class="btn" value="SignUp" name="SignUp">
-    </form>
-    <p class="or">
-        ----------------- O -----------------
-        <div class="icons"> 
-            <i class="fab fa-google"></i>
-            <i class="fab fa-facebook"></i>
-        </div>
-        <div class="links">
-            <p> Tienes una Cuenta ?</p>
-            <button id="SignInButton">Sign In</button>
-        </div>
-    </p>
+            <button type="submit" class="btn">Registrarse</button>
+        </form>
+        <p class="or">
+            ----------------- O -----------------
+            <div class="icons"> 
+                <i class="fab fa-google"></i>
+                <i class="fab fa-facebook"></i>
+            </div>
+            <div class="links">
+                <p> ¿Ya tienes una cuenta?</p>
+                <button id="SignInButton">Iniciar Sesión</button>
+            </div>
+        </p>
     </div>
 
-        <div class="container"  id="SignIn">
-        <h1 class="form-title">Inicio</h1>
-        <form id="loginForm" method="post" action="/login">
-
+    <div class="container"  id="SignIn">
+        <h1 class="form-title">Inicio de Sesión</h1>
+        <form id="loginForm">
             <div class="input-group">
-            <i class="fas fa-envelope"></i>
-            <input type="email" name="email" id="email" placeholder="email" required>
-            <label for="email">email</label>
-    </div>
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" id="loginEmail" placeholder="email" required>
+                <label for="email">email</label>
+            </div>
             <div class="input-group">
-            <i class="fas fa-lock"></i>
-            <input type="password" name="password" id="password" placeholder="password" required>
-            <label for="password">contraseña</label>
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" id="loginPassword" placeholder="password" required>
+                <label for="password">contraseña</label>
             </div>
             <p class="recover">
-                <a href="#">Olvidaste tu contraseña ?</a>
+                <a href="#">¿Olvidaste tu contraseña?</a>
             </p>
 
             <div id="signin-recaptcha"></div>
 
-            <input type="submit" class="btn" value="Sign in" name="Sign In">
-    </form>
-    <p class="or">
-        ------------- O -----------------
-        
-        <div class="icons"> 
-            <i class="fab fa-google"></i>
-            <i class="fab fa-facebook"></i>
-        </div>
-        <div class="links">
-            <p> No tienes una Cuenta ?</p>
-            <button id="SignUpButton">Sign Up</button>
-        </div>
+            <button type="submit" class="btn">Iniciar Sesión</button>
+        </form>
+        <p class="or">
+            ------------- O -----------------
+            
+            <div class="icons"> 
+                <i class="fab fa-google"></i>
+                <i class="fab fa-facebook"></i>
+            </div>
+            <div class="links">
+                <p> ¿No tienes una cuenta?</p>
+                <button id="SignUpButton">Registrarse</button>
+            </div>
+        </p>
     </div>
     <script src="scripts.js"></script>
 
