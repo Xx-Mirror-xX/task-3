@@ -14,7 +14,14 @@
       gtag('config', 'G-DCK5HDLZ0N');
     </script>
     
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+      var onloadCallback = function() {
+        grecaptcha.render('payment-recaptcha', {
+          'sitekey': '6Le1SE4rAAAAANvBxclNSX_kOKHsH2KZ8sayC3R7'
+        });
+      };
+    </script>
+    <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
 </head>
 <body>
     <div class="container" id="paymentForm">
