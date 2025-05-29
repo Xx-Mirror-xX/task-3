@@ -92,21 +92,33 @@ const verifyRecaptcha = async (token, ipAddress, action = 'unknown') => {
     }
 
     try {
-        const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${token}&remoteip=${ipAddress}`;
-        const response = await axios.post(verificationUrl, {}, {
+        const verificationUrl = `https://recaptchaenterprise.googleapis.com/v1/projects/YOUR_PROJECT_ID/assessments?key=${RECAPTCHA_SECRET_KEY}`;
+        
+        const response = await axios.post(verificationUrl, {
+            event: {
+                token: token,
+                siteKey: RECAPTCHA_SITE_KEY,
+                expectedAction: action,
+                userIpAddress: ipAddress
+            }
+        }, {
+            headers: {
+                'Content-Type': 'application/json'
+            },
             timeout: 3000
         });
 
         const result = {
-            ...response.data,
+            success: response.data.riskAnalysis.score > 0.5,
+            score: response.data.riskAnalysis.score,
+            reasons: response.data.riskAnalysis.reasons || [],
             action: action,
-            ip_address: ipAddress,
             timestamp: new Date().toISOString()
         };
 
         return result;
     } catch (error) {
-        console.error('Error al verificar reCAPTCHA:', error);
+        console.error('Error al verificar reCAPTCHA Enterprise:', error);
         return {
             success: false,
             error: "Error al verificar reCAPTCHA",
