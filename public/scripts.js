@@ -40,16 +40,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
-    if (message.toLowerCase().includes('captcha')) {
-        if (window.grecaptcha && window.grecaptcha.reset) {
-            const widgets = document.querySelectorAll('.g-recaptcha');
-            widgets.forEach(widget => {
-                const widgetId = widget.getAttribute('data-widget-id');
-                if (widgetId) grecaptcha.reset(widgetId);
-            });
-        }
-    }
-}
+            if (message.toLowerCase().includes('captcha')) {
+                if (window.grecaptcha && window.grecaptcha.reset) {
+                    const widgets = document.querySelectorAll('.g-recaptcha');
+                    widgets.forEach(widget => {
+                        const widgetId = widget.getAttribute('data-widget-id');
+                        if (widgetId) grecaptcha.reset(widgetId);
+                    });
+                }
+            }
             
             setTimeout(() => {
                 errorContainer.style.display = 'none';
@@ -72,6 +71,28 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // Función para verificar reCAPTCHA
+    async function verifyRecaptcha(token, action = 'unknown') {
+        try {
+            const response = await fetch('/api/verify-recaptcha', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token, action })
+            });
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                console.error('Errores de reCAPTCHA:', result.errors);
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('Error verifying reCAPTCHA:', error);
+            return { success: false };
+        }
+    }
+
     // Formulario de contacto
     const contactForm = document.getElementById('contactFormData');
     if (contactForm) {
@@ -90,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                const recaptchaVerification = await verifyRecaptcha(recaptchaToken);
+                const recaptchaVerification = await verifyRecaptcha(recaptchaToken, 'contact');
                 if (!recaptchaVerification.success) {
                     showError('Verificación de reCAPTCHA fallida');
                     return;
@@ -196,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                const recaptchaVerification = await verifyRecaptcha(recaptchaToken);
+                const recaptchaVerification = await verifyRecaptcha(recaptchaToken, 'payment');
                 if (!recaptchaVerification.success) {
                     alert('Verificación de reCAPTCHA fallida');
                     return;
@@ -322,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                const recaptchaVerification = await verifyRecaptcha(recaptchaToken);
+                const recaptchaVerification = await verifyRecaptcha(recaptchaToken, 'register');
                 if (!recaptchaVerification.success) {
                     showError('Verificación de reCAPTCHA fallida');
                     return;
@@ -423,27 +444,5 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Credenciales incorrectas. Inténtalo de nuevo.');
             }
         });
-    }
-
-    // Función para verificar reCAPTCHA
-    async function verifyRecaptcha(token) {
-        try {
-            const response = await fetch('/api/verify-recaptcha', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token })
-            });
-            
-            const result = await response.json();
-            
-            if (!result.success) {
-                console.error('Errores de reCAPTCHA:', result.errors);
-            }
-            
-            return result;
-        } catch (error) {
-            console.error('Error verifying reCAPTCHA:', error);
-            return { success: false };
-        }
     }
 });
