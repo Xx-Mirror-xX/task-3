@@ -1,4 +1,3 @@
-// scripts.js (código completo actualizado)
 document.addEventListener('DOMContentLoaded', function() {
     const signUpButton = document.getElementById('SignUpButton');
     const signInButton = document.getElementById('SignInButton');
@@ -59,20 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Google Analytics para navegación
-    document.querySelectorAll('a[href*="indice.html"]').forEach(link => {
-        link.addEventListener('click', function() {
-            if (typeof gtag === 'function') {
-                gtag('event', 'page_view', {
-                    'page_title': 'Indice',
-                    'page_path': '/indice.html',
-                    'event_category': 'navigation'
-                });
-            }
-        });
-    });
-
-    // Función para verificar reCAPTCHA con acciones específicas
+    // Función para verificar reCAPTCHA
     async function verifyRecaptcha(token, action = 'unknown') {
         try {
             const response = await fetch('/api/verify-recaptcha', {
@@ -81,20 +67,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ token, action })
             });
             
-            const result = await response.json();
-            
-            if (!result.success) {
-                console.error('Errores de reCAPTCHA:', result.errors);
+            if (!response.ok) {
+                throw new Error('Error en la verificación');
             }
             
-            return result;
+            return await response.json();
         } catch (error) {
             console.error('Error verifying reCAPTCHA:', error);
             return { success: false };
         }
     }
 
-    // Formulario de contacto con acción específica
+    // Formulario de contacto
     const contactForm = document.getElementById('contactFormData');
     if (contactForm) {
         contactForm.addEventListener('submit', async function(e) {
@@ -166,21 +150,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Google Analytics para formulario de contacto
-    const showContactBtn = document.getElementById('showContactForm');
-    if (showContactBtn) {
-        showContactBtn.addEventListener('click', function() {
-            if (typeof gtag === 'function') {
-                gtag('event', 'click', {
-                    'event_category': 'engagement',
-                    'event_label': 'Botón Formulario de Contacto'
-                });
-            }
-        });
-    }
 
-    // Formulario de pago con acción específica
+    // Formulario de pago
     const paymentForm = document.getElementById('paymentFormData');
     if (paymentForm) {
         paymentForm.addEventListener('submit', async function(e) {
@@ -266,20 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Google Analytics para formulario de pago
-    const showPaymentBtn = document.getElementById('showPaymentForm');
-    if (showPaymentBtn) {
-        showPaymentBtn.addEventListener('click', function() {
-            if (typeof gtag === 'function') {
-                gtag('event', 'click', {
-                    'event_category': 'conversion',
-                    'event_label': 'Botón Realizar Pago'
-                });
-            }
-        });
-    }
-
-    // Formulario de login con acción específica
+    // Formulario de login
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async function(e) {
@@ -326,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Formulario de registro con acción específica
+    // Formulario de registro
     const registerForm = document.getElementById('SignUp')?.querySelector('form');
     if (registerForm) {
         registerForm.addEventListener('submit', async function(e) {
@@ -379,70 +337,6 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.error('Error:', error);
                 showError('Error de conexión con el servidor');
-            }
-        });
-    }
-
-    // Panel de administración
-    const adminBtn = document.querySelector('.admin-btn');
-    const adminModal = document.getElementById('adminLoginModal');
-    const closeBtn = document.querySelector('.admin-close-btn');
-    const adminLoginForm = document.getElementById('adminLoginForm');
-
-    if (adminBtn) {
-        adminBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            adminModal.style.display = 'block';
-        });
-    }
-
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
-            adminModal.style.display = 'none';
-        });
-    }
-
-    window.addEventListener('click', function(e) {
-        if (e.target === adminModal) {
-            adminModal.style.display = 'none';
-        }
-    });
-
-    if (adminLoginForm) {
-        adminLoginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('adminEmail').value;
-            const password = document.getElementById('adminPassword').value;
-
-            const validEmail = 'xxsandovalluisxx@gmail.com';
-            const validPassword = '12345';
-
-            if (email === validEmail && password === validPassword) {
-                try {
-                    const response = await fetch('/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            email: validEmail, 
-                            password: validPassword 
-                        })
-                    });
-
-                    const result = await response.json();
-
-                    if (response.ok) {
-                        window.location.href = '/admin/contacts.html';
-                        adminModal.style.display = 'none';
-                    } else {
-                        alert(result.error || 'Error en la autenticación');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error de conexión con el servidor');
-                }
-            } else {
-                alert('Credenciales incorrectas. Inténtalo de nuevo.');
             }
         });
     }
