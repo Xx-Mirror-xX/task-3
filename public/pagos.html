@@ -4,6 +4,17 @@
     <title>Realizar Pago</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-DCK5HDLZ0N');
+</script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <div class="container" id="paymentForm">
@@ -75,6 +86,9 @@
                 </select>
                 <label for="currency" style="top: -0.01em;">Moneda</label>
             </div>
+            
+            <div class="g-recaptcha" data-sitekey="6Lf3RUwrAAAAAE5rIvFN6aV5lN683RHtDc71erwi"></div>
+            
             <div style="display: flex; justify-content: space-between; margin-top: 20px;">
                 <a href="/index.html" class="btn" style="width: 48%; text-align: center;">
                     <i class="fas fa-arrow-left"></i> Volver

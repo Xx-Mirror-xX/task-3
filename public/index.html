@@ -6,6 +6,21 @@
     <title>Inicio Y Registro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <div class="error-container" id="errorContainer" style="display: none;">
+    <div class="error-message" id="errorMessage"></div>
+</div>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-DCK5HDLZ0N');
+</script>
+
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
 </head>
 <body>
     <div class="container"  id="SignUp" style="display: none;">
@@ -31,6 +46,9 @@
             <input type="password" name="password" id="password" placeholder="password" required>
             <label for="password">contraseña</label>
             </div>
+
+            <div class="g-recaptcha" data-sitekey="6Lf3RUwrAAAAAE5rIvFN6aV5lN683RHtDc71erwi"></div>
+            
             <input type="submit" class="btn" value="SignUp" name="SignUp">
     </form>
     <p class="or">
@@ -63,6 +81,9 @@
             <p class="recover">
                 <a href="#">Olvidaste tu contraseña ?</a>
             </p>
+
+            <div class="g-recaptcha" data-sitekey="6Lf3RUwrAAAAAE5rIvFN6aV5lN683RHtDc71erwi"></div>
+
             <input type="submit" class="btn" value="Sign in" name="Sign In">
     </form>
     <p class="or">

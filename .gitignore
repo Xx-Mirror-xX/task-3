@@ -128,3 +128,30 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Dependencias
+/node_modules
+
+# Archivos de entorno
+.env
+.env.local
+
+# Archivos de desarrollo
+.DS_Store
+*.log
+
+# Archivos del sistema
+Thumbs.db
+
+# Archivos de IDE
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Base de datos local
+*.db
+*.sqlite
