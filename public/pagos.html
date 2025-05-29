@@ -14,7 +14,15 @@
 
   gtag('config', 'G-DCK5HDLZ0N');
 </script>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    
+<script>
+  var onloadCallback = function() {
+    grecaptcha.render('payment-recaptcha', {
+      'sitekey': '6Le1SE4rAAAAANvBxclNSX_kOKHsH2KZ8sayC3R7'
+    });
+  };
+</script>
+<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
 </head>
 <body>
     <div class="container" id="paymentForm">
@@ -87,13 +95,7 @@
                 <label for="currency" style="top: -0.01em;">Moneda</label>
             </div>
             
-
-<div class="g-recaptcha" data-sitekey="6Le1SE4rAAAAANvBxclNSX_kOKHsH2KZ8sayC3R7" 
-     data-theme="light" 
-     data-size="normal" 
-     data-callback="onRecaptchaSuccess"
-     data-expired-callback="onRecaptchaExpired"
-     data-error-callback="onRecaptchaError"></div>
+            <div id="payment-recaptcha"></div>
             
             <div style="display: flex; justify-content: space-between; margin-top: 20px;">
                 <a href="/index.html" class="btn" style="width: 48%; text-align: center;">
