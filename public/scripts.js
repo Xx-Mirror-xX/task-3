@@ -401,17 +401,26 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para verificar reCAPTCHA
-    async function verifyRecaptcha(token) {
-        try {
-            const response = await fetch('/api/verify-recaptcha', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token })
-            });
-            return response.json();
-        } catch (error) {
-            console.error('Error verifying reCAPTCHA:', error);
-            return { success: false };
+async function verifyRecaptcha(token) {
+    try {
+        const response = await fetch('/api/verify-recaptcha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+        });
+        
+        const result = await response.json();
+        
+        // Debug: muestra la respuesta en consola
+        console.log('Resultado de verificación:', result);
+        
+        if (!result.success) {
+            console.error('Errores de reCAPTCHA:', result.errors);
         }
+        
+        return result;
+    } catch (error) {
+        console.error('Error verifying reCAPTCHA:', error);
+        return { success: false };
     }
-});
+}
