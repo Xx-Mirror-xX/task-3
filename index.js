@@ -7,8 +7,7 @@ const axios = require('axios');
 const app = express();
 require('dotenv').config();
 
-const RECAPTCHA_SITE_KEY = process.env.RECAPTCHA_SITE_KEY || '6Le1SE4rAAAAANvBxclNSX_kOKHsH2KZ8sayC3R7';
-const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6Le1SE4rAAAAAB07BDfVTCNguDfhgyhJQucCvVYq';
+const RECAPTCHA_SECRET_KEY = '6Le1SE4rAAAAAB07BDfVTCNguDfhgyhJQucCvVYq';
 
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
@@ -51,19 +50,6 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 service TEXT,
                 paymentDate DATETIME DEFAULT CURRENT_TIMESTAMP
             )`);
-
-            db.run(`CREATE TABLE IF NOT EXISTS captchas (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                action TEXT NOT NULL,
-                token TEXT NOT NULL,
-                hostname TEXT,
-                success BOOLEAN NOT NULL,
-                score REAL,
-                challenge_ts DATETIME,
-                error_codes TEXT,
-                ip_address TEXT,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )`);
         });
     }
 });
@@ -92,91 +78,28 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
-// Función para registrar captchas
-const logCaptcha = (data) => {
-    db.run(
-        `INSERT INTO captchas (action, token, hostname, success, score, challenge_ts, error_codes, ip_address)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-            data.action || 'unknown',
-            data.token,
-            data.hostname,
-            data.success ? 1 : 0,
-            data.score || null,
-            data.challenge_ts || null,
-            data.error_codes ? JSON.stringify(data.error_codes) : null,
-            data.ip_address || null
-        ],
-        (err) => {
-            if (err) console.error('Error al registrar captcha:', err);
-        }
-    );
-};
-
-// Función para verificar reCAPTCHA
-const verifyRecaptcha = async (token, ipAddress, action = 'unknown') => {
+// Función optimizada para verificar reCAPTCHA
+const verifyRecaptcha = async (token, ipAddress) => {
     if (!token) {
-        const error = { 
+        return { 
             success: false, 
-            error: "Token de reCAPTCHA faltante",
-            'error-codes': ['missing-input-response'],
-            action,
-            timestamp: new Date().toISOString()
+            error: "Token de reCAPTCHA faltante"
         };
-        logCaptcha(error);
-        return error;
     }
-
+    
     try {
-        const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${token}`;
-        const response = await axios.post(verificationUrl, {}, {
-            timeout: 3000,
-            params: {
-                remoteip: ipAddress
-            }
-        });
-
-        const result = {
-            ...response.data,
-            action: action,
-            ip_address: ipAddress,
-            timestamp: new Date().toISOString()
-        };
-
-        logCaptcha(result);
-        return result;
+        const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${token}&remoteip=${ipAddress}`;
+        const response = await axios.post(verificationUrl);
+        
+        return response.data;
     } catch (error) {
         console.error('Error al verificar reCAPTCHA:', error);
-        const errResult = {
+        return {
             success: false,
-            error: "Error al verificar reCAPTCHA",
-            'error-codes': ['connection-error'],
-            action: action,
-            timestamp: new Date().toISOString()
+            error: "Error al verificar reCAPTCHA"
         };
-        logCaptcha(errResult);
-        return errResult;
     }
 };
-
-// Ruta de verificación de reCAPTCHA
-app.post('/api/verify-recaptcha', async (req, res) => {
-    const { token, action } = req.body;
-    const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    
-    const result = await verifyRecaptcha(token, ipAddress, action);
-    
-    if (!result.success) {
-        return res.status(400).json(result);
-    }
-    
-    res.json({
-        success: true,
-        timestamp: result.challenge_ts,
-        hostname: result.hostname,
-        action: result.action
-    });
-});
 
 // Rutas de autenticación
 app.post('/register', async (req, res) => {
@@ -188,9 +111,9 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Todos los campos son requeridos' });
         }
 
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'user_registration');
+        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress);
         if (!recaptchaResult.success) {
-            return res.status(400).json({ error: 'Verificación de reCAPTCHA fallida', details: recaptchaResult });
+            return res.status(400).json({ error: 'Verificación de reCAPTCHA fallida' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -226,12 +149,11 @@ app.post('/login', async (req, res) => {
             });
         }
 
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'user_login');
+        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress);
         if (!recaptchaResult.success) {
             return res.status(400).json({ 
                 success: false,
-                message: 'Verificación de reCAPTCHA fallida',
-                details: recaptchaResult
+                message: 'Verificación de reCAPTCHA fallida' 
             });
         }
 
@@ -289,9 +211,9 @@ app.post('/api/contact', async (req, res) => {
             return res.status(400).json({ error: "Todos los campos son requeridos" });
         }
 
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'contact_form_submit');
+        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress);
         if (!recaptchaResult.success) {
-            return res.status(400).json({ error: "Verificación de reCAPTCHA fallida", details: recaptchaResult });
+            return res.status(400).json({ error: "Verificación de reCAPTCHA fallida" });
         }
 
         // Obtener ubicación por IP
@@ -351,9 +273,9 @@ app.post('/api/payment', requireAuth, async (req, res) => {
             return res.status(400).json({ error: "Todos los campos son requeridos" });
         }
 
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'payment_processing');
+        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress);
         if (!recaptchaResult.success) {
-            return res.status(400).json({ error: "Verificación de reCAPTCHA fallida", details: recaptchaResult });
+            return res.status(400).json({ error: "Verificación de reCAPTCHA fallida" });
         }
 
         db.run(
@@ -391,19 +313,6 @@ app.get('/api/payments', requireAuth, (req, res) => {
     );
 });
 
-app.get('/api/captchas', requireAuth, (req, res) => {
-    db.all(
-        "SELECT * FROM captchas ORDER BY created_at DESC",
-        (err, rows) => {
-            if (err) {
-                console.error('Error al obtener captchas:', err);
-                return res.status(500).json({ error: 'Error al obtener captchas' });
-            }
-            res.json(rows);
-        }
-    );
-});
-
 // Rutas de vistas
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -422,7 +331,7 @@ app.get('/pagos.html', (req, res) => {
 });
 
 app.get('/indice', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'vistas', 'indice.html'));
+    res.sendFile(path.join(__dirname, 'public', 'indice.html'));
 });
 
 app.get('/admin/contacts.html', requireAuth, (req, res) => {
