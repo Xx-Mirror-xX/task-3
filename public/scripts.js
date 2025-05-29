@@ -40,15 +40,16 @@ document.addEventListener('DOMContentLoaded', function() {
             
             errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
-            if (message.toLowerCase().includes('captcha')) {
-                const captcha = document.querySelector('.g-recaptcha');
-                if (captcha) {
-                    captcha.classList.add('grecaptcha-error');
-                    setTimeout(() => {
-                        captcha.classList.remove('grecaptcha-error');
-                    }, 3000);
-                }
-            }
+    if (message.toLowerCase().includes('captcha')) {
+        if (window.grecaptcha && window.grecaptcha.reset) {
+            const widgets = document.querySelectorAll('.g-recaptcha');
+            widgets.forEach(widget => {
+                const widgetId = widget.getAttribute('data-widget-id');
+                if (widgetId) grecaptcha.reset(widgetId);
+            });
+        }
+    }
+}
             
             setTimeout(() => {
                 errorContainer.style.display = 'none';
