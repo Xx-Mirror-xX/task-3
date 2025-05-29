@@ -88,12 +88,12 @@ app.post('/api/verify-recaptcha', async (req, res) => {
             return res.status(400).json({ 
                 success: false, 
                 error: "Token de reCAPTCHA faltante",
-                details: "No se recibió el token de reCAPTCHA" 
+                'error-codes': ['missing-input-response']
             });
         }
 
         const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${token}`;
-        const recaptchaResponse = await axios.get(verificationUrl);
+        const recaptchaResponse = await axios.post(verificationUrl);
         
         if (!recaptchaResponse.data.success) {
             console.log('Respuesta completa de reCAPTCHA:', recaptchaResponse.data);
