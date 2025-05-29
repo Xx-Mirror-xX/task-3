@@ -7,7 +7,8 @@ const axios = require('axios');
 const app = express();
 require('dotenv').config();
 
-const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY || '6Le1SE4rAAAAAB07BDfVTCNguDfhgyhJQucCvVYq';
+const RECAPTCHA_SITE_KEY = process.env.RECAPTCHA_SITE_KEY || '6Le1SE4rAAAAANvBxclNSX_kOKHsH2KZ8sayC3R7';
+const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6Le1SE4rAAAAAB07BDfVTCNguDfhgyhJQucCvVYq';
 
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
