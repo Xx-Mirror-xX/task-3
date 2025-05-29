@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-
     const signUpButton = document.getElementById('SignUpButton');
     const signInButton = document.getElementById('SignInButton');
     const signInForm = document.getElementById('SignIn');
@@ -10,32 +9,30 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             signInForm.style.display = "none";
             signUpForm.style.display = "block";
+            // Reset reCAPTCHA when switching forms
+            if (window.grecaptcha && window.grecaptcha.reset) {
+                const signupWidgetId = document.getElementById('signup-recaptcha').getAttribute('data-widget-id');
+                if (signupWidgetId) {
+                    grecaptcha.reset(signupWidgetId);
+                }
+            }
         });
 
         signInButton.addEventListener('click', function(e) {
             e.preventDefault();
             signUpForm.style.display = "none";
             signInForm.style.display = "block";
+            // Reset reCAPTCHA when switching forms
+            if (window.grecaptcha && window.grecaptcha.reset) {
+                const signinWidgetId = document.getElementById('signin-recaptcha').getAttribute('data-widget-id');
+                if (signinWidgetId) {
+                    grecaptcha.reset(signinWidgetId);
+                }
+            }
         });
     }
 
     // Función para mostrar errores
-    function onRecaptchaSuccess(token) {
-    console.log('reCAPTCHA completado con éxito');
-    // Puedes habilitar el botón de envío aquí si lo prefieres
-}
-
-function onRecaptchaExpired() {
-    console.log('reCAPTCHA expirado');
-    grecaptcha.reset();
-    showError('El reCAPTCHA ha expirado. Por favor, complétalo nuevamente.');
-}
-
-function onRecaptchaError() {
-    console.log('Error en reCAPTCHA');
-    showError('Hubo un error con el reCAPTCHA. Por favor, inténtalo de nuevo.');
-}
-    
     function showError(message, formId = null) {
         const errorContainer = document.getElementById('errorContainer');
         const errorMessage = document.getElementById('errorMessage');
@@ -63,38 +60,6 @@ function onRecaptchaError() {
             alert(message);
         }
     }
-
-async function verifyRecaptcha(token) {
-    try {
-        const response = await fetch('/api/verify-recaptcha', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token })
-        });
-        
-        if (!response.ok) {
-            throw new Error('Error en la verificación');
-        }
-        
-        const data = await response.json();
-        
-        if (!data.success) {
-            console.error('Errores de reCAPTCHA:', data.errors);
-            return { 
-                success: false,
-                errors: data.errors 
-            };
-        }
-        
-        return { success: true };
-    } catch (error) {
-        console.error('Error verifying reCAPTCHA:', error);
-        return { 
-            success: false,
-            error: 'Error de conexión con el servidor de verificación' 
-        };
-    }
-}
 
     // Google Analytics para navegación
     document.querySelectorAll('a[href*="indice.html"]').forEach(link => {
@@ -161,6 +126,7 @@ async function verifyRecaptcha(token) {
                 if (response.ok) {
                     showError(result.message || 'Mensaje enviado con éxito', 'success');
                     this.reset();
+                    grecaptcha.reset();
                     setTimeout(() => {
                         window.location.href = '/index.html';
                     }, 1000);
@@ -252,6 +218,7 @@ async function verifyRecaptcha(token) {
                     }
                     alert(successMsg);
                     this.reset();
+                    grecaptcha.reset();
                     setTimeout(() => {
                         window.location.href = '/index.html';
                     }, 1000);
