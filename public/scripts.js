@@ -48,6 +48,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    async function verifyRecaptcha(token) {
+    try {
+        const response = await fetch('/api/verify-recaptcha', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+        });
+        const result = await response.json();
+        
+        if (!result.success) {
+            console.error('Error de reCAPTCHA:', result);
+            showError(`Error de reCAPTCHA: ${result.errors ? result.errors.join(', ') : 'Error desconocido'}`);
+        }
+        
+        return result;
+    } catch (error) {
+        console.error('Error verifying reCAPTCHA:', error);
+        showError('Error de conexión al verificar reCAPTCHA');
+        return { success: false };
+    }
+}
+
     // Google Analytics para navegación
     document.querySelectorAll('a[href*="indice.html"]').forEach(link => {
         link.addEventListener('click', function() {
