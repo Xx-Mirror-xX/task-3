@@ -6,31 +6,17 @@
     <title>Inicio Y Registro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <div class="error-container" id="errorContainer" style="display: none;">
-    <div class="error-message" id="errorMessage"></div>
-</div>
 
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-DCK5HDLZ0N');
+    </script>
 
-  gtag('config', 'G-DCK5HDLZ0N');
-</script>
-
-<script>
-  var onloadCallback = function() {
-    grecaptcha.render('signup-recaptcha', {
-      'sitekey': '6Le1SE4rAAAAANvBxclNSX_kOKHsH2KZ8sayC3R7'
-    });
-    grecaptcha.render('signin-recaptcha', {
-      'sitekey': '6Le1SE4rAAAAANvBxclNSX_kOKHsH2KZ8sayC3R7'
-    });
-  };
-</script>
-<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
-
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <div class="container"  id="SignUp" style="display: none;">
