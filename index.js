@@ -1,3 +1,4 @@
+// index.js (código completo actualizado)
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
@@ -113,11 +114,11 @@ const logCaptcha = (data) => {
     );
 };
 
-// Función optimizada para verificar reCAPTCHA
+// Función optimizada para verificar reCAPTCHA con acciones específicas
 const verifyRecaptcha = async (token, ipAddress, action = 'unknown') => {
     if (!token) {
         return { 
-            success: true,  // Cambiado a true para que no sea obligatorio
+            success: false, 
             error: "Token de reCAPTCHA faltante",
             'error-codes': ['missing-input-response'],
             action,
@@ -125,23 +126,18 @@ const verifyRecaptcha = async (token, ipAddress, action = 'unknown') => {
         };
     }
 
+    // Validar formato de acción según recomendaciones de reCAPTCHA
+    const validAction = action.replace(/[^a-zA-Z0-9/_]/g, '_').toLowerCase();
+    
     try {
-        // Configurar timeout de 3 segundos para la verificación
-        const source = axios.CancelToken.source();
-        const timeout = setTimeout(() => {
-            source.cancel('Timeout al verificar reCAPTCHA');
-        }, 3000);
-
         const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${token}`;
         const response = await axios.post(verificationUrl, {}, {
-            cancelToken: source.token
+            timeout: 3000
         });
-
-        clearTimeout(timeout);
 
         const result = {
             ...response.data,
-            action,
+            action: validAction,
             ip_address: ipAddress,
             timestamp: new Date().toISOString()
         };
@@ -151,22 +147,12 @@ const verifyRecaptcha = async (token, ipAddress, action = 'unknown') => {
 
         return result;
     } catch (error) {
-        if (axios.isCancel(error)) {
-            return {
-                success: true,  // Cambiado a true para que no sea obligatorio
-                error: "Timeout al verificar reCAPTCHA",
-                'error-codes': ['timeout'],
-                action,
-                timestamp: new Date().toISOString()
-            };
-        }
-
         console.error('Error al verificar reCAPTCHA:', error);
         return {
-            success: true,  // Cambiado a true para que no sea obligatorio
+            success: false,
             error: "Error al verificar reCAPTCHA",
             'error-codes': ['connection-error'],
-            action,
+            action: validAction,
             timestamp: new Date().toISOString()
         };
     }
@@ -186,17 +172,24 @@ app.post('/api/verify-recaptcha', async (req, res) => {
     res.json({
         success: true,
         timestamp: result.challenge_ts,
-        hostname: result.hostname
+        hostname: result.hostname,
+        action: result.action
     });
 });
 
-// Rutas de autenticación optimizadas
+// Rutas de autenticación optimizadas con acciones específicas
 app.post('/register', async (req, res) => {
     try {
-        const { fName, lName, email, password } = req.body;
+        const { fName, lName, email, password, 'g-recaptcha-response': recaptchaToken } = req.body;
+        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         
-        if (!fName || !lName || !email || !password) {
+        if (!fName || !lName || !email || !password || !recaptchaToken) {
             return res.status(400).json({ error: 'Todos los campos son requeridos' });
+        }
+
+        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'user_registration');
+        if (!recaptchaResult.success) {
+            return res.status(400).json({ error: 'Verificación de reCAPTCHA fallida' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -222,8 +215,24 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, 'g-recaptcha-response': recaptchaToken } = req.body;
+        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         
+        if (!recaptchaToken) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Por favor completa el reCAPTCHA' 
+            });
+        }
+
+        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'user_login');
+        if (!recaptchaResult.success) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Verificación de reCAPTCHA fallida' 
+            });
+        }
+
         db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
             if (err) {
                 return res.status(500).json({ 
@@ -268,14 +277,19 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// Rutas de contactos optimizadas
+// Rutas de contactos optimizadas con acciones específicas
 app.post('/api/contact', async (req, res) => {
     try {
-        const { firstName, lastName, email, message } = req.body;
+        const { firstName, lastName, email, message, 'g-recaptcha-response': recaptchaToken } = req.body;
         const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-        if (!firstName || !lastName || !email || !message) {
+        if (!firstName || !lastName || !email || !message || !recaptchaToken) {
             return res.status(400).json({ error: "Todos los campos son requeridos" });
+        }
+
+        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'contact_form_submit');
+        if (!recaptchaResult.success) {
+            return res.status(400).json({ error: "Verificación de reCAPTCHA fallida" });
         }
 
         // Obtener ubicación por IP (no bloqueante)
@@ -328,13 +342,19 @@ app.get('/api/contacts', requireAuth, (req, res) => {
     );
 });
 
-// Rutas de pagos optimizadas
+// Rutas de pagos optimizadas con acciones específicas
 app.post('/api/payment', requireAuth, async (req, res) => {
     try {
-        const { email, cardName, cardNumber, expiryMonth, expiryYear, cvv, amount, currency } = req.body;
+        const { email, cardName, cardNumber, expiryMonth, expiryYear, cvv, amount, currency, 'g-recaptcha-response': recaptchaToken } = req.body;
+        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-        if (!email || !cardName || !cardNumber || !expiryMonth || !expiryYear || !cvv || !amount || !currency) {
+        if (!email || !cardName || !cardNumber || !expiryMonth || !expiryYear || !cvv || !amount || !currency || !recaptchaToken) {
             return res.status(400).json({ error: "Todos los campos son requeridos" });
+        }
+
+        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'payment_processing');
+        if (!recaptchaResult.success) {
+            return res.status(400).json({ error: "Verificación de reCAPTCHA fallida" });
         }
 
         db.run(
