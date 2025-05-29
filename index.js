@@ -95,9 +95,8 @@ app.post('/api/verify-recaptcha', async (req, res) => {
         const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET}&response=${token}`;
         const recaptchaResponse = await axios.post(verificationUrl);
         
-        if (!recaptchaResponse.data.success) {
-            console.log('Respuesta completa de reCAPTCHA:', recaptchaResponse.data);
-        }
+        // Debug: muestra la respuesta completa en consola
+        console.log('Respuesta de reCAPTCHA:', recaptchaResponse.data);
         
         res.json({
             success: recaptchaResponse.data.success,
