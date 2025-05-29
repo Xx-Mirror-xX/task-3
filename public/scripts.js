@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             signInForm.style.display = "none";
             signUpForm.style.display = "block";
-            // Reset reCAPTCHA when switching forms
             if (window.grecaptcha && window.grecaptcha.reset) {
                 const signupWidgetId = document.getElementById('signup-recaptcha').getAttribute('data-widget-id');
                 if (signupWidgetId) {
@@ -22,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             signUpForm.style.display = "none";
             signInForm.style.display = "block";
-            // Reset reCAPTCHA when switching forms
             if (window.grecaptcha && window.grecaptcha.reset) {
                 const signinWidgetId = document.getElementById('signin-recaptcha').getAttribute('data-widget-id');
                 if (signinWidgetId) {
@@ -32,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Función para mostrar errores
     function showError(message, formId = null) {
         const errorContainer = document.getElementById('errorContainer');
         const errorMessage = document.getElementById('errorMessage');
@@ -64,11 +61,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Google Analytics para navegación
     document.querySelectorAll('a[href*="indice.html"]').forEach(link => {
         link.addEventListener('click', function() {
-            gtag('event', 'page_view', {
-                'page_title': 'Indice',
-                'page_path': '/indice.html',
-                'event_category': 'navigation'
-            });
+            if (typeof gtag === 'function') {
+                gtag('event', 'page_view', {
+                    'page_title': 'Indice',
+                    'page_path': '/indice.html',
+                    'event_category': 'navigation'
+                });
+            }
         });
     });
 
@@ -77,6 +76,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (contactForm) {
         contactForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            if (!window.grecaptcha || !window.grecaptcha.getResponse) {
+                showError('reCAPTCHA no está cargado correctamente');
+                return;
+            }
 
             const recaptchaToken = grecaptcha.getResponse();
             if (!recaptchaToken) {
@@ -144,10 +148,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const showContactBtn = document.getElementById('showContactForm');
     if (showContactBtn) {
         showContactBtn.addEventListener('click', function() {
-            gtag('event', 'click', {
-                'event_category': 'engagement',
-                'event_label': 'Botón Formulario de Contacto'
-            });
+            if (typeof gtag === 'function') {
+                gtag('event', 'click', {
+                    'event_category': 'engagement',
+                    'event_label': 'Botón Formulario de Contacto'
+                });
+            }
         });
     }
 
@@ -178,6 +184,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
+                if (!window.grecaptcha || !window.grecaptcha.getResponse) {
+                    alert('reCAPTCHA no está cargado correctamente');
+                    return;
+                }
+
                 const recaptchaToken = grecaptcha.getResponse();
                 if (!recaptchaToken) {
                     alert('Por favor completa el reCAPTCHA');
@@ -236,10 +247,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const showPaymentBtn = document.getElementById('showPaymentForm');
     if (showPaymentBtn) {
         showPaymentBtn.addEventListener('click', function() {
-            gtag('event', 'click', {
-                'event_category': 'conversion',
-                'event_label': 'Botón Realizar Pago'
-            });
+            if (typeof gtag === 'function') {
+                gtag('event', 'click', {
+                    'event_category': 'conversion',
+                    'event_label': 'Botón Realizar Pago'
+                });
+            }
         });
     }
 
@@ -251,6 +264,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const email = this.email.value;
             const password = this.password.value;
+            
+            if (!window.grecaptcha || !window.grecaptcha.getResponse) {
+                showError('reCAPTCHA no está cargado correctamente');
+                return;
+            }
+
             const recaptchaToken = grecaptcha.getResponse();
 
             if (!recaptchaToken) {
@@ -290,6 +309,11 @@ document.addEventListener('DOMContentLoaded', function() {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
+            if (!window.grecaptcha || !window.grecaptcha.getResponse) {
+                showError('reCAPTCHA no está cargado correctamente');
+                return;
+            }
+
             const recaptchaToken = grecaptcha.getResponse();
             if (!recaptchaToken) {
                 showError('Por favor completa el reCAPTCHA');
@@ -401,26 +425,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para verificar reCAPTCHA
-async function verifyRecaptcha(token) {
-    try {
-        const response = await fetch('/api/verify-recaptcha', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token })
-        });
-        
-        const result = await response.json();
-        
-        // Debug: muestra la respuesta en consola
-        console.log('Resultado de verificación:', result);
-        
-        if (!result.success) {
-            console.error('Errores de reCAPTCHA:', result.errors);
+    async function verifyRecaptcha(token) {
+        try {
+            const response = await fetch('/api/verify-recaptcha', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token })
+            });
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                console.error('Errores de reCAPTCHA:', result.errors);
+            }
+            
+            return result;
+        } catch (error) {
+            console.error('Error verifying reCAPTCHA:', error);
+            return { success: false };
         }
-        
-        return result;
-    } catch (error) {
-        console.error('Error verifying reCAPTCHA:', error);
-        return { success: false };
     }
-}
+});
