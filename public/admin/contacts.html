@@ -1,7 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Contactos</title>
+    <link rel="stylesheet" href="/stylesheet/styles.css">
     <style>
         table { 
             width: 100%; 
@@ -38,68 +41,69 @@
     </style>
 
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-DCK5HDLZ0N');
-</script>
-
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-DCK5HDLZ0N');
+    </script>
 </head>
 <body>
-    <h1>Contactos Recibidos</h1>
-    <a href="/logout" class="logout-btn">Cerrar sesión</a>
-    
-<table id="contactsTable">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Mensaje</th>
-            <th>IP</th>
-            <th>Ciudad</th>
-            <th>País</th>
-            <th>Fecha</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+    <div class="container">
+        <h1>Contactos Recibidos</h1>
+        <a href="/logout" class="logout-btn">Cerrar sesión</a>
+        
+        <table id="contactsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Mensaje</th>
+                    <th>IP</th>
+                    <th>Ciudad</th>
+                    <th>País</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
-<script>
-    async function loadContacts() {
-        try {
-            const response = await fetch('/api/contacts');
-            if (!response.ok) {
-                throw new Error('Error al cargar contactos');
+    <script src="/scripts.js"></script>
+    <script>
+        async function loadContacts() {
+            try {
+                const response = await fetch('/api/contacts');
+                if (!response.ok) {
+                    throw new Error('Error al cargar contactos');
+                }
+                const contacts = await response.json();
+                
+                const tbody = document.querySelector('#contactsTable tbody');
+                tbody.innerHTML = '';
+                
+                contacts.forEach(contact => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${contact.id}</td>
+                        <td>${contact.firstName} ${contact.lastName}</td>
+                        <td>${contact.email}</td>
+                        <td>${contact.message}</td>
+                        <td>${contact.ipAddress}</td>
+                        <td>${contact.city || 'N/A'}</td>
+                        <td>${contact.country || 'N/A'}</td>
+                        <td>${new Date(contact.createdAt).toLocaleString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message);
             }
-            const contacts = await response.json();
-            
-            const tbody = document.querySelector('#contactsTable tbody');
-            tbody.innerHTML = '';
-            
-            contacts.forEach(contact => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${contact.id}</td>
-                    <td>${contact.firstName} ${contact.lastName}</td>
-                    <td>${contact.email}</td>
-                    <td>${contact.message}</td>
-                    <td>${contact.ipAddress}</td>
-                    <td>${contact.city || 'N/A'}</td>
-                    <td>${contact.country || 'N/A'}</td>
-                    <td>${new Date(contact.createdAt).toLocaleString()}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        } catch (error) {
-            console.error('Error:', error);
-            alert(error.message);
         }
-    }
-    document.addEventListener('DOMContentLoaded', loadContacts);
-</script>
+        document.addEventListener('DOMContentLoaded', loadContacts);
+    </script>
 </body>
 </html>
