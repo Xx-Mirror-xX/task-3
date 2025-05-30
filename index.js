@@ -249,27 +249,37 @@ app.post('/api/contact', async (req, res) => {
             });
         }
 
-    // En la ruta /api/contact, reemplazar la parte de geolocalización con:
-let country = 'Desconocido';
-let city = 'Desconocido';
-
+        let country = 'Desconocido';
+        let city = 'Desconocido';
+        
+        try {
+            const response = await axios.get(`https://api.apiip.net/api/check?ip=${ipAddress}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`);
+            if (response.data && response.data.country) {
+                country = response.data.country;
+                city = response.data.city || 'Desconocido';
+            }
+        } catch (error) {
+            console.error('Error al obtener geolocalización:', error.message);
+        }
 try {
-    const response = await axios.get(`https://ipapi.co/${ipAddress}/json/`);
+    const response = await axios.get(`https://api.apiip.net/api/check?ip=${ipAddress}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`, {
+        timeout: 3000 // 3 segundos de timeout
+    });
+    
     if (response.data) {
-        country = response.data.country_name || 'Desconocido';
+        country = response.data.country || 'Desconocido';
         city = response.data.city || 'Desconocido';
     }
 } catch (error) {
     console.error('Error al obtener geolocalización:', error.message);
-    
-    // Manejo de IP local (localhost)
+
     if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
         try {
             const publicIpResponse = await axios.get('https://api.ipify.org?format=json');
             const publicIp = publicIpResponse.data.ip;
-            const locResponse = await axios.get(`https://ipapi.co/${publicIp}/json/`);
+            const locResponse = await axios.get(`https://api.apiip.net/api/check?ip=${publicIp}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`);
             if (locResponse.data) {
-                country = locResponse.data.country_name || 'Desconocido';
+                country = locResponse.data.country || 'Desconocido';
                 city = locResponse.data.city || 'Desconocido';
             }
         } catch (fallbackError) {
@@ -277,6 +287,27 @@ try {
         }
     }
 }
+        db.run(
+            `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [firstName, lastName, email, message, ipAddress, country, city],
+            function(err) {
+                if (err) {
+                    console.error('Error al guardar contacto:', err);
+                    return res.status(500).json({ error: "Error al guardar contacto" });
+                }
+                res.json({ 
+                    success: true, 
+                    message: "Contacto guardado exitosamente",
+                    id: this.lastID
+                });
+            }
+        );
+    } catch (error) {
+        console.error('Error en /api/contact:', error);
+        res.status(500).json({ error: "Error en el servidor" });
+    }
+});
 
 app.get('/api/contacts', requireAuth, (req, res) => {
     db.all(
@@ -369,6 +400,7 @@ app.get('/admin/contacts.html', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'contacts.html'));
 });
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor ejecutándose en http://0.0.0.0:${PORT}`);
 });
