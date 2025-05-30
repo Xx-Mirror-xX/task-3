@@ -249,20 +249,18 @@ app.post('/api/contact', async (req, res) => {
             });
         }
 
-        // Obtener ubicación por IP (no bloqueante)
         let country = 'Desconocido';
         let city = 'Desconocido';
         
-        const locationPromise = axios.get(`https://ipapi.co/${ipAddress}/json/`)
-            .then(response => {
-                country = response.data.country_name || 'Desconocido';
+        try {
+            const response = await axios.get(`https://api.apiip.net/api/check?ip=${ipAddress}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`);
+            if (response.data && response.data.country) {
+                country = response.data.country;
                 city = response.data.city || 'Desconocido';
-            })
-            .catch(error => {
-                console.error('Error al obtener geolocalización:', error.message);
-            });
-
-        await locationPromise;
+            }
+        } catch (error) {
+            console.error('Error al obtener geolocalización:', error.message);
+        }
 
         db.run(
             `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
