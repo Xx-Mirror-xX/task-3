@@ -7,11 +7,8 @@ const axios = require('axios');
 const app = express();
 require('dotenv').config();
 
-// Configuración de reCAPTCHA Enterprise
-const RECAPTCHA_SITE_KEY = process.env.RECAPTCHA_SITE_KEY || '6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ';
+// Configuración de reCAPTCHA v2
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6LcojE4rAAAAAEcJGKd1KJh2-Uepd0HPQLL1Rkvh';
-const RECAPTCHA_PROJECT_ID = 'creating-social--1748397311466';
-const RECAPTCHA_API_KEY = process.env.RECAPTCHA_API_KEY || 'TU_API_KEY_AQUI';
 
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
@@ -83,54 +80,36 @@ const requireAuth = (req, res, next) => {
 };
 
 // Función optimizada para verificar reCAPTCHA Enterprise
-const verifyRecaptcha = async (token, ipAddress, action = 'unknown') => {
+const verifyRecaptcha = async (token, ipAddress) => {
     if (!token) {
         return { 
             success: false, 
             error: "Token de reCAPTCHA faltante",
-            'error-codes': ['missing-input-response'],
-            action,
-            timestamp: new Date().toISOString()
+            'error-codes': ['missing-input-response']
         };
     }
 
     try {
-        const verificationUrl = `https://recaptchaenterprise.googleapis.com/v1/projects/${RECAPTCHA_PROJECT_ID}/assessments?key=${RECAPTCHA_API_KEY}`;
+        const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${token}&remoteip=${ipAddress}`;
         
-        const response = await axios.post(verificationUrl, {
-            event: {
-                token: token,
-                siteKey: RECAPTCHA_SITE_KEY,
-                expectedAction: action,
-                userIpAddress: ipAddress
-            }
-        }, {
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            timeout: 3000
-        });
+        const response = await axios.post(verificationUrl);
+        const result = response.data;
 
-        const result = {
-            success: response.data.riskAnalysis.score > 0.5,
-            score: response.data.riskAnalysis.score,
-            reasons: response.data.riskAnalysis.reasons || [],
-            action: action,
-            timestamp: new Date().toISOString()
+        return {
+            success: result.success,
+            score: result.score || 0.5, // Default score for v2
+            'error-codes': result['error-codes'] || []
         };
-
-        return result;
     } catch (error) {
-        console.error('Error al verificar reCAPTCHA Enterprise:', error);
+        console.error('Error al verificar reCAPTCHA:', error);
         return {
             success: false,
             error: "Error al verificar reCAPTCHA",
-            'error-codes': ['connection-error'],
-            action: action,
-            timestamp: new Date().toISOString()
+            'error-codes': ['connection-error']
         };
     }
 };
+
 
 // Ruta de verificación de reCAPTCHA optimizada
 app.post('/api/verify-recaptcha', async (req, res) => {
