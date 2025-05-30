@@ -253,40 +253,34 @@ app.post('/api/contact', async (req, res) => {
         let city = 'Desconocido';
         
         try {
-            const response = await axios.get(`https://api.apiip.net/api/check?ip=${ipAddress}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`);
-            if (response.data && response.data.country) {
-                country = response.data.country;
+            // Using ipapi.co instead of apiip.net
+            const response = await axios.get(`https://ipapi.co/${ipAddress}/json/`, {
+                timeout: 3000
+            });
+            
+            if (response.data) {
+                country = response.data.country_name || 'Desconocido';
                 city = response.data.city || 'Desconocido';
             }
         } catch (error) {
             console.error('Error al obtener geolocalización:', error.message);
-        }
-try {
-    const response = await axios.get(`https://api.apiip.net/api/check?ip=${ipAddress}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`, {
-        timeout: 3000 // 3 segundos de timeout
-    });
-    
-    if (response.data) {
-        country = response.data.country || 'Desconocido';
-        city = response.data.city || 'Desconocido';
-    }
-} catch (error) {
-    console.error('Error al obtener geolocalización:', error.message);
 
-    if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
-        try {
-            const publicIpResponse = await axios.get('https://api.ipify.org?format=json');
-            const publicIp = publicIpResponse.data.ip;
-            const locResponse = await axios.get(`https://api.apiip.net/api/check?ip=${publicIp}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`);
-            if (locResponse.data) {
-                country = locResponse.data.country || 'Desconocido';
-                city = locResponse.data.city || 'Desconocido';
+            // Fallback for localhost
+            if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
+                try {
+                    const publicIpResponse = await axios.get('https://api.ipify.org?format=json');
+                    const publicIp = publicIpResponse.data.ip;
+                    const locResponse = await axios.get(`https://ipapi.co/${publicIp}/json/`);
+                    if (locResponse.data) {
+                        country = locResponse.data.country_name || 'Desconocido';
+                        city = locResponse.data.city || 'Desconocido';
+                    }
+                } catch (fallbackError) {
+                    console.error('Error al obtener IP pública:', fallbackError.message);
+                }
             }
-        } catch (fallbackError) {
-            console.error('Error al obtener IP pública:', fallbackError.message);
         }
-    }
-}
+
         db.run(
             `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -401,6 +395,6 @@ app.get('/admin/contacts.html', requireAuth, (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor ejecutándose en http://0.0.0.0:${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
 });
