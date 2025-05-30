@@ -79,6 +79,25 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
+const getGeoLocation = async (ipAddress) => {
+    try {
+        const response = await axios.get(`https://api.apiip.net/api/check?ip=${ipAddress}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`, {
+            timeout: 3000
+        });
+        
+        return {
+            country: response.data?.country || 'Desconocido',
+            city: response.data?.city || 'Desconocido'
+        };
+    } catch (error) {
+        console.error('Error al obtener geolocalización:', error.message);
+        return {
+            country: 'Desconocido',
+            city: 'Desconocido'
+        };
+    }
+};
+
 // Función optimizada para verificar reCAPTCHA Enterprise
 const verifyRecaptcha = async (token, ipAddress) => {
     if (!token) {
