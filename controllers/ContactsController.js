@@ -1,6 +1,7 @@
 const ContactsModel = require('../models/ContactsModel');
 const path = require('path');
-
+const GeolocationHelper = require('../helpers/geolocation');
+const geolocationHelper = new GeolocationHelper('78fa71af-348c-412f-9a27-15af099c312c');
 class ContactsController {
     constructor() {
         this.model = new ContactsModel();
@@ -16,7 +17,7 @@ async addContact(req, res) {
                 error: "Todos los campos son requeridos" 
             });
         }
-
+        const location = await geolocationHelper.getLocationByIp(ipAddress);
         const ipAddress = req.ip || 
                          req.headers['x-forwarded-for'] || 
                          req.connection.remoteAddress;
