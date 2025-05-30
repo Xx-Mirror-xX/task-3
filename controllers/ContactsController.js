@@ -1,13 +1,14 @@
 const ContactsModel = require('../models/ContactsModel');
 const path = require('path');
 const axios = require('axios');
+const mailService = require('../services/mailService'); 
 
 class ContactsController {
     constructor() {
         this.model = new ContactsModel();
     }
 
-    async addContact(req, res) {
+  async addContact(req, res) {
         try {
             const { firstName, lastName, email, message } = req.body;
             
@@ -51,7 +52,7 @@ class ContactsController {
                 }
             }
 
-            await this.model.addContact({
+            const contactData = {
                 firstName,
                 lastName,
                 email,
@@ -59,7 +60,13 @@ class ContactsController {
                 ipAddress,
                 country,
                 city
-            });
+            };
+
+            await this.model.addContact(contactData);
+
+            // Enviar notificación por correo (no esperamos la respuesta para no retrasar la respuesta al cliente)
+            mailService.sendContactNotification(contactData)
+                .catch(err => console.error('Error al enviar correo:', err));
 
             res.status(201).json({ 
                 success: true,
