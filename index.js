@@ -110,6 +110,58 @@ const verifyRecaptcha = async (token, ipAddress) => {
     }
 };
 
+// Función para obtener geolocalización con fallbacks
+const getGeoLocation = async (ipAddress) => {
+    let country = 'Desconocido';
+    let city = 'Desconocido';
+    
+    // Si es localhost, intentamos obtener la IP pública primero
+    if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
+        try {
+            const publicIpResponse = await axios.get('https://api.ipify.org?format=json', { timeout: 3000 });
+            ipAddress = publicIpResponse.data.ip;
+        } catch (error) {
+            console.error('Error al obtener IP pública:', error.message);
+            return { country, city };
+        }
+    }
+
+    // Primero intentamos con api.apiip.net
+    try {
+        const response = await axios.get(`https://api.apiip.net/api/check?ip=${ipAddress}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`, {
+            timeout: 3000
+        });
+        
+        if (response.data) {
+            country = response.data.country || 'Desconocido';
+            city = response.data.city || 'Desconocido';
+            return { country, city };
+        }
+    } catch (apiIpError) {
+        console.error('Error con api.apiip.net:', apiIpError.message);
+        
+        // Si falla, intentamos con ipapi.co
+        try {
+            const response = await axios.get(`https://ipapi.co/${ipAddress}/json/`, {
+                timeout: 3000
+            });
+            
+            if (response.data) {
+                country = response.data.country_name || 'Desconocido';
+                city = response.data.city || 'Desconocido';
+                return { country, city };
+            }
+        } catch (ipApiError) {
+            console.error('Error con ipapi.co:', ipApiError.message);
+        }
+    }
+
+    return { country, city };
+};
+
+
+
+
 
 // Ruta de verificación de reCAPTCHA optimizada
 app.post('/api/verify-recaptcha', async (req, res) => {
@@ -248,45 +300,9 @@ app.post('/api/contact', async (req, res) => {
                 score: recaptchaResult.score
             });
         }
+        // Obtener geolocalización con el nuevo sistema de fallbacks
+        const { country, city } = await getGeoLocation(ipAddress);
 
-        let country = 'Desconocido';
-        let city = 'Desconocido';
-        
-        try {
-            const response = await axios.get(`https://api.apiip.net/api/check?ip=${ipAddress}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`);
-            if (response.data && response.data.country) {
-                country = response.data.country;
-                city = response.data.city || 'Desconocido';
-            }
-        } catch (error) {
-            console.error('Error al obtener geolocalización:', error.message);
-        }
-try {
-    const response = await axios.get(`https://api.apiip.net/api/check?ip=${ipAddress}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`, {
-        timeout: 3000 // 3 segundos de timeout
-    });
-    
-    if (response.data) {
-        country = response.data.country || 'Desconocido';
-        city = response.data.city || 'Desconocido';
-    }
-} catch (error) {
-    console.error('Error al obtener geolocalización:', error.message);
-
-    if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
-        try {
-            const publicIpResponse = await axios.get('https://api.ipify.org?format=json');
-            const publicIp = publicIpResponse.data.ip;
-            const locResponse = await axios.get(`https://api.apiip.net/api/check?ip=${publicIp}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`);
-            if (locResponse.data) {
-                country = locResponse.data.country || 'Desconocido';
-                city = locResponse.data.city || 'Desconocido';
-            }
-        } catch (fallbackError) {
-            console.error('Error al obtener IP pública:', fallbackError.message);
-        }
-    }
-}
         db.run(
             `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
