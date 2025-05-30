@@ -175,22 +175,12 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     try {
-        const { email, password, 'g-recaptcha-response': recaptchaToken } = req.body;
-        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        const { email, password } = req.body; // Eliminamos el recaptchaToken
         
-        if (!email || !password || !recaptchaToken) {
+        if (!email || !password) {
             return res.status(400).json({ 
                 success: false,
                 message: 'Todos los campos son requeridos' 
-            });
-        }
-
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'login');
-        if (!recaptchaResult.success || recaptchaResult.score < 0.5) {
-            return res.status(400).json({ 
-                success: false,
-                message: 'Verificación de reCAPTCHA fallida',
-                score: recaptchaResult.score
             });
         }
 
