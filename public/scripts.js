@@ -189,51 +189,71 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Formulario de login
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const email = this.email.value;
-            const password = this.password.value;
-            
-            const recaptchaResponse = grecaptcha.getResponse();
-            if (!recaptchaResponse) {
-                showError('Por favor completa el reCAPTCHA');
-                return;
-            }
 
-            try {
-                const response = await fetch('/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        email, 
-                        password,
-                        'g-recaptcha-response': recaptchaResponse 
-                    })
-                });
+// Formulario de login - Versión mejorada
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const email = this.email.value;
+        const password = this.password.value;
+        
+        const recaptchaResponse = grecaptcha.getResponse();
+        if (!recaptchaResponse) {
+            showError('Por favor completa el reCAPTCHA');
+            return;
+        }
 
-                const result = await response.json();
-
-                if (response.ok) {
-                    if (result.redirect) {
-                        window.location.href = result.redirect;
-                    } else {
-                        window.location.href = '/indice';
-                    }
-                } else {
-                    showError(result.message || 'Credenciales incorrectas');
-                    grecaptcha.reset();
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Error de conexión con el servidor');
-                grecaptcha.reset();
+        // Validación de campos requeridos
+        const requiredFields = ['email', 'password'];
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            const input = this.elements[field];
+            if (!input.value.trim()) {
+                isValid = false;
+                input.style.borderBottom = '2px solid red';
+            } else {
+                input.style.borderBottom = '';
             }
         });
-    }
+
+        if (!isValid) {
+            showError('Por favor complete todos los campos requeridos');
+            return;
+        }
+
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email, 
+                    password,
+                    'g-recaptcha-response': recaptchaResponse 
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                if (result.redirect) {
+                    window.location.href = result.redirect;
+                } else {
+                    window.location.href = '/indice';
+                }
+            } else {
+                showError(result.message || 'Credenciales incorrectas');
+                grecaptcha.reset();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Error de conexión con el servidor');
+            grecaptcha.reset();
+        }
+    });
+}
 
     // Formulario de registro
     const registerForm = document.getElementById('SignUp')?.querySelector('form');
