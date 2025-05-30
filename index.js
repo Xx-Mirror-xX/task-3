@@ -374,7 +374,7 @@ app.get('/indice', requireAuth, (req, res) => {
 });
 
 app.get('/admin/contacts.html', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'contacts.html'));
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'contacts.html'));
 });
 
 const PORT = process.env.PORT || 3000;
