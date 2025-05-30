@@ -79,25 +79,6 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
-const getGeoLocation = async (ipAddress) => {
-    try {
-        const response = await axios.get(`https://api.apiip.net/api/check?ip=${ipAddress}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`, {
-            timeout: 3000
-        });
-        
-        return {
-            country: response.data?.country || 'Desconocido',
-            city: response.data?.city || 'Desconocido'
-        };
-    } catch (error) {
-        console.error('Error al obtener geolocalización:', error.message);
-        return {
-            country: 'Desconocido',
-            city: 'Desconocido'
-        };
-    }
-};
-
 // Función optimizada para verificar reCAPTCHA Enterprise
 const verifyRecaptcha = async (token, ipAddress) => {
     if (!token) {
@@ -271,30 +252,41 @@ app.post('/api/contact', async (req, res) => {
         let country = 'Desconocido';
         let city = 'Desconocido';
         
-
-        const { country, city } = await getGeoLocation(ipAddress);
-
-        db.run(
-            `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [firstName, lastName, email, message, ipAddress, country, city],
-            function(err) {
-                if (err) {
-                    console.error('Error al guardar contacto:', err);
-                    return res.status(500).json({ error: "Error al guardar contacto" });
-                }
-                res.json({ 
-                    success: true, 
-                    message: "Contacto guardado exitosamente",
-                    id: this.lastID
-                });
+        try {
+            const response = await axios.get(`https://api.apiip.net/api/check?ip=${ipAddress}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`);
+            if (response.data && response.data.country) {
+                country = response.data.country;
+                city = response.data.city || 'Desconocido';
             }
-        );
-    } catch (error) {
-        console.error('Error en /api/contact:', error);
-        res.status(500).json({ error: "Error en el servidor" });
+        } catch (error) {
+            console.error('Error al obtener geolocalización:', error.message);
+        }
+try {
+    const response = await axios.get(`https://api.apiip.net/api/check?ip=${ipAddress}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`, {
+        timeout: 3000 // 3 segundos de timeout
+    });
+    
+    if (response.data) {
+        country = response.data.country || 'Desconocido';
+        city = response.data.city || 'Desconocido';
     }
-});
+} catch (error) {
+    console.error('Error al obtener geolocalización:', error.message);
+
+    if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
+        try {
+            const publicIpResponse = await axios.get('https://api.ipify.org?format=json');
+            const publicIp = publicIpResponse.data.ip;
+            const locResponse = await axios.get(`https://api.apiip.net/api/check?ip=${publicIp}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`);
+            if (locResponse.data) {
+                country = locResponse.data.country || 'Desconocido';
+                city = locResponse.data.city || 'Desconocido';
+            }
+        } catch (fallbackError) {
+            console.error('Error al obtener IP pública:', fallbackError.message);
+        }
+    }
+}
         db.run(
             `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
