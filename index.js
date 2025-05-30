@@ -7,8 +7,11 @@ const axios = require('axios');
 const app = express();
 require('dotenv').config();
 
+// Configuración de reCAPTCHA Enterprise
 const RECAPTCHA_SITE_KEY = process.env.RECAPTCHA_SITE_KEY || '6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ';
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6LcojE4rAAAAAEcJGKd1KJh2-Uepd0HPQLL1Rkvh';
+const RECAPTCHA_PROJECT_ID = 'creating-social--1748397311466';
+const RECAPTCHA_API_KEY = process.env.RECAPTCHA_API_KEY || 'TU_API_KEY_AQUI';
 
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
@@ -79,7 +82,7 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
-// Función optimizada para verificar reCAPTCHA con acciones específicas
+// Función optimizada para verificar reCAPTCHA Enterprise
 const verifyRecaptcha = async (token, ipAddress, action = 'unknown') => {
     if (!token) {
         return { 
@@ -92,7 +95,7 @@ const verifyRecaptcha = async (token, ipAddress, action = 'unknown') => {
     }
 
     try {
-        const verificationUrl = `https://recaptchaenterprise.googleapis.com/v1/projects/YOUR_PROJECT_ID/assessments?key=${RECAPTCHA_SECRET_KEY}`;
+        const verificationUrl = `https://recaptchaenterprise.googleapis.com/v1/projects/${RECAPTCHA_PROJECT_ID}/assessments?key=${RECAPTCHA_API_KEY}`;
         
         const response = await axios.post(verificationUrl, {
             event: {
@@ -142,8 +145,7 @@ app.post('/api/verify-recaptcha', async (req, res) => {
     
     res.json({
         success: true,
-        timestamp: result.challenge_ts,
-        hostname: result.hostname,
+        timestamp: result.timestamp,
         action: result.action,
         score: result.score
     });
@@ -159,7 +161,7 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ error: 'Todos los campos son requeridos' });
         }
 
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'user_registration');
+        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'register');
         if (!recaptchaResult.success || recaptchaResult.score < 0.5) {
             return res.status(400).json({ 
                 error: 'Verificación de reCAPTCHA fallida',
@@ -204,7 +206,7 @@ app.post('/login', async (req, res) => {
             });
         }
 
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'user_login');
+        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'login');
         if (!recaptchaResult.success || recaptchaResult.score < 0.5) {
             return res.status(400).json({ 
                 success: false,
@@ -270,7 +272,7 @@ app.post('/api/contact', async (req, res) => {
             return res.status(400).json({ error: "Todos los campos son requeridos" });
         }
 
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'contact_form_submit');
+        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'contact');
         if (!recaptchaResult.success || recaptchaResult.score < 0.5) {
             return res.status(400).json({ 
                 error: "Verificación de reCAPTCHA fallida",
@@ -338,7 +340,7 @@ app.post('/api/payment', requireAuth, async (req, res) => {
             return res.status(400).json({ error: "Todos los campos son requeridos" });
         }
 
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'payment_processing');
+        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'payment');
         if (!recaptchaResult.success || recaptchaResult.score < 0.5) {
             return res.status(400).json({ 
                 error: "Verificación de reCAPTCHA fallida",
