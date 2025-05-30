@@ -19,8 +19,8 @@
       gtag('config', 'G-DCK5HDLZ0N');
     </script>
 
-    <!-- reCAPTCHA Enterprise -->
-    <script src="https://www.google.com/recaptcha/enterprise.js?render=6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></script>
+    <!-- reCAPTCHA v2 -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <div class="container"  id="SignUp" style="display: none;">
@@ -46,6 +46,9 @@
                 <input type="password" name="password" id="password" placeholder="password" required>
                 <label for="password">contraseña</label>
             </div>
+            
+            <!-- reCAPTCHA v2 Checkbox -->
+            <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></div>
             
             <button class="btn" id="registerBtn" type="submit">
                 Registrarse
@@ -80,6 +83,9 @@
             <p class="recover">
                 <a href="#">¿Olvidaste tu contraseña?</a>
             </p>
+
+            <!-- reCAPTCHA v2 Checkbox -->
+            <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></div>
 
             <button class="btn" id="loginBtn" type="submit">
                 Iniciar Sesión
