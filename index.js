@@ -252,24 +252,30 @@ app.post('/api/contact', async (req, res) => {
         let country = 'Desconocido';
         let city = 'Desconocido';
         
-const getGeoLocation = async (ipAddress) => {
-    try {
-        const response = await axios.get(`https://api.apiip.net/api/check?ip=${ipAddress}&accessKey=78fa71af-348c-412f-9a27-15af099c312c`, {
-            timeout: 3000
-        });
-        
-        return {
-            country: response.data?.country || 'Desconocido',
-            city: response.data?.city || 'Desconocido'
-        };
+
+        const { country, city } = await getGeoLocation(ipAddress);
+
+        db.run(
+            `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [firstName, lastName, email, message, ipAddress, country, city],
+            function(err) {
+                if (err) {
+                    console.error('Error al guardar contacto:', err);
+                    return res.status(500).json({ error: "Error al guardar contacto" });
+                }
+                res.json({ 
+                    success: true, 
+                    message: "Contacto guardado exitosamente",
+                    id: this.lastID
+                });
+            }
+        );
     } catch (error) {
-        console.error('Error al obtener geolocalización:', error.message);
-        return {
-            country: 'Desconocido',
-            city: 'Desconocido'
-        };
+        console.error('Error en /api/contact:', error);
+        res.status(500).json({ error: "Error en el servidor" });
     }
-};
+});
         db.run(
             `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
