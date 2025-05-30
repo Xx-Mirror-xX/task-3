@@ -290,73 +290,47 @@ if (loginForm) {
     }
 
     // Panel de administración
-    const adminBtn = document.querySelector('.admin-btn');
-    const adminModal = document.getElementById('adminLoginModal');
-    const closeBtn = document.querySelector('.admin-close-btn');
-    const adminLoginForm = document.getElementById('adminLoginForm');
+   const adminBtn = document.querySelector('.admin-btn');
+        const adminModal = document.getElementById('adminLoginModal');
+        const closeBtn = document.querySelector('.admin-close-btn');
+        const adminLoginForm = document.getElementById('adminLoginForm');
 
-    if (adminBtn) {
-        adminBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            adminModal.style.display = 'block';
-        });
-    }
-
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
-            adminModal.style.display = 'none';
-        });
-    }
-
-    window.addEventListener('click', function(e) {
-        if (e.target === adminModal) {
-            adminModal.style.display = 'none';
+        if (adminBtn) {
+            adminBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                adminModal.style.display = 'block';
+            });
         }
-    });
 
-    if (adminLoginForm) {
-        adminLoginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('adminEmail').value;
-            const password = document.getElementById('adminPassword').value;
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                adminModal.style.display = 'none';
+            });
+        }
 
-            const validEmail = 'xxsandovalluisxx@gmail.com';
-            const validPassword = '12345';
-
-            if (email === validEmail && password === validPassword) {
-                try {
-                    const recaptchaResponse = grecaptcha.getResponse();
-                    if (!recaptchaResponse) {
-                        alert('Por favor completa el reCAPTCHA');
-                        return;
-                    }
-
-                    const response = await fetch('/login', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            email: validEmail, 
-                            password: validPassword,
-                            'g-recaptcha-response': recaptchaResponse
-                        })
-                    });
-
-                    const result = await response.json();
-
-                    if (response.ok) {
-                        window.location.href = '/admin/contacts.html';
-                        adminModal.style.display = 'none';
-                    } else {
-                        alert(result.error || 'Error en la autenticación');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Error de conexión con el servidor');
-                }
-            } else {
-                alert('Credenciales incorrectas. Inténtalo de nuevo.');
+        window.addEventListener('click', function(e) {
+            if (e.target === adminModal) {
+                adminModal.style.display = 'none';
             }
         });
-    }
-});
+
+        if (adminLoginForm) {
+            adminLoginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('adminEmail').value;
+                const password = document.getElementById('adminPassword').value;
+
+                const validEmail = 'xxsandovalluisxx@gmail.com';
+                const validPassword = '12345';
+
+                if (email === validEmail && password === validPassword) {
+
+                    window.location.href = '/contacts.html';
+                    adminModal.style.display = 'none';
+                } else {
+                    alert('Credenciales incorrectas. Inténtalo de nuevo.');
+                }
+            });
+        }
+    });
