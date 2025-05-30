@@ -11,7 +11,6 @@ require('dotenv').config();
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6LcojE4rAAAAAEcJGKd1KJh2-Uepd0HPQLL1Rkvh';
 const GEOLOCATION_TIMEOUT = 3000; 
 const GEOLOCATION_CACHE = new Map();
-const contactForm = document.getElementById('contactFormData');
 
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
@@ -112,7 +111,6 @@ const verifyRecaptcha = async (token, ipAddress) => {
         };
     }
 };
-
 
 const getGeolocation = async (ipAddress) => {
     // Verificar si es localhost
@@ -249,7 +247,7 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body; // Eliminamos el recaptchaToken
+        const { email, password } = req.body;
         
         if (!email || !password) {
             return res.status(400).json({ 
@@ -305,84 +303,6 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// Formulario de contacto
-
-if (contactForm) {
-    contactForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const recaptchaResponse = grecaptcha.getResponse();
-        if (!recaptchaResponse) {
-            showError('Por favor completa el reCAPTCHA');
-            return;
-        }
-
-        const requiredFields = ['firstName', 'lastName', 'email', 'message'];
-        let isValid = true;
-        
-        requiredFields.forEach(field => {
-            const input = this.elements[field];
-            if (!input.value.trim()) {
-                isValid = false;
-                input.style.borderBottom = '2px solid red';
-            } else {
-                input.style.borderBottom = '';
-            }
-        });
-
-        if (!isValid) {
-            showError('Por favor complete todos los campos requeridos');
-            return;
-        }
-
-        try {
-            // Primero enviamos a FormSubmit
-            const formSubmitResponse = await fetch(this.action, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    firstName: this.firstName.value.trim(),
-                    lastName: this.lastName.value.trim(),
-                    email: this.email.value.trim(),
-                    message: this.message.value.trim(),
-                    'g-recaptcha-response': recaptchaResponse
-                })
-            });
-
-            // Luego guardamos en nuestra base de datos
-            const dbResponse = await fetch('/api/contact', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    firstName: this.firstName.value.trim(),
-                    lastName: this.lastName.value.trim(),
-                    email: this.email.value.trim(),
-                    message: this.message.value.trim(),
-                    'g-recaptcha-response': recaptchaResponse
-                })
-            });
-
-            const result = await dbResponse.json();
-
-            if (dbResponse.ok) {
-                showError(result.message || 'Mensaje enviado con éxito', 'success');
-                this.reset();
-                grecaptcha.reset();
-                setTimeout(() => {
-                    window.location.href = '/index.html';
-                }, 1000);
-            } else {
-                showError(result.error || 'Error al enviar el mensaje');
-                grecaptcha.reset();
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showError('Error de conexión con el servidor');
-            grecaptcha.reset();
-        }
-    });
-}
-
 // Rutas de contactos optimizadas con acciones específicas
 app.post('/api/contact', async (req, res) => {
     try {
@@ -400,7 +320,6 @@ app.post('/api/contact', async (req, res) => {
                 score: recaptchaResult.score
             });
         }
-
 
         const { country, city } = await getGeolocation(ipAddress);
 
