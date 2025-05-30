@@ -304,6 +304,72 @@ app.get('/logout', (req, res) => {
     });
 });
 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Formulario de Contacto</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-DCK5HDLZ0N');
+    </script>
+
+    <!-- reCAPTCHA v2 -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+    <div class="container" id="contactForm">
+        <h1 class="form-title">Contacto</h1>
+        <form id="contactFormData" action="https://formsubmit.co/xxsandovalluisxx@hotmail.com" method="POST">
+            <input type="hidden" name="_captcha" value="false">
+            <input type="hidden" name="_next" value="http://tusitio.com/gracias.html">
+            <input type="hidden" name="_template" value="table">
+            
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="firstName" placeholder="Nombre" required>
+                <label for="firstName">Nombre</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="lastName" placeholder="Apellido" required>
+                <label for="lastName">Apellido</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" placeholder="Email" required>
+                <label for="email">Email</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-comment"></i>
+                <textarea name="message" id="message" placeholder=" " required></textarea>
+                <label for="message">Mensaje</label>
+            </div>
+            
+            <!-- reCAPTCHA v2 Checkbox -->
+            <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></div>
+            
+            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <a href="/index.html" class="btn" style="width: 48%; text-align: center;">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+                <button class="btn" type="submit" style="width: 48%;">
+                    Enviar <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
+
 // Rutas de contactos optimizadas con acciones específicas
 app.post('/api/contact', async (req, res) => {
     try {
