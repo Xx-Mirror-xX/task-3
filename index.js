@@ -248,7 +248,8 @@ app.post('/api/contact', async (req, res) => {
                 score: recaptchaResult.score
             });
         }
-        // Obtener geolocalización con el nuevo sistema de fallbacks
+
+    // En la ruta /api/contact, reemplazar la parte de geolocalización con:
 let country = 'Desconocido';
 let city = 'Desconocido';
 
@@ -275,7 +276,7 @@ try {
             console.error('Error al obtener IP pública:', fallbackError.message);
         }
     }
-}
+};
 
 app.get('/api/contacts', requireAuth, (req, res) => {
     db.all(
@@ -369,6 +370,6 @@ app.get('/admin/contacts.html', requireAuth, (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor ejecutándose en http://0.0.0.0:${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
 });
