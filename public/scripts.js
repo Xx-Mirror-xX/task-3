@@ -191,6 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 // Formulario de login (reemplazar el existente)
+// En scripts.js, modificar la parte del loginForm:
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
     loginForm.addEventListener('submit', async function(e) {
@@ -205,27 +206,20 @@ if (loginForm) {
             return;
         }
 
-        const recaptchaResponse = grecaptcha.getResponse();
-        if (!recaptchaResponse) {
-            showError('Por favor completa el reCAPTCHA');
-            return;
-        }
-
         try {
             const response = await fetch('/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     email, 
-                    password,
-                    'g-recaptcha-response': recaptchaResponse 
+                    password
+                    // Eliminamos el 'g-recaptcha-response' del body
                 })
             });
 
             const result = await response.json();
 
             if (response.ok) {
-                // Mostrar mensaje de éxito antes de redirigir
                 showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
                 if (result.redirect) {
                     setTimeout(() => {
@@ -238,16 +232,13 @@ if (loginForm) {
                 }
             } else {
                 showError(result.message || 'Credenciales incorrectas');
-                grecaptcha.reset();
             }
         } catch (error) {
             console.error('Error:', error);
             showError('Error de conexión con el servidor');
-            grecaptcha.reset();
         }
     });
 }
-
     // Formulario de registro
     const registerForm = document.getElementById('SignUp')?.querySelector('form');
     if (registerForm) {
