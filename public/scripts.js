@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-// Formulario de login - Versión mejorada
+// Formulario de login (reemplazar el existente)
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
     loginForm.addEventListener('submit', async function(e) {
@@ -199,28 +199,15 @@ if (loginForm) {
         const email = this.email.value;
         const password = this.password.value;
         
-        const recaptchaResponse = grecaptcha.getResponse();
-        if (!recaptchaResponse) {
-            showError('Por favor completa el reCAPTCHA');
+        // Validación de campos requeridos
+        if (!email || !password) {
+            showError('Por favor complete todos los campos requeridos');
             return;
         }
 
-        // Validación de campos requeridos
-        const requiredFields = ['email', 'password'];
-        let isValid = true;
-        
-        requiredFields.forEach(field => {
-            const input = this.elements[field];
-            if (!input.value.trim()) {
-                isValid = false;
-                input.style.borderBottom = '2px solid red';
-            } else {
-                input.style.borderBottom = '';
-            }
-        });
-
-        if (!isValid) {
-            showError('Por favor complete todos los campos requeridos');
+        const recaptchaResponse = grecaptcha.getResponse();
+        if (!recaptchaResponse) {
+            showError('Por favor completa el reCAPTCHA');
             return;
         }
 
@@ -238,10 +225,16 @@ if (loginForm) {
             const result = await response.json();
 
             if (response.ok) {
+                // Mostrar mensaje de éxito antes de redirigir
+                showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
                 if (result.redirect) {
-                    window.location.href = result.redirect;
+                    setTimeout(() => {
+                        window.location.href = result.redirect;
+                    }, 1000);
                 } else {
-                    window.location.href = '/indice';
+                    setTimeout(() => {
+                        window.location.href = '/indice';
+                    }, 1000);
                 }
             } else {
                 showError(result.message || 'Credenciales incorrectas');
