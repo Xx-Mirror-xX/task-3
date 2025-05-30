@@ -17,7 +17,7 @@ class MailService {
         try {
             const mailOptions = {
                 from: `"Formulario de Contacto" <${process.env.EMAIL_USER}>`,
-                to: 'xxsandovalluisxx@gmail.com', // Destinatario principal
+                to: 'xxsandovalluisxx@hotmail.com', // Destinatario principal
                 bcc: process.env.ADDITIONAL_RECIPIENTS?.split(',') || [], // Destinatarios adicionales
                 subject: 'Nuevo contacto recibido',
                 html: `
