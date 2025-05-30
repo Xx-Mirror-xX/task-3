@@ -111,6 +111,77 @@ const verifyRecaptcha = async (token, ipAddress) => {
 };
 
 
+const getGeolocation = async (ipAddress) => {
+    // Verificar si es localhost
+    if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
+        try {
+            const publicIpResponse = await axios.get('https://api.ipify.org?format=json', { timeout: GEOLOCATION_TIMEOUT });
+            ipAddress = publicIpResponse.data.ip;
+        } catch (error) {
+            console.error('Error al obtener IP pública:', error.message);
+            return {
+                country: 'Desconocido',
+                city: 'Desconocido'
+            };
+        }
+    }
+
+    // Verificar caché primero
+    if (GEOLOCATION_CACHE.has(ipAddress)) {
+        return GEOLOCATION_CACHE.get(ipAddress);
+    }
+
+    try {
+        // Intentar con ip-api.com primero (gratuito y menos restrictivo)
+        const response = await axios.get(`http://ip-api.com/json/${ipAddress}?fields=country,city,status`, {
+            timeout: GEOLOCATION_TIMEOUT
+        });
+        
+        if (response.data && response.data.status === 'success') {
+            const result = {
+                country: response.data.country || 'Desconocido',
+                city: response.data.city || 'Desconocido'
+            };
+            
+            // Almacenar en caché por 1 hora
+            GEOLOCATION_CACHE.set(ipAddress, result);
+            setTimeout(() => GEOLOCATION_CACHE.delete(ipAddress), 60 * 60 * 1000);
+            
+            return result;
+        }
+    } catch (error) {
+        console.error('Error con ip-api.com:', error.message);
+    }
+
+    // Fallback a ipapi.co si ip-api.com falla
+    try {
+        const response = await axios.get(`https://ipapi.co/${ipAddress}/json/`, {
+            timeout: GEOLOCATION_TIMEOUT
+        });
+        
+        if (response.data) {
+            const result = {
+                country: response.data.country_name || 'Desconocido',
+                city: response.data.city || 'Desconocido'
+            };
+            
+            // Almacenar en caché por 1 hora
+            GEOLOCATION_CACHE.set(ipAddress, result);
+            setTimeout(() => GEOLOCATION_CACHE.delete(ipAddress), 60 * 60 * 1000);
+            
+            return result;
+        }
+    } catch (error) {
+        console.error('Error con ipapi.co:', error.message);
+    }
+
+    // Retornar valores por defecto si todo falla
+    return {
+        country: 'Desconocido',
+        city: 'Desconocido'
+    };
+};
+
 // Ruta de verificación de reCAPTCHA optimizada
 app.post('/api/verify-recaptcha', async (req, res) => {
     const { token, action } = req.body;
@@ -249,37 +320,8 @@ app.post('/api/contact', async (req, res) => {
             });
         }
 
-        let country = 'Desconocido';
-        let city = 'Desconocido';
-        
-        try {
-            // Using ipapi.co instead of apiip.net
-            const response = await axios.get(`https://ipapi.co/${ipAddress}/json/`, {
-                timeout: 3000
-            });
-            
-            if (response.data) {
-                country = response.data.country_name || 'Desconocido';
-                city = response.data.city || 'Desconocido';
-            }
-        } catch (error) {
-            console.error('Error al obtener geolocalización:', error.message);
 
-            // Fallback for localhost
-            if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
-                try {
-                    const publicIpResponse = await axios.get('https://api.ipify.org?format=json');
-                    const publicIp = publicIpResponse.data.ip;
-                    const locResponse = await axios.get(`https://ipapi.co/${publicIp}/json/`);
-                    if (locResponse.data) {
-                        country = locResponse.data.country_name || 'Desconocido';
-                        city = locResponse.data.city || 'Desconocido';
-                    }
-                } catch (fallbackError) {
-                    console.error('Error al obtener IP pública:', fallbackError.message);
-                }
-            }
-        }
+        const { country, city } = await getGeolocation(ipAddress);
 
         db.run(
             `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
@@ -395,6 +437,8 @@ app.get('/admin/contacts.html', requireAuth, (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+const HOST = process.env.HOST || '0.0.0.0';
+
+app.listen(PORT, HOST, () => {
+    console.log(`Servidor ejecutándose en http://${HOST}:${PORT}`);
 });
