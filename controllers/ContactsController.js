@@ -3,6 +3,13 @@ const path = require('path');
 const axios = require('axios');
 const mailService = require('../services/mailService'); 
 
+mailService.sendContactNotification(contactData)
+    .then(() => console.log('Correo enviado exitosamente'))
+    .catch(err => {
+        console.error('Error al enviar correo:', err);
+        // Opcional: registrar el error en la base de datos
+    });
+
 class ContactsController {
     constructor() {
         this.model = new ContactsModel();
