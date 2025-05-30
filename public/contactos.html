@@ -15,11 +15,28 @@
     </script>
 
     <!-- reCAPTCHA Enterprise -->
-    <script src="https://www.google.com/recaptcha/enterprise.js?render=6LcKHk4rAAAAAHjcLw4w-tW_YDeizZiYt2zblDeo"></script>
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></script>
     
     <script>
       function onSubmitContact(token) {
         document.getElementById("contactFormData").submit();
+      }
+
+      function verifyRecaptcha(token, action) {
+        fetch('/api/verify-recaptcha', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, action })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (!data.success) {
+            console.error('reCAPTCHA verification failed:', data);
+          }
+        })
+        .catch(error => {
+          console.error('Error verifying reCAPTCHA:', error);
+        });
       }
     </script>
 </head>
@@ -53,10 +70,11 @@
                     <i class="fas fa-arrow-left"></i> Volver
                 </a>
                 <button class="g-recaptcha btn" 
-                    data-sitekey="6LcKHk4rAAAAAHjcLw4w-tW_YDeizZiYt2zblDeo"
+                    data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"
                     data-callback='onSubmitContact'
-                    data-action='submit'
-                    style="width: 48%;">
+                    data-action='contact_form_submit'
+                    style="width: 48%;"
+                    onclick="verifyRecaptcha(grecaptcha.getResponse(), 'contact_form_submit')">
                     Enviar <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
