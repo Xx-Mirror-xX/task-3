@@ -20,15 +20,7 @@
     </script>
 
     <!-- reCAPTCHA Enterprise -->
-    <script src="https://www.google.com/recaptcha/enterprise.js?render=6LcKHk4rAAAAAHjcLw4w-tW_YDeizZiYt2zblDeo"></script>
-    <script>
-      function onSubmitLogin(token) {
-        document.getElementById("loginForm").submit();
-      }
-      function onSubmitRegister(token) {
-        document.getElementById("registerForm").submit();
-      }
-    </script>
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></script>
 </head>
 <body>
     <div class="container"  id="SignUp" style="display: none;">
@@ -55,10 +47,7 @@
                 <label for="password">contraseña</label>
             </div>
             
-            <button class="g-recaptcha btn"
-                data-sitekey="6LcKHk4rAAAAAHjcLw4w-tW_YDeizZiYt2zblDeo"
-                data-callback='onSubmitRegister'
-                data-action='submit'>
+            <button class="btn" id="registerBtn" type="submit">
                 Registrarse
             </button>
         </form>
@@ -92,10 +81,7 @@
                 <a href="#">¿Olvidaste tu contraseña?</a>
             </p>
 
-            <button class="g-recaptcha btn"
-                data-sitekey="6LcKHk4rAAAAAHjcLw4w-tW_YDeizZiYt2zblDeo"
-                data-callback='onSubmitLogin'
-                data-action='submit'>
+            <button class="btn" id="loginBtn" type="submit">
                 Iniciar Sesión
             </button>
         </form>
