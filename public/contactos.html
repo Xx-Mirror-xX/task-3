@@ -14,31 +14,8 @@
       gtag('config', 'G-DCK5HDLZ0N');
     </script>
 
-    <!-- reCAPTCHA Enterprise -->
-    <script src="https://www.google.com/recaptcha/enterprise.js?render=6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></script>
-    
-    <script>
-      function onSubmitContact(token) {
-        document.getElementById("contactFormData").submit();
-      }
-
-      function verifyRecaptcha(token, action) {
-        fetch('/api/verify-recaptcha', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, action })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (!data.success) {
-            console.error('reCAPTCHA verification failed:', data);
-          }
-        })
-        .catch(error => {
-          console.error('Error verifying reCAPTCHA:', error);
-        });
-      }
-    </script>
+    <!-- reCAPTCHA v2 -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <div class="container" id="contactForm">
@@ -65,16 +42,14 @@
                 <label for="message">Mensaje</label>
             </div>
             
+            <!-- reCAPTCHA v2 Checkbox -->
+            <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></div>
+            
             <div style="display: flex; justify-content: space-between; margin-top: 20px;">
                 <a href="/index.html" class="btn" style="width: 48%; text-align: center;">
                     <i class="fas fa-arrow-left"></i> Volver
                 </a>
-                <button class="g-recaptcha btn" 
-                    data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"
-                    data-callback='onSubmitContact'
-                    data-action='contact_form_submit'
-                    style="width: 48%;"
-                    onclick="verifyRecaptcha(grecaptcha.getResponse(), 'contact_form_submit')">
+                <button class="btn" type="submit" style="width: 48%;">
                     Enviar <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
