@@ -1,5 +1,6 @@
 const ContactsModel = require('../models/ContactsModel');
 const path = require('path');
+const axios = require('axios');
 
 class ContactsController {
     constructor() {
@@ -16,17 +17,48 @@ class ContactsController {
                 });
             }
 
-
             const ipAddress = req.ip || 
                              req.headers['x-forwarded-for'] || 
                              req.connection.remoteAddress;
+
+            let country = 'Desconocido';
+            let city = 'Desconocido';
+            
+            try {
+                const response = await axios.get(`https://ipapi.co/${ipAddress}/json/`, {
+                    timeout: 3000
+                });
+                
+                if (response.data) {
+                    country = response.data.country_name || 'Desconocido';
+                    city = response.data.city || 'Desconocido';
+                }
+            } catch (error) {
+                console.error('Error al obtener geolocalización:', error.message);
+                
+                if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
+                    try {
+                        const publicIpResponse = await axios.get('https://api.ipify.org?format=json');
+                        const publicIp = publicIpResponse.data.ip;
+                        const locResponse = await axios.get(`https://ipapi.co/${publicIp}/json/`);
+                        if (locResponse.data) {
+                            country = locResponse.data.country_name || 'Desconocido';
+                            city = locResponse.data.city || 'Desconocido';
+                        }
+                    } catch (fallbackError) {
+                        console.error('Error al obtener IP pública:', fallbackError.message);
+                    }
+                }
+            }
 
             await this.model.addContact({
                 firstName,
                 lastName,
                 email,
                 message,
-                ipAddress
+                ipAddress,
+                country,
+                city
             });
 
             res.status(201).json({ 
