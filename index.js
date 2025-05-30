@@ -304,71 +304,83 @@ app.get('/logout', (req, res) => {
     });
 });
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Formulario de Contacto</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-DCK5HDLZ0N');
-    </script>
+// Formulario de contacto
+const contactForm = document.getElementById('contactFormData');
+if (contactForm) {
+    contactForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
 
-    <!-- reCAPTCHA v2 -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-</head>
-<body>
-    <div class="container" id="contactForm">
-        <h1 class="form-title">Contacto</h1>
-        <form id="contactFormData" action="https://formsubmit.co/xxsandovalluisxx@hotmail.com" method="POST">
-            <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="_next" value="http://tusitio.com/gracias.html">
-            <input type="hidden" name="_template" value="table">
-            
-            <div class="input-group">
-                <i class="fas fa-user"></i>
-                <input type="text" name="firstName" placeholder="Nombre" required>
-                <label for="firstName">Nombre</label>
-            </div>
-            <div class="input-group">
-                <i class="fas fa-user"></i>
-                <input type="text" name="lastName" placeholder="Apellido" required>
-                <label for="lastName">Apellido</label>
-            </div>
-            <div class="input-group">
-                <i class="fas fa-envelope"></i>
-                <input type="email" name="email" placeholder="Email" required>
-                <label for="email">Email</label>
-            </div>
-            <div class="input-group">
-                <i class="fas fa-comment"></i>
-                <textarea name="message" id="message" placeholder=" " required></textarea>
-                <label for="message">Mensaje</label>
-            </div>
-            
-            <!-- reCAPTCHA v2 Checkbox -->
-            <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></div>
-            
-            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-                <a href="/index.html" class="btn" style="width: 48%; text-align: center;">
-                    <i class="fas fa-arrow-left"></i> Volver
-                </a>
-                <button class="btn" type="submit" style="width: 48%;">
-                    Enviar <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-        </form>
-    </div>
+        const recaptchaResponse = grecaptcha.getResponse();
+        if (!recaptchaResponse) {
+            showError('Por favor completa el reCAPTCHA');
+            return;
+        }
 
-    <script src="scripts.js"></script>
-</body>
-</html>
+        const requiredFields = ['firstName', 'lastName', 'email', 'message'];
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            const input = this.elements[field];
+            if (!input.value.trim()) {
+                isValid = false;
+                input.style.borderBottom = '2px solid red';
+            } else {
+                input.style.borderBottom = '';
+            }
+        });
+
+        if (!isValid) {
+            showError('Por favor complete todos los campos requeridos');
+            return;
+        }
+
+        try {
+            // Primero enviamos a FormSubmit
+            const formSubmitResponse = await fetch(this.action, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    firstName: this.firstName.value.trim(),
+                    lastName: this.lastName.value.trim(),
+                    email: this.email.value.trim(),
+                    message: this.message.value.trim(),
+                    'g-recaptcha-response': recaptchaResponse
+                })
+            });
+
+            // Luego guardamos en nuestra base de datos
+            const dbResponse = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    firstName: this.firstName.value.trim(),
+                    lastName: this.lastName.value.trim(),
+                    email: this.email.value.trim(),
+                    message: this.message.value.trim(),
+                    'g-recaptcha-response': recaptchaResponse
+                })
+            });
+
+            const result = await dbResponse.json();
+
+            if (dbResponse.ok) {
+                showError(result.message || 'Mensaje enviado con éxito', 'success');
+                this.reset();
+                grecaptcha.reset();
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 1000);
+            } else {
+                showError(result.error || 'Error al enviar el mensaje');
+                grecaptcha.reset();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Error de conexión con el servidor');
+            grecaptcha.reset();
+        }
+    });
+}
 
 // Rutas de contactos optimizadas con acciones específicas
 app.post('/api/contact', async (req, res) => {
