@@ -326,7 +326,7 @@ if (loginForm) {
 
                 if (email === validEmail && password === validPassword) {
 
-                    window.location.href = '/contacts.html';
+                    window.location.href = '/admin/contacts.html';
                     adminModal.style.display = 'none';
                 } else {
                     alert('Credenciales incorrectas. Inténtalo de nuevo.');
