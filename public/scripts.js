@@ -86,22 +86,22 @@ document.addEventListener('DOMContentLoaded', function() {
         contactForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            if (!window.grecaptcha || !window.grecaptcha.getResponse) {
-                showError('reCAPTCHA no está cargado correctamente');
-                return;
-            }
-
-            const recaptchaToken = grecaptcha.getResponse();
-            if (!recaptchaToken) {
-                showError('Por favor completa el reCAPTCHA');
+            if (!window.grecaptcha || !window.grecaptcha.enterprise || !window.grecaptcha.enterprise.execute) {
+                showError('reCAPTCHA Enterprise no está cargado correctamente');
                 return;
             }
 
             try {
-                const recaptchaVerification = await verifyRecaptcha(recaptchaToken, 'contact_form_submit');
+                const token = await grecaptcha.enterprise.execute('6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ', {action: 'contact'});
+                
+                if (!token) {
+                    showError('Por favor completa el reCAPTCHA');
+                    return;
+                }
+
+                const recaptchaVerification = await verifyRecaptcha(token, 'contact');
                 if (!recaptchaVerification.success || recaptchaVerification.score < 0.5) {
                     showError('Verificación de reCAPTCHA fallida. Por favor inténtalo de nuevo.');
-                    grecaptcha.reset();
                     return;
                 }
                 
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         lastName: this.lastName.value.trim(),
                         email: this.email.value.trim(),
                         message: this.message.value.trim(),
-                        'g-recaptcha-response': recaptchaToken
+                        'g-recaptcha-response': token
                     })
                 });
 
@@ -140,7 +140,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     showError(result.message || 'Mensaje enviado con éxito', 'success');
                     this.reset();
-                    grecaptcha.reset();
                     setTimeout(() => {
                         window.location.href = '/index.html';
                     }, 1000);
@@ -181,21 +180,21 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                if (!window.grecaptcha || !window.grecaptcha.getResponse) {
-                    alert('reCAPTCHA no está cargado correctamente');
+                if (!window.grecaptcha || !window.grecaptcha.enterprise || !window.grecaptcha.enterprise.execute) {
+                    alert('reCAPTCHA Enterprise no está cargado correctamente');
                     return;
                 }
 
-                const recaptchaToken = grecaptcha.getResponse();
-                if (!recaptchaToken) {
+                const token = await grecaptcha.enterprise.execute('6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ', {action: 'payment'});
+                
+                if (!token) {
                     alert('Por favor completa el reCAPTCHA');
                     return;
                 }
 
-                const recaptchaVerification = await verifyRecaptcha(recaptchaToken, 'payment_processing');
+                const recaptchaVerification = await verifyRecaptcha(token, 'payment');
                 if (!recaptchaVerification.success || recaptchaVerification.score < 0.5) {
                     alert('Verificación de reCAPTCHA fallida. Por favor inténtalo de nuevo.');
-                    grecaptcha.reset();
                     return;
                 }
 
@@ -214,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         amount: this.amount.value.trim(),
                         currency: this.currency.value,
                         service: "Donante de Cafes",
-                        'g-recaptcha-response': recaptchaToken
+                        'g-recaptcha-response': token
                     })
                 });
                 
@@ -227,7 +226,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     alert(successMsg);
                     this.reset();
-                    grecaptcha.reset();
                     setTimeout(() => {
                         window.location.href = '/index.html';
                     }, 1000);
@@ -250,23 +248,22 @@ document.addEventListener('DOMContentLoaded', function() {
             const email = this.email.value;
             const password = this.password.value;
             
-            if (!window.grecaptcha || !window.grecaptcha.getResponse) {
-                showError('reCAPTCHA no está cargado correctamente');
-                return;
-            }
-
-            const recaptchaToken = grecaptcha.getResponse();
-
-            if (!recaptchaToken) {
-                showError('Por favor completa el reCAPTCHA');
+            if (!window.grecaptcha || !window.grecaptcha.enterprise || !window.grecaptcha.enterprise.execute) {
+                showError('reCAPTCHA Enterprise no está cargado correctamente');
                 return;
             }
 
             try {
-                const recaptchaVerification = await verifyRecaptcha(recaptchaToken, 'user_login');
+                const token = await grecaptcha.enterprise.execute('6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ', {action: 'login'});
+                
+                if (!token) {
+                    showError('Por favor completa el reCAPTCHA');
+                    return;
+                }
+
+                const recaptchaVerification = await verifyRecaptcha(token, 'login');
                 if (!recaptchaVerification.success || recaptchaVerification.score < 0.5) {
                     showError('Verificación de reCAPTCHA fallida. Por favor inténtalo de nuevo.');
-                    grecaptcha.reset();
                     return;
                 }
 
@@ -276,7 +273,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({ 
                         email, 
                         password,
-                        'g-recaptcha-response': recaptchaToken 
+                        'g-recaptcha-response': token 
                     })
                 });
 
@@ -290,7 +287,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } else {
                     showError(result.message || 'Credenciales incorrectas');
-                    grecaptcha.reset();
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -305,22 +301,22 @@ document.addEventListener('DOMContentLoaded', function() {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            if (!window.grecaptcha || !window.grecaptcha.getResponse) {
-                showError('reCAPTCHA no está cargado correctamente');
-                return;
-            }
-
-            const recaptchaToken = grecaptcha.getResponse();
-            if (!recaptchaToken) {
-                showError('Por favor completa el reCAPTCHA');
+            if (!window.grecaptcha || !window.grecaptcha.enterprise || !window.grecaptcha.enterprise.execute) {
+                showError('reCAPTCHA Enterprise no está cargado correctamente');
                 return;
             }
 
             try {
-                const recaptchaVerification = await verifyRecaptcha(recaptchaToken, 'user_registration');
+                const token = await grecaptcha.enterprise.execute('6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ', {action: 'register'});
+                
+                if (!token) {
+                    showError('Por favor completa el reCAPTCHA');
+                    return;
+                }
+
+                const recaptchaVerification = await verifyRecaptcha(token, 'register');
                 if (!recaptchaVerification.success || recaptchaVerification.score < 0.5) {
                     showError('Verificación de reCAPTCHA fallida. Por favor inténtalo de nuevo.');
-                    grecaptcha.reset();
                     return;
                 }
                 
@@ -332,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         lName: this.lName.value,
                         email: this.email.value,
                         password: this.password.value,
-                        'g-recaptcha-response': recaptchaToken
+                        'g-recaptcha-response': token
                     })
                 });
 
@@ -347,11 +343,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             const loginEmail = document.querySelector('#SignIn input[name="email"]');
                             if (loginEmail) loginEmail.value = result.email;
                         }
-                        grecaptcha.reset();
                     }, 1500);
                 } else {
                     showError(result.error || 'Error en el registro');
-                    grecaptcha.reset();
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -397,12 +391,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (email === validEmail && password === validPassword) {
                 try {
+                    if (!window.grecaptcha || !window.grecaptcha.enterprise || !window.grecaptcha.enterprise.execute) {
+                        alert('reCAPTCHA Enterprise no está cargado correctamente');
+                        return;
+                    }
+
+                    const token = await grecaptcha.enterprise.execute('6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ', {action: 'admin_login'});
+                    
+                    if (!token) {
+                        alert('Por favor completa el reCAPTCHA');
+                        return;
+                    }
+
+                    const recaptchaVerification = await verifyRecaptcha(token, 'admin_login');
+                    if (!recaptchaVerification.success || recaptchaVerification.score < 0.5) {
+                        alert('Verificación de reCAPTCHA fallida. Por favor inténtalo de nuevo.');
+                        return;
+                    }
+
                     const response = await fetch('/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
                             email: validEmail, 
-                            password: validPassword 
+                            password: validPassword,
+                            'g-recaptcha-response': token
                         })
                     });
 
