@@ -9,6 +9,8 @@ require('dotenv').config();
 
 // Configuración de reCAPTCHA v2
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6LcojE4rAAAAAEcJGKd1KJh2-Uepd0HPQLL1Rkvh';
+const GEOLOCATION_TIMEOUT = 3000; 
+const GEOLOCATION_CACHE = new Map();
 
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
