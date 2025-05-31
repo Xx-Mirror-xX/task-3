@@ -129,11 +129,62 @@ class PaymentsController {
         }
     }
 
+    async getTransactionDetails(req, res) {
+        try {
+            const { transaction_id } = req.params;
+            
+            if (!transaction_id) {
+                return res.status(400).json({ error: "Se requiere el ID de transacción" });
+            }
+
+            const config = {
+                headers: {
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmFrZSBwYXltZW50IiwiZGF0ZSI6IjIwMjUtMDUtMzFUMDY6NTA6MDguODk0WiIsImlhdCI6MTc0ODY3NDIwOH0.qXRCwAZ7_6JawqcSVz3Wh9bBqXtyZYRZv5bI1MmjCag',
+                    'Content-Type': 'application/json'
+                },
+                timeout: 5000 // 5 seconds timeout
+            };
+
+            const response = await axios.get(`https://fakepayment.onrender.com/payments/${transaction_id}`, config);
+            
+            res.json({
+                success: true,
+                transaction: response.data
+            });
+            
+        } catch (error) {
+            console.error('Error al obtener detalles de transacción:', error.message);
+            
+            if (error.response) {
+                // The API returned an error response
+                res.status(error.response.status).json({
+                    success: false,
+                    error: error.response.data.message || 'Error al obtener detalles de la transacción',
+                    details: error.response.data
+                });
+            } else if (error.request) {
+                // The request was made but no response was received
+                res.status(503).json({
+                    success: false,
+                    error: 'No se pudo conectar con el servicio de pagos',
+                    details: error.message
+                });
+            } else {
+                // Something happened in setting up the request
+                res.status(500).json({
+                    success: false,
+                    error: 'Error interno del servidor',
+                    details: error.message
+                });
+            }
+        }
+    }
+
     async index(req, res) {
         if (!req.session.userId) {
             return res.status(403).send('Acceso denegado');
         }
-        res.sendFile(path.join(__dirname, '../public/payments.html'));
+        res.sendFile(path.join(__dirname, '../public/admin/payments.html'));
     }
 
     async getPayments(req, res) {
