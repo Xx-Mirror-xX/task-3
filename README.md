@@ -16,6 +16,8 @@ Este proyecto es una aplicación web que permite:
 
 7- Se agrego un archivo .yaml porque ya estaba hasta la madre de colocar todo el rato los datos para abrir la pagina
 
+8- Se integro google analytics dentro de todos los html, para poder controlar el flujo de datos de la pagina
+
 Cosas Que Faltan:
 
 1- Crear no se que cosas de entorno, ponerlo en un .gitginore y proteger cosas sensibles, llevo dias intentando hacer eso, pero cuando lo hago, deja de funcionar el captcha, o el formulario de contactos, o el login, etc asi que me rendi, tratare de mejorar eso en la siguiente tarea
