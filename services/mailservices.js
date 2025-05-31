@@ -1,4 +1,4 @@
-// mailservices.js
+
 const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
 const OAuth2 = google.auth.OAuth2;
@@ -57,8 +57,8 @@ class MailService {
         try {
             const mailOptions = {
                 from: `"Formulario de Contacto" <xxsandovalluisxx@gmail.com>`,
-                to: 'xxsandovalluisxx@gmail.com', // Correo principal
-                cc: 'xxsandovalluisxx@hotmail.com', // Correo secundario
+                to: 'xxsandovalluisxx@gmail.com', 
+                cc: 'xxsandovalluisxx@hotmail.com', 
                 subject: 'Nuevo contacto recibido - Creating Social Network',
                 html: `
                     <h2>Nuevo contacto recibido</h2>
