@@ -18,4 +18,4 @@ Este proyecto es una aplicación web que permite:
 
 Cosas Que Faltan:
 
-1- Crear no se que cosas de entorno, ponerlo en un .env y proteger cosas sensibles, llevo dias intentando hacer eso, pero cuando lo hago, deja de funcionar el captcha, o el formulario de contactos, o el login, etc asi que me rendi, tratare de mejorar eso en la siguiente tarea
+1- Crear no se que cosas de entorno, ponerlo en un .gitginore y proteger cosas sensibles, llevo dias intentando hacer eso, pero cuando lo hago, deja de funcionar el captcha, o el formulario de contactos, o el login, etc asi que me rendi, tratare de mejorar eso en la siguiente tarea
