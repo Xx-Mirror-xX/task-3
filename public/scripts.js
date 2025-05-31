@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize EmailJS with your public key
-    emailjs.init('YOUR_PUBLIC_KEY');
+    emailjs.init('h8z-MzydYx4SjjIEt');
 
     // Función para mostrar errores
     function showError(message, type = 'error') {
@@ -133,8 +133,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Send email using EmailJS
                     try {
                         const emailjsResponse = await emailjs.send(
-                            'YOUR_SERVICE_ID',
-                            'YOUR_TEMPLATE_ID',
+                            'service_52jvu4t',
+                            'template_1mmq126',
                             {
                                 name: `${contactData.firstName} ${contactData.lastName}`,
                                 email: contactData.email,
