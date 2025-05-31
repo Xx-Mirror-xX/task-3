@@ -283,55 +283,51 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-const loginForm = document.getElementById('loginForm');
-if (loginForm) {
-    loginForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const email = this.email.value;
-        const password = this.password.value;
-        
-        // Validación de campos requeridos
-        if (!email || !password) {
-            showError('Por favor complete todos los campos requeridos');
-            return;
-        }
-
-        try {
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    email, 
-                    password
-                    // Eliminamos el 'g-recaptcha-response' del body
-                })
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
-                if (result.redirect) {
-                    setTimeout(() => {
-                        window.location.href = result.redirect;
-                    }, 1000);
-                } else {
-                    setTimeout(() => {
-                        window.location.href = '/indice';
-                    }, 1000);
-                }
-            } else {
-                showError(result.message || 'Credenciales incorrectas');
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = this.email.value;
+            const password = this.password.value;
+            
+            // Validación de campos requeridos
+            if (!email || !password) {
+                showError('Por favor complete todos los campos requeridos');
+                return;
             }
-        } catch (error) {
-            console.error('Error:', error);
-            showError('Error de conexión con el servidor');
-        }
-    });
-}
-   // Formulario de registro
-    const registerForm = document.getElementById('SignUp')?.querySelector('form');
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email, 
+                        password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
+                    if (result.redirect) {
+                        setTimeout(() => {
+                            window.location.href = result.redirect;
+                        }, 1000);
+                    }
+                } else {
+                    showError(result.message || 'Credenciales incorrectas');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error de conexión con el servidor');
+            }
+        });
+    }
+
+    // Formulario de registro
+    const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
