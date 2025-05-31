@@ -49,69 +49,64 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Formulario de contacto
-    const contactForm = document.getElementById('contactFormData');
-    if (contactForm) {
-        contactForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
+const contactForm = document.getElementById('contactFormData');
+if (contactForm) {
+    // Establece la fecha actual
+    document.getElementById('currentDate').value = new Date().toLocaleString();
+    
+    contactForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
 
-            const recaptchaResponse = grecaptcha.getResponse();
-            if (!recaptchaResponse) {
-                showError('Por favor completa el reCAPTCHA');
-                return;
-            }
+        const recaptchaResponse = grecaptcha.getResponse();
+        if (!recaptchaResponse) {
+            showError('Por favor completa el reCAPTCHA');
+            return;
+        }
 
-            const requiredFields = ['firstName', 'lastName', 'email', 'message'];
-            let isValid = true;
-            
-            requiredFields.forEach(field => {
-                const input = this.elements[field];
-                if (!input.value.trim()) {
-                    isValid = false;
-                    input.style.borderBottom = '2px solid red';
-                } else {
-                    input.style.borderBottom = '';
-                }
-            });
-
-            if (!isValid) {
-                showError('Por favor complete todos los campos requeridos');
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/contact', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        firstName: this.firstName.value.trim(),
-                        lastName: this.lastName.value.trim(),
-                        email: this.email.value.trim(),
-                        message: this.message.value.trim(),
-                        'g-recaptcha-response': recaptchaResponse
-                    })
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    showError(result.message || 'Mensaje enviado con éxito', 'success');
-                    this.reset();
-                    grecaptcha.reset();
-                    setTimeout(() => {
-                        window.location.href = '/index.html';
-                    }, 1000);
-                } else {
-                    showError(result.error || 'Error al enviar el mensaje');
-                    grecaptcha.reset();
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Error de conexión con el servidor');
-                grecaptcha.reset();
+        const requiredFields = ['firstName', 'lastName', 'email', 'message'];
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            const input = this.elements[field];
+            if (!input.value.trim()) {
+                isValid = false;
+                input.style.borderBottom = '2px solid red';
+            } else {
+                input.style.borderBottom = '';
             }
         });
-    }
 
+        if (!isValid) {
+            showError('Por favor complete todos los campos requeridos');
+            return;
+        }
+
+        try {
+            // Envía el formulario usando EmailJS
+            const response = await emailjs.sendForm(
+                'service_52jvu4t', // Tu Service ID
+                'TU_TEMPLATE_ID',   // ID del template que creaste
+                this
+            );
+
+            if (response.status === 200) {
+                showError('Mensaje enviado con éxito', 'success');
+                this.reset();
+                grecaptcha.reset();
+                setTimeout(() => {
+                    window.location.href = '/index.html';
+                }, 1000);
+            } else {
+                showError('Error al enviar el mensaje');
+                grecaptcha.reset();
+            }
+        } catch (error) {
+            console.error('Error al enviar el formulario:', error);
+            showError('Error al enviar el mensaje. Por favor intente nuevamente.');
+            grecaptcha.reset();
+        }
+    });
+}
     // Formulario de pago
     const paymentForm = document.getElementById('paymentFormData');
     if (paymentForm) {
