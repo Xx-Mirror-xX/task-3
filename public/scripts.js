@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
-            if (message.toLowerCase().includes('captcha') {
+            if (message.toLowerCase().includes('captcha')) {
                 if (window.grecaptcha && window.grecaptcha.reset) {
                     grecaptcha.reset();
                 }
@@ -170,15 +170,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
             try {
                 // Envía el formulario usando EmailJS
-const response = await emailjs.send(
-    'service_52jvu4t',
-    'template_1mmq126',
-    {
-        ...Object.fromEntries(new FormData(this)),
-        to_email: 'xxsandovalluisxx@gmail.com',
-        cc: 'programacion2ais@yopmail.com'
-    }
-);
+                const response = await emailjs.send(
+                    'service_52jvu4t',
+                    'template_1mmq126',
+                    {
+                        ...Object.fromEntries(new FormData(this)),
+                        to_email: 'xxsandovalluisxx@gmail.com',
+                        cc: 'programacion2ais@yopmail.com'
+                    }
+                );
 
                 if (response.status === 200) {
                     showError('Mensaje enviado con éxito', 'success');
