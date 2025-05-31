@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
                     if (result.redirect) {
                         setTimeout(() => {
-                            window.location.href = result.redirect;
+                            window.location.href = '/admin/contacts.html';
                         }, 1000);
                     } else {
                         setTimeout(() => {
