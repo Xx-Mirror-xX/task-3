@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Inicialización de EmailJS (reemplaza con tu User ID)
-    emailjs.init('TU_USER_ID_DE_EMAILJS');
+    emailjs.init('h8z-MzydYx4SjjIEt');
 
     // Elementos del formulario de login/registro
     const signUpButton = document.getElementById('SignUpButton');
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Envía el formulario usando EmailJS
 const response = await emailjs.send(
     'service_52jvu4t',
-    'TU_TEMPLATE_ID',
+    'template_1mmq126',
     {
         ...Object.fromEntries(new FormData(this)),
         to_email: 'xxsandovalluisxx@gmail.com',
