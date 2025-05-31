@@ -42,7 +42,7 @@ async addPayment(req, res) {
 
         const amountValue = parseFloat(amount);
         if (amountValue <= 0) {
-            return res.status(400).json({ error: "El monto debe ser mayor que 0" });
+            return res.status(400).json({ error: "Monto Insuficiente" });
         }
 
 
