@@ -1,5 +1,28 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize EmailJS with your public key
+    const signUpButton = document.getElementById('SignUpButton');
+    const signInButton = document.getElementById('SignInButton');
+    const signInForm = document.getElementById('SignIn');
+    const signUpForm = document.getElementById('SignUp');
+    
+    if (signUpButton && signInButton) {
+        signUpButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            signInForm.style.display = "none";
+            signUpForm.style.display = "block";
+            if (window.grecaptcha && window.grecaptcha.reset) {
+                grecaptcha.reset();
+            }
+        });
+
+        signInButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            signUpForm.style.display = "none";
+            signInForm.style.display = "block";
+            if (window.grecaptcha && window.grecaptcha.reset) {
+                grecaptcha.reset();
+            }
+        });
+    }
     emailjs.init('h8z-MzydYx4SjjIEt');
 
     // Función para mostrar errores
