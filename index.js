@@ -7,11 +7,16 @@ const axios = require('axios');
 const app = express();
 require('dotenv').config();
 
+// Importar controladores
+const PaymentsController = require('./controllers/PaymentsController');
+const paymentsController = new PaymentsController();
+
 // Configuración de reCAPTCHA v2
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6LcojE4rAAAAAEcJGKd1KJh2-Uepd0HPQLL1Rkvh';
 const GEOLOCATION_TIMEOUT = 3000; 
 const GEOLOCATION_CACHE = new Map();
 
+// Configuración de la base de datos
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
         console.error('Error al conectar con la base de datos:', err.message);
@@ -51,7 +56,9 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 amount REAL,
                 currency TEXT,
                 service TEXT,
-                paymentDate DATETIME DEFAULT CURRENT_TIMESTAMP
+                paymentDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+                transactionId TEXT,
+                status TEXT
             )`);
         });
     }
@@ -81,8 +88,8 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
-// Función optimizada para verificar reCAPTCHA Enterprise
-const verifyRecaptcha = async (token, ipAddress) => {
+// Función para verificar reCAPTCHA
+const verifyRecaptcha = async (token, ipAddress, action = '') => {
     if (!token) {
         return { 
             success: false, 
@@ -112,8 +119,8 @@ const verifyRecaptcha = async (token, ipAddress) => {
     }
 };
 
+// Función para obtener geolocalización
 const getGeolocation = async (ipAddress) => {
-    // Verificar si es localhost
     if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
         try {
             const publicIpResponse = await axios.get('https://api.ipify.org?format=json', { timeout: GEOLOCATION_TIMEOUT });
@@ -127,13 +134,11 @@ const getGeolocation = async (ipAddress) => {
         }
     }
 
-    // Verificar caché primero
     if (GEOLOCATION_CACHE.has(ipAddress)) {
         return GEOLOCATION_CACHE.get(ipAddress);
     }
 
     try {
-        // Intentar con ip-api.com primero (gratuito y menos restrictivo)
         const response = await axios.get(`http://ip-api.com/json/${ipAddress}?fields=country,city,status`, {
             timeout: GEOLOCATION_TIMEOUT
         });
@@ -144,7 +149,6 @@ const getGeolocation = async (ipAddress) => {
                 city: response.data.city || 'Desconocido'
             };
             
-            // Almacenar en caché por 1 hora
             GEOLOCATION_CACHE.set(ipAddress, result);
             setTimeout(() => GEOLOCATION_CACHE.delete(ipAddress), 60 * 60 * 1000);
             
@@ -154,7 +158,6 @@ const getGeolocation = async (ipAddress) => {
         console.error('Error con ip-api.com:', error.message);
     }
 
-    // Fallback a ipapi.co si ip-api.com falla
     try {
         const response = await axios.get(`https://ipapi.co/${ipAddress}/json/`, {
             timeout: GEOLOCATION_TIMEOUT
@@ -166,7 +169,6 @@ const getGeolocation = async (ipAddress) => {
                 city: response.data.city || 'Desconocido'
             };
             
-            // Almacenar en caché por 1 hora
             GEOLOCATION_CACHE.set(ipAddress, result);
             setTimeout(() => GEOLOCATION_CACHE.delete(ipAddress), 60 * 60 * 1000);
             
@@ -176,14 +178,13 @@ const getGeolocation = async (ipAddress) => {
         console.error('Error con ipapi.co:', error.message);
     }
 
-    // Retornar valores por defecto si todo falla
     return {
         country: 'Desconocido',
         city: 'Desconocido'
     };
 };
 
-// Ruta de verificación de reCAPTCHA optimizada
+// Ruta de verificación de reCAPTCHA
 app.post('/api/verify-recaptcha', async (req, res) => {
     const { token, action } = req.body;
     const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -196,13 +197,11 @@ app.post('/api/verify-recaptcha', async (req, res) => {
     
     res.json({
         success: true,
-        timestamp: result.timestamp,
-        action: result.action,
         score: result.score
     });
 });
 
-// Rutas de autenticación optimizadas con acciones específicas
+// Rutas de autenticación
 app.post('/register', async (req, res) => {
     try {
         const { fName, lName, email, password, 'g-recaptcha-response': recaptchaToken } = req.body;
@@ -303,7 +302,7 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// Rutas de contactos optimizadas con acciones específicas
+// Rutas de contactos
 app.post('/api/contact', async (req, res) => {
     try {
         const { firstName, lastName, email, message, 'g-recaptcha-response': recaptchaToken } = req.body;
@@ -358,14 +357,14 @@ app.get('/api/contacts', requireAuth, (req, res) => {
     );
 });
 
-// Rutas de pagos optimizadas con acciones específicas
-app.post('/api/payment', requireAuth, async (req, res) => {
+// Rutas de pagos
+app.post('/api/payment', async (req, res) => {
     try {
-        const { email, cardName, cardNumber, expiryMonth, expiryYear, cvv, amount, currency, 'g-recaptcha-response': recaptchaToken } = req.body;
+        const { 'g-recaptcha-response': recaptchaToken } = req.body;
         const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-        if (!email || !cardName || !cardNumber || !expiryMonth || !expiryYear || !cvv || !amount || !currency || !recaptchaToken) {
-            return res.status(400).json({ error: "Todos los campos son requeridos" });
+        if (!recaptchaToken) {
+            return res.status(400).json({ error: "Verificación de reCAPTCHA requerida" });
         }
 
         const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'payment');
@@ -376,22 +375,7 @@ app.post('/api/payment', requireAuth, async (req, res) => {
             });
         }
 
-        db.run(
-            `INSERT INTO payments (email, cardName, cardNumber, expiryMonth, expiryYear, cvv, amount, currency)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [email, cardName, cardNumber, expiryMonth, expiryYear, cvv, amount, currency],
-            function(err) {
-                if (err) {
-                    console.error('Error al procesar pago:', err);
-                    return res.status(500).json({ error: "Error al procesar pago" });
-                }
-                res.json({ 
-                    success: true, 
-                    message: "Pago procesado exitosamente",
-                    id: this.lastID
-                });
-            }
-        );
+        return paymentsController.addPayment(req, res);
     } catch (error) {
         console.error('Error en /api/payment:', error);
         res.status(500).json({ error: "Error en el servidor" });
@@ -430,6 +414,10 @@ app.get('/pagos.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'pagos.html'));
 });
 
+app.get('/payment-receipt.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'payment-receipt.html'));
+});
+
 app.get('/indice', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'vistas', 'indice.html'));
 });
@@ -438,6 +426,7 @@ app.get('/admin/contacts.html', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'contacts.html'));
 });
 
+// Iniciar servidor
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 
