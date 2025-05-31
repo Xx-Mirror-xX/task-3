@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Función para mostrar errores
+
     function showError(message, type = 'error') {
         const errorContainer = document.getElementById('errorContainer');
         const errorMessage = document.getElementById('errorMessage');
@@ -52,10 +52,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Función para obtener geolocalización
+
     async function getGeolocation(ip) {
         try {
-            // Primero intentamos con ip-api.com (gratis)
+
             const response = await fetch(`https://ip-api.com/json/${ip}?fields=country,city`);
             if (response.ok) {
                 const data = await response.json();
@@ -67,7 +67,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Fallback a ipapi.co si el primero falla
             const backupResponse = await fetch(`https://ipapi.co/${ip}/json/`);
             if (backupResponse.ok) {
                 const backupData = await backupResponse.json();
@@ -85,13 +84,12 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // Formulario de contacto
+
     const contactForm = document.getElementById('contactFormData');
     if (contactForm) {
         contactForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            // Validación de reCAPTCHA
             if (window.grecaptcha) {
                 const recaptchaResponse = grecaptcha.getResponse();
                 if (!recaptchaResponse) {
@@ -100,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // Validación de campos requeridos
             const requiredFields = ['firstName', 'lastName', 'email', 'message'];
             let isValid = true;
             
@@ -120,15 +117,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
 try {
-    // Get IP address
+
     const ipResponse = await fetch('https://api.ipify.org?format=json');
     const ipData = await ipResponse.json();
     const ipAddress = ipData.ip;
     
-    // Get geolocation
+
     const { country, city } = await getGeolocation(ipAddress);
 
-    // Prepare data for both server and EmailJS
+
     const contactData = {
         firstName: this.firstName.value.trim(),
         lastName: this.lastName.value.trim(),
@@ -141,7 +138,7 @@ try {
         'g-recaptcha-response': window.grecaptcha ? grecaptcha.getResponse() : ''
     };
 
-    // Send to server
+
     const serverResponse = await fetch('/api/contact', {
         method: 'POST',
         headers: { 
@@ -153,7 +150,7 @@ try {
     const serverResult = await serverResponse.json();
 
     if (serverResponse.ok) {
-        // Send email using EmailJS
+
         try {
             const emailjsResponse = await emailjs.send(
                 'service_52jvu4t',
@@ -201,21 +198,18 @@ try {
         });
     }
 
-    // Formulario de pago
+
     const paymentForm = document.getElementById('paymentFormData');
-   // En scripts.js, actualiza el manejador del formulario de pagos
 if (paymentForm) {
     paymentForm.addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        // Validar reCAPTCHA
         const recaptchaResponse = window.grecaptcha ? grecaptcha.getResponse() : '';
         if (!recaptchaResponse) {
             showError('Por favor completa el reCAPTCHA');
             return;
         }
 
-        // Validar campos
         const requiredFields = ['email', 'cardName', 'cardNumber', 'expiryMonth', 
                               'expiryYear', 'cvv', 'amount', 'currency'];
         let isValid = true;
@@ -235,7 +229,6 @@ if (paymentForm) {
             return;
         }
 
-        // Validar que el monto sea mayor que 0
         const amount = parseFloat(this.amount.value.trim());
         if (amount <= 0) {
             showError('El monto debe ser mayor que 0');
@@ -243,7 +236,6 @@ if (paymentForm) {
             return;
         }
 
-        // Mostrar carga
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalBtnText = submitBtn.innerHTML;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
@@ -276,11 +268,9 @@ if (paymentForm) {
                 }
                 showError(successMsg, 'success');
                 
-                // Resetear formulario
                 this.reset();
                 if (window.grecaptcha) grecaptcha.reset();
                 
-                // Opcional: Redirigir o mostrar comprobante
                 setTimeout(() => {
                     window.location.href = `/payment-receipt.html?paymentId=${result.paymentId}`;
                 }, 2000);
@@ -347,7 +337,6 @@ if (paymentForm) {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Validar campos requeridos
             const requiredFields = ['fName', 'lName', 'email', 'password'];
             let isValid = true;
             
@@ -366,7 +355,7 @@ if (paymentForm) {
                 return;
             }
 
-            // Validar reCAPTCHA
+
             const recaptchaResponse = window.grecaptcha ? grecaptcha.getResponse() : '';
             if (!recaptchaResponse) {
                 showError('Por favor complete el reCAPTCHA');
@@ -412,7 +401,6 @@ if (paymentForm) {
         });
     }
 
-    // Panel de administración
     const adminBtn = document.querySelector('.admin-btn');
     const adminModal = document.getElementById('adminLoginModal');
     const closeBtn = document.querySelector('.admin-close-btn');
@@ -458,7 +446,6 @@ if (paymentForm) {
         });
     }
 
-    // Cargar contactos si estamos en la página de administración
     if (document.getElementById('contactsTable')) {
         async function loadContacts() {
             try {
