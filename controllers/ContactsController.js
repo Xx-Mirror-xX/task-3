@@ -71,7 +71,7 @@ class ContactsController {
 
             await this.model.addContact(contactData);
 
-            // Enviar notificación por correo (no esperamos la respuesta para no retrasar la respuesta al cliente)
+            // Enviar notificación por correo (no bloqueante)
             mailService.sendContactNotification(contactData)
                 .catch(err => console.error('Error al enviar correo:', err));
 
