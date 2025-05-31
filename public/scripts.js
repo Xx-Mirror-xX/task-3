@@ -283,65 +283,63 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Formulario de login
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const email = this.elements.email?.value;
-            const password = this.elements.password?.value;
-            
-            if (!email || !password) {
-                showError('Por favor complete todos los campos requeridos');
-                return;
-            }
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const email = this.email.value;
+        const password = this.password.value;
+        
+        // Validación de campos requeridos
+        if (!email || !password) {
+            showError('Por favor complete todos los campos requeridos');
+            return;
+        }
 
-            try {
-                const response = await fetch('/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        email, 
-                        password
-                    })
-                });
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    email, 
+                    password
+                    // Eliminamos el 'g-recaptcha-response' del body
+                })
+            });
 
-                const result = await response.json();
+            const result = await response.json();
 
-                if (response.ok) {
-                    showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
-                    if (result.redirect) {
-                        setTimeout(() => {
-                            window.location.href = '/admin/contacts.html';
-                        }, 1000);
-                    } else {
-                        setTimeout(() => {
-                            window.location.href = '/indice';
-                        }, 1000);
-                    }
+            if (response.ok) {
+                showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
+                if (result.redirect) {
+                    setTimeout(() => {
+                        window.location.href = result.redirect;
+                    }, 1000);
                 } else {
-                    showError(result.message || 'Credenciales incorrectas');
+                    setTimeout(() => {
+                        window.location.href = '/indice';
+                    }, 1000);
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Error de conexión con el servidor');
+            } else {
+                showError(result.message || 'Credenciales incorrectas');
             }
-        });
-    }
-
-    // Formulario de registro
-    const registerForm = document.getElementById('registerForm') || document.getElementById('SignUp')?.querySelector('form');
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Error de conexión con el servidor');
+        }
+    });
+}
+   // Formulario de registro
+    const registerForm = document.getElementById('SignUp')?.querySelector('form');
     if (registerForm) {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            if (window.grecaptcha) {
-                const recaptchaResponse = grecaptcha.getResponse();
-                if (!recaptchaResponse) {
-                    showError('Por favor completa el reCAPTCHA');
-                    return;
-                }
+            const recaptchaResponse = grecaptcha.getResponse();
+            if (!recaptchaResponse) {
+                showError('Por favor completa el reCAPTCHA');
+                return;
             }
                 
             try {
@@ -349,11 +347,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        fName: this.elements.fName?.value,
-                        lName: this.elements.lName?.value,
-                        email: this.elements.email?.value,
-                        password: this.elements.password?.value,
-                        'g-recaptcha-response': window.grecaptcha ? grecaptcha.getResponse() : ''
+                        fName: this.fName.value,
+                        lName: this.lName.value,
+                        email: this.email.value,
+                        password: this.password.value,
+                        'g-recaptcha-response': recaptchaResponse
                     })
                 });
 
@@ -362,13 +360,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     showError('Registro exitoso. Redirigiendo...', 'success');
                     setTimeout(() => {
-                        const signUpForm = document.getElementById('SignUp');
-                        const signInForm = document.getElementById('SignIn');
-                        if (signUpForm) signUpForm.style.display = "none";
-                        if (signInForm) signInForm.style.display = "block";
-                        if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
-                            grecaptcha.reset();
-                        }
+                        signUpForm.style.display = "none";
+                        signInForm.style.display = "block";
+                        grecaptcha.reset();
                         if (result.email) {
                             const loginEmail = document.querySelector('#SignIn input[name="email"]');
                             if (loginEmail) loginEmail.value = result.email;
@@ -376,16 +370,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     }, 1500);
                 } else {
                     showError(result.error || 'Error en el registro');
-                    if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
-                        grecaptcha.reset();
-                    }
+                    grecaptcha.reset();
                 }
             } catch (error) {
                 console.error('Error:', error);
                 showError('Error de conexión con el servidor');
-                if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
-                    grecaptcha.reset();
-                }
+                grecaptcha.reset();
             }
         });
     }
