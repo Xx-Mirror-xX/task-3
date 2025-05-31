@@ -14,38 +14,44 @@ class PaymentsController {
         };
     }
 
-    async addPayment(req, res) {
-        try {
-            const requiredFields = ['email', 'cardName', 'cardNumber', 'expiryMonth', 
-                                  'expiryYear', 'cvv', 'amount', 'currency', 'service'];
-            
-            const missingFields = requiredFields.filter(field => !req.body[field]);
-            if (missingFields.length > 0) {
-                return res.status(400).json({ 
-                    error: "Todos los campos son requeridos",
-                    missingFields
-                });
-            }
+async addPayment(req, res) {
+    try {
+        const requiredFields = ['email', 'cardName', 'cardNumber', 'expiryMonth', 
+                              'expiryYear', 'cvv', 'amount', 'currency', 'service'];
+        
+        const missingFields = requiredFields.filter(field => !req.body[field]);
+        if (missingFields.length > 0) {
+            return res.status(400).json({ 
+                error: "Todos los campos son requeridos",
+                missingFields
+            });
+        }
 
-            const { email, cardName, cardNumber, expiryMonth, expiryYear, cvv, 
-                   amount, currency, service } = req.body;
+        const { email, cardName, cardNumber, expiryMonth, expiryYear, cvv, 
+               amount, currency, service } = req.body;
 
-            // Validación básica de datos
-            if (cardNumber.length < 13 || cardNumber.length > 19) {
-                return res.status(400).json({ error: "Número de tarjeta inválido" });
-            }
 
-            if (cvv.length < 3 || cvv.length > 4) {
-                return res.status(400).json({ error: "CVV inválido" });
-            }
+        if (cardNumber.length < 13 || cardNumber.length > 19) {
+            return res.status(400).json({ error: "Número de tarjeta inválido" });
+        }
 
-            // Guardar en base de datos local primero
+        if (cvv.length < 3 || cvv.length > 4) {
+            return res.status(400).json({ error: "CVV inválido" });
+        }
+
+
+        const amountValue = parseFloat(amount);
+        if (amountValue <= 0) {
+            return res.status(400).json({ error: "El monto debe ser mayor que 0" });
+        }
+
+
             const localPaymentId = await this.model.addPayment({
                 email, cardName, cardNumber, expiryMonth, expiryYear, cvv, 
                 amount, currency, service
             });
 
-            // Preparar datos para la API de pagos
+
             const paymentData = {
                 "amount": parseFloat(amount),
                 "card-number": cardNumber,
@@ -59,14 +65,14 @@ class PaymentsController {
             };
 
             try {
-                // Hacer la petición a la API de pagos
+
                 const response = await axios.post(
                     `${this.apiConfig.baseURL}/payments`,
                     paymentData,
                     this.apiConfig
                 );
 
-                // Manejar respuesta de la API
+
                 if (response.data.status === 'APPROVED') {
                     return res.status(201).json({ 
                         success: true,
@@ -114,7 +120,7 @@ class PaymentsController {
         console.error('Error con la API de pagos:', error.message);
 
         if (error.response) {
-            // La API respondió con un error
+
             const errorData = error.response.data;
             const errorCodes = {
                 '001': 'Número de tarjeta inválido',
@@ -130,7 +136,7 @@ class PaymentsController {
                 details: errorData
             });
         } else {
-            // Error de red o tiempo de espera
+
             return res.status(201).json({
                 success: true,
                 paymentId: `local-${localPaymentId}`,
