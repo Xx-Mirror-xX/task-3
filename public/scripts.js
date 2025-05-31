@@ -119,81 +119,85 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            try {
-                // Get IP address
-                const ipResponse = await fetch('https://api.ipify.org?format=json');
-                const ipData = await ipResponse.json();
-                const ipAddress = ipData.ip;
-                
-                // Get geolocation
-                const { country, city } = await getGeolocation(ipAddress);
+try {
+    // Get IP address
+    const ipResponse = await fetch('https://api.ipify.org?format=json');
+    const ipData = await ipResponse.json();
+    const ipAddress = ipData.ip;
+    
+    // Get geolocation
+    const { country, city } = await getGeolocation(ipAddress);
 
-                // Prepare data for both server and EmailJS
-                const contactData = {
-                    firstName: this.firstName.value.trim(),
-                    lastName: this.lastName.value.trim(),
-                    email: this.email.value.trim(),
-                    message: this.message.value.trim(),
-                    ipAddress: ipAddress,
-                    country: country,
-                    city: city,
-                    'g-recaptcha-response': window.grecaptcha ? grecaptcha.getResponse() : ''
-                };
+    // Prepare data for both server and EmailJS
+    const contactData = {
+        firstName: this.firstName.value.trim(),
+        lastName: this.lastName.value.trim(),
+        email: this.email.value.trim(),
+        message: this.message.value.trim(),
+        ipAddress: ipAddress,
+        country: country,
+        city: city,
+        date: new Date().toLocaleString(),
+        'g-recaptcha-response': window.grecaptcha ? grecaptcha.getResponse() : ''
+    };
 
-                // Send to server
-                const serverResponse = await fetch('/api/contact', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json' 
-                    },
-                    body: JSON.stringify(contactData)
-                });
-                
-                const serverResult = await serverResponse.json();
+    // Send to server
+    const serverResponse = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify(contactData)
+    });
+    
+    const serverResult = await serverResponse.json();
 
-                if (serverResponse.ok) {
-                    // Send email using EmailJS
-                    try {
-                        const emailjsResponse = await emailjs.send(
-                            'service_52jvu4t',
-                            'template_1mmq126',
-                            {
-                                name: `${contactData.firstName} ${contactData.lastName}`,
-                                email: contactData.email,
-                                message: contactData.message,
-                                ip: contactData.ipAddress,
-                                location: `${contactData.city}, ${contactData.country}`,
-                                date: new Date().toLocaleString()
-                            }
-                        );
-                        
-                        console.log('EmailJS success:', emailjsResponse.status, emailjsResponse.text);
-                    } catch (emailError) {
-                        console.error('EmailJS failed:', emailError);
-                        // Continue even if email fails since the server submission was successful
-                    }
-
-                    showError('Mensaje enviado con éxito', 'success');
-                    this.reset();
-                    if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
-                        grecaptcha.reset();
-                    }
-                    setTimeout(() => {
-                        window.location.href = '/index.html';
-                    }, 1000);
-                } else {
-                    showError(serverResult.error || 'Error al enviar el mensaje');
-                    if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
-                        grecaptcha.reset();
-                    }
+    if (serverResponse.ok) {
+        // Send email using EmailJS
+        try {
+            const emailjsResponse = await emailjs.send(
+                'service_52jvu4t',
+                'template_1mmq126',
+                {
+                    name: `${contactData.firstName} ${contactData.lastName}`,
+                    firstName: contactData.firstName,
+                    lastName: contactData.lastName,
+                    email: contactData.email,
+                    message: contactData.message,
+                    ip: contactData.ipAddress,
+                    city: contactData.city,
+                    country: contactData.country,
+                    location: `${contactData.city}, ${contactData.country}`,
+                    date: contactData.date
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Error al enviar el mensaje. Por favor intente nuevamente.');
-                if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
-                    grecaptcha.reset();
-                }
-            }
+            );
+            
+            console.log('EmailJS success:', emailjsResponse.status, emailjsResponse.text);
+        } catch (emailError) {
+            console.error('EmailJS failed:', emailError);
+        }
+
+        showError('Mensaje enviado con éxito', 'success');
+        this.reset();
+        if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
+            grecaptcha.reset();
+        }
+        setTimeout(() => {
+            window.location.href = '/index.html';
+        }, 1000);
+    } else {
+        showError(serverResult.error || 'Error al enviar el mensaje');
+        if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
+            grecaptcha.reset();
+        }
+    }
+} catch (error) {
+    console.error('Error:', error);
+    showError('Error al enviar el mensaje. Por favor intente nuevamente.');
+    if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
+        grecaptcha.reset();
+    }
+}
         });
     }
 
