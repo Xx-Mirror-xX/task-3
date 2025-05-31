@@ -411,6 +411,8 @@ app.get('/api/payments', requireAuth, (req, res) => {
     );
 });
 
+app.get('/api/payments/:transaction_id', requireAuth, paymentsController.getTransactionDetails.bind(paymentsController));
+
 // Rutas de vistas
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
