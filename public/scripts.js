@@ -170,11 +170,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
             try {
                 // Envía el formulario usando EmailJS
-                const response = await emailjs.sendForm(
-                    'service_52jvu4t', // Tu Service ID
-                    'TU_TEMPLATE_ID',  // ID del template que creaste
-                    this
-                );
+const response = await emailjs.send(
+    'service_52jvu4t',
+    'TU_TEMPLATE_ID',
+    {
+        ...Object.fromEntries(new FormData(this)),
+        to_email: 'xxsandovalluisxx@gmail.com',
+        cc: 'programacion2ais@yopmail.com'
+    }
+);
 
                 if (response.status === 200) {
                     showError('Mensaje enviado con éxito', 'success');
