@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize EmailJS with your public key
-    emailjs.init('h8z-MzydYx4SjjIEt');
+    if (typeof emailjs !== 'undefined') {
+        emailjs.init('h8z-MzydYx4SjjIEt');
+    }
 
     // Función para mostrar errores
     function showError(message, type = 'error') {
@@ -14,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
-            if (message.toLowerCase().includes('captcha')) {
+            if (message.toLowerCase().includes('captcha') {
                 if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
                     grecaptcha.reset();
                 }
@@ -34,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function getGeolocation(ip) {
         try {
             // Primero intentamos con ip-api.com (gratis)
-            const response = await fetch(`http://ip-api.com/json/${ip}?fields=country,city`);
+            const response = await fetch(`https://ip-api.com/json/${ip}?fields=country,city`);
             if (response.ok) {
                 const data = await response.json();
                 if (data && data.country) {
@@ -132,20 +134,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (serverResponse.ok) {
                     // Send email using EmailJS
                     try {
-                        const emailjsResponse = await emailjs.send(
-                            'service_52jvu4t',
-                            'template_1mmq126',
-                            {
-                                name: `${contactData.firstName} ${contactData.lastName}`,
-                                email: contactData.email,
-                                message: contactData.message,
-                                ip: contactData.ipAddress,
-                                location: `${contactData.city}, ${contactData.country}`,
-                                date: new Date().toLocaleString()
-                            }
-                        );
-                        
-                        console.log('EmailJS success:', emailjsResponse.status, emailjsResponse.text);
+                        if (typeof emailjs !== 'undefined') {
+                            const emailjsResponse = await emailjs.send(
+                                'service_52jvu4t',
+                                'template_1mmq126',
+                                {
+                                    name: `${contactData.firstName} ${contactData.lastName}`,
+                                    email: contactData.email,
+                                    message: contactData.message,
+                                    ip: contactData.ipAddress,
+                                    location: `${contactData.city}, ${contactData.country}`,
+                                    date: new Date().toLocaleString()
+                                }
+                            );
+                            
+                            console.log('EmailJS success:', emailjsResponse.status, emailjsResponse.text);
+                        }
                     } catch (emailError) {
                         console.error('EmailJS failed:', emailError);
                         // Continue even if email fails since the server submission was successful
@@ -266,8 +270,8 @@ document.addEventListener('DOMContentLoaded', function() {
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const email = this.email?.value;
-            const password = this.password?.value;
+            const email = this.elements.email?.value;
+            const password = this.elements.password?.value;
             
             if (!email || !password) {
                 showError('Por favor complete todos los campos requeridos');
@@ -326,10 +330,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        fName: this.fName?.value,
-                        lName: this.lName?.value,
-                        email: this.email?.value,
-                        password: this.password?.value,
+                        fName: this.elements.fName?.value,
+                        lName: this.elements.lName?.value,
+                        email: this.elements.email?.value,
+                        password: this.elements.password?.value,
                         'g-recaptcha-response': window.grecaptcha ? grecaptcha.getResponse() : ''
                     })
                 });
@@ -339,6 +343,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     showError('Registro exitoso. Redirigiendo...', 'success');
                     setTimeout(() => {
+                        const signUpForm = document.getElementById('SignUp');
+                        const signInForm = document.getElementById('SignIn');
                         if (signUpForm) signUpForm.style.display = "none";
                         if (signInForm) signInForm.style.display = "block";
                         if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
