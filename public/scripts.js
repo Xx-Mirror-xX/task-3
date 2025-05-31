@@ -1,35 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicialización de EmailJS (reemplaza con tu User ID)
-    if (typeof emailjs !== 'undefined') {
-        emailjs.init('h8z-MzydYx4SjjIEt');
-    }
-
-    // Elementos del formulario de login/registro
-    const signUpButton = document.getElementById('SignUpButton');
-    const signInButton = document.getElementById('SignInButton');
-    const signInForm = document.getElementById('SignIn');
-    const signUpForm = document.getElementById('SignUp');
-    
-    // Toggle entre login y registro
-    if (signUpButton && signInButton && signInForm && signUpForm) {
-        signUpButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            signInForm.style.display = "none";
-            signUpForm.style.display = "block";
-            if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
-                grecaptcha.reset();
-            }
-        });
-
-        signInButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            signUpForm.style.display = "none";
-            signInForm.style.display = "block";
-            if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
-                grecaptcha.reset();
-            }
-        });
-    }
+    // Initialize EmailJS with your public key
+    emailjs.init('YOUR_PUBLIC_KEY');
 
     // Función para mostrar errores
     function showError(message, type = 'error') {
@@ -127,23 +98,59 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                const response = await fetch('/api/contact', {
+                // Get IP address
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                const ipAddress = ipData.ip;
+                
+                // Get geolocation
+                const { country, city } = await getGeolocation(ipAddress);
+
+                // Prepare data for both server and EmailJS
+                const contactData = {
+                    firstName: this.firstName.value.trim(),
+                    lastName: this.lastName.value.trim(),
+                    email: this.email.value.trim(),
+                    message: this.message.value.trim(),
+                    ipAddress: ipAddress,
+                    country: country,
+                    city: city,
+                    'g-recaptcha-response': window.grecaptcha ? grecaptcha.getResponse() : ''
+                };
+
+                // Send to server
+                const serverResponse = await fetch('/api/contact', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json' 
                     },
-                    body: JSON.stringify({
-                        firstName: this.firstName.value.trim(),
-                        lastName: this.lastName.value.trim(),
-                        email: this.email.value.trim(),
-                        message: this.message.value.trim(),
-                        'g-recaptcha-response': window.grecaptcha ? grecaptcha.getResponse() : ''
-                    })
+                    body: JSON.stringify(contactData)
                 });
                 
-                const result = await response.json();
+                const serverResult = await serverResponse.json();
 
-                if (response.ok) {
+                if (serverResponse.ok) {
+                    // Send email using EmailJS
+                    try {
+                        const emailjsResponse = await emailjs.send(
+                            'YOUR_SERVICE_ID',
+                            'YOUR_TEMPLATE_ID',
+                            {
+                                name: `${contactData.firstName} ${contactData.lastName}`,
+                                email: contactData.email,
+                                message: contactData.message,
+                                ip: contactData.ipAddress,
+                                location: `${contactData.city}, ${contactData.country}`,
+                                date: new Date().toLocaleString()
+                            }
+                        );
+                        
+                        console.log('EmailJS success:', emailjsResponse.status, emailjsResponse.text);
+                    } catch (emailError) {
+                        console.error('EmailJS failed:', emailError);
+                        // Continue even if email fails since the server submission was successful
+                    }
+
                     showError('Mensaje enviado con éxito', 'success');
                     this.reset();
                     if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
@@ -153,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         window.location.href = '/index.html';
                     }, 1000);
                 } else {
-                    showError(result.error || 'Error al enviar el mensaje');
+                    showError(serverResult.error || 'Error al enviar el mensaje');
                     if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
                         grecaptcha.reset();
                     }
