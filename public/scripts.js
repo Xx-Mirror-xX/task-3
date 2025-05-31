@@ -235,6 +235,14 @@ if (paymentForm) {
             return;
         }
 
+        // Validar que el monto sea mayor que 0
+        const amount = parseFloat(this.amount.value.trim());
+        if (amount <= 0) {
+            showError('El monto debe ser mayor que 0');
+            this.amount.style.borderBottom = '2px solid red';
+            return;
+        }
+
         // Mostrar carga
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalBtnText = submitBtn.innerHTML;
@@ -252,7 +260,7 @@ if (paymentForm) {
                     expiryMonth: this.expiryMonth.value,
                     expiryYear: this.expiryYear.value,
                     cvv: this.cvv.value.trim(),
-                    amount: parseFloat(this.amount.value.trim()),
+                    amount: amount,
                     currency: this.currency.value,
                     service: "Servicio de Donación",
                     'g-recaptcha-response': recaptchaResponse
