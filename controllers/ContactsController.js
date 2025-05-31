@@ -7,7 +7,6 @@ mailService.sendContactNotification(contactData)
     .then(() => console.log('Correo enviado exitosamente'))
     .catch(err => {
         console.error('Error al enviar correo:', err);
-        // Opcional: registrar el error en la base de datos
     });
 
 class ContactsController {
@@ -71,7 +70,6 @@ class ContactsController {
 
             await this.model.addContact(contactData);
 
-            // Enviar notificación por correo (no bloqueante)
             mailService.sendContactNotification(contactData)
                 .catch(err => console.error('Error al enviar correo:', err));
 
