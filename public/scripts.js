@@ -434,8 +434,8 @@ if (paymentForm) {
             const email = document.getElementById('adminEmail')?.value;
             const password = document.getElementById('adminPassword')?.value;
 
-            const validEmail = process.env.ADMIN_EMAIL;
-            const validPassword = process.env.ADMIN_PASSWORD;
+            const validEmail = 'xxsandovalluisxx@gmail.com';
+            const validPassword = '12345';
 
             if (email === validEmail && password === validPassword) {
                 window.location.href = '/admin/contacts.html';
