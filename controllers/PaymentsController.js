@@ -1,3 +1,4 @@
+// PaymentsController.js
 const PaymentsModel = require('../models/PaymentsModel');
 const path = require('path');
 const axios = require('axios');
@@ -26,8 +27,8 @@ class PaymentsController {
                 return res.status(400).json({ error: "Todos los campos son requeridos" });
             }
 
-            // Primero guardamos el pago en la base de datos local
-            await this.model.addPayment({
+            // First save payment to local database
+            const localPaymentId = await this.model.addPayment({
                 email,
                 cardName,
                 cardNumber,
@@ -39,48 +40,79 @@ class PaymentsController {
                 service
             });
 
-            // Configuración para la solicitud a la API de pagos
+            // Prepare data for Fake Payment API
             const paymentData = {
-                cardNumber,
-                cardName,
-                expiryDate: `${expiryMonth}/${expiryYear}`,
-                cvv,
-                amount,
-                currency
+                "amount": parseFloat(amount),
+                "card-number": cardNumber,
+                "cvv": cvv,
+                "expiration-month": expiryMonth,
+                "expiration-year": expiryYear,
+                "full-name": cardName,
+                "currency": currency,
+                "description": service,
+                "reference": `local-${localPaymentId}`
             };
 
             const config = {
                 headers: {
-                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmFrZSBwYXltZW50IiwiZGF0ZSI6IjIwMjUtMDUtMjdUMDg6NTM6MDguMDY4WiIsImlhdCI6MTc0ODMzNTk4OH0.S6yNoBe0VKc_nAB34NN1in9lOkx58apjS3eixaVQggA',
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmFrZSBwYXltZW50IiwiZGF0ZSI6IjIwMjUtMDUtMzFUMDY6NTA6MDguODk0WiIsImlhdCI6MTc0ODY3NDIwOH0.qXRCwAZ7_6JawqcSVz3Wh9bBqXtyZYRZv5bI1MmjCag',
                     'Content-Type': 'application/json'
                 },
-                timeout: 10000 // 10 segundos de timeout
+                timeout: 10000 // 10 seconds timeout
             };
 
-            // Intentamos conectar con la API de pagos
             try {
-                const fakePaymentResponse = await axios.post('https://fakepayment.onrender.com/payment', paymentData, config);
+                // Make request to Fake Payment API
+                const paymentResponse = await axios.post('https://fakepayment.onrender.com/payments', paymentData, config);
 
-                if (!fakePaymentResponse.data.success) {
-                    console.error('Error en el pago:', fakePaymentResponse.data.message);
+                // Check response status
+                if (paymentResponse.data && paymentResponse.data.status === 'APPROVED') {
+                    return res.status(201).json({ 
+                        success: true,
+                        paymentId: paymentResponse.data.transaction_id || `local-${localPaymentId}`,
+                        message: 'Pago procesado exitosamente',
+                        details: paymentResponse.data
+                    });
+                } else {
+                    // Payment was rejected or had an error
+                    const errorMessage = paymentResponse.data.message || 
+                                        (paymentResponse.data.status === 'REJECTED' ? 'Pago rechazado' : 
+                                         paymentResponse.data.status === 'ERROR' ? 'Error en el procesamiento del pago' : 
+                                         paymentResponse.data.status === 'INSUFFICIENT' ? 'Fondos insuficientes' : 
+                                         'Error al procesar el pago');
+                    
                     return res.status(400).json({ 
-                        error: fakePaymentResponse.data.message || 'Error al procesar el pago' 
+                        success: false,
+                        error: errorMessage,
+                        details: paymentResponse.data
                     });
                 }
-
-                res.status(201).json({ 
-                    success: true,
-                    paymentId: fakePaymentResponse.data.paymentId,
-                    message: 'Pago procesado exitosamente'
-                });
             } catch (apiError) {
                 console.error('Error al conectar con la API de pagos:', apiError.message);
-                // Aunque falló la API externa, el pago se guardó localmente
-                res.status(201).json({ 
-                    success: true,
-                    paymentId: 'local-' + Date.now(),
-                    message: 'Pago registrado localmente (error en conexión con procesador de pagos)'
-                });
+                
+                if (apiError.response) {
+                    // API returned an error response
+                    const errorData = apiError.response.data;
+                    let errorMessage = 'Error al procesar el pago';
+                    
+                    if (errorData.error_code === '001') errorMessage = 'Número de tarjeta inválido';
+                    else if (errorData.error_code === '002') errorMessage = 'Pago rechazado';
+                    else if (errorData.error_code === '003') errorMessage = 'Error en el procesamiento del pago';
+                    else if (errorData.error_code === '004') errorMessage = 'Fondos insuficientes';
+                    
+                    return res.status(400).json({ 
+                        success: false,
+                        error: errorMessage,
+                        details: errorData
+                    });
+                } else {
+                    // Network or other error - payment was saved locally but API call failed
+                    return res.status(201).json({ 
+                        success: true,
+                        paymentId: `local-${localPaymentId}`,
+                        message: 'Pago registrado localmente (error en conexión con procesador de pagos)'
+                    });
+                }
             }
         } catch (error) {
             console.error('Error al procesar pago:', error);
