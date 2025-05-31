@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize EmailJS with your public key
-    if (typeof emailjs !== 'undefined') {
-        emailjs.init('h8z-MzydYx4SjjIEt');
-    }
+    emailjs.init('h8z-MzydYx4SjjIEt');
 
     // Función para mostrar errores
     function showError(message, type = 'error') {
@@ -16,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
             
-            if (message.toLowerCase().includes('captcha') {
+            if (message.toLowerCase().includes('captcha')) {
                 if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
                     grecaptcha.reset();
                 }
@@ -134,22 +132,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (serverResponse.ok) {
                     // Send email using EmailJS
                     try {
-                        if (typeof emailjs !== 'undefined') {
-                            const emailjsResponse = await emailjs.send(
-                                'service_52jvu4t',
-                                'template_1mmq126',
-                                {
-                                    name: `${contactData.firstName} ${contactData.lastName}`,
-                                    email: contactData.email,
-                                    message: contactData.message,
-                                    ip: contactData.ipAddress,
-                                    location: `${contactData.city}, ${contactData.country}`,
-                                    date: new Date().toLocaleString()
-                                }
-                            );
-                            
-                            console.log('EmailJS success:', emailjsResponse.status, emailjsResponse.text);
-                        }
+                        const emailjsResponse = await emailjs.send(
+                            'service_52jvu4t',
+                            'template_1mmq126',
+                            {
+                                name: `${contactData.firstName} ${contactData.lastName}`,
+                                email: contactData.email,
+                                message: contactData.message,
+                                ip: contactData.ipAddress,
+                                location: `${contactData.city}, ${contactData.country}`,
+                                date: new Date().toLocaleString()
+                            }
+                        );
+                        
+                        console.log('EmailJS success:', emailjsResponse.status, emailjsResponse.text);
                     } catch (emailError) {
                         console.error('EmailJS failed:', emailError);
                         // Continue even if email fails since the server submission was successful
