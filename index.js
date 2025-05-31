@@ -7,16 +7,16 @@ const axios = require('axios');
 const app = express();
 require('dotenv').config();
 
-// Importar controladores
+
 const PaymentsController = require('./controllers/PaymentsController');
 const paymentsController = new PaymentsController();
 
-// Configuración de reCAPTCHA v2
+
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6LcojE4rAAAAAEcJGKd1KJh2-Uepd0HPQLL1Rkvh';
 const GEOLOCATION_TIMEOUT = 3000; 
 const GEOLOCATION_CACHE = new Map();
 
-// Configuración de la base de datos
+
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
         console.error('Error al conectar con la base de datos:', err.message);
@@ -64,7 +64,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
     }
 });
 
-// Configuración de middlewares
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use('/stylesheet', express.static(path.join(__dirname, 'public', 'stylesheet')));
@@ -80,7 +80,7 @@ app.use(session({
     }
 }));
 
-// Middleware de autenticación
+
 const requireAuth = (req, res, next) => {
     if (!req.session.userId) {
         return res.status(403).send('Acceso denegado');
@@ -88,7 +88,7 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
-// Función para verificar reCAPTCHA
+
 const verifyRecaptcha = async (token, ipAddress, action = '') => {
     if (!token) {
         return { 
@@ -106,7 +106,7 @@ const verifyRecaptcha = async (token, ipAddress, action = '') => {
 
         return {
             success: result.success,
-            score: result.score || 0.5, // Default score for v2
+            score: result.score || 0.5,
             'error-codes': result['error-codes'] || []
         };
     } catch (error) {
@@ -119,7 +119,7 @@ const verifyRecaptcha = async (token, ipAddress, action = '') => {
     }
 };
 
-// Función para obtener geolocalización
+
 const getGeolocation = async (ipAddress) => {
     if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
         try {
@@ -184,7 +184,7 @@ const getGeolocation = async (ipAddress) => {
     };
 };
 
-// Ruta de verificación de reCAPTCHA
+
 app.post('/api/verify-recaptcha', async (req, res) => {
     const { token, action } = req.body;
     const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -201,7 +201,7 @@ app.post('/api/verify-recaptcha', async (req, res) => {
     });
 });
 
-// Rutas de autenticación
+
 app.post('/register', async (req, res) => {
     try {
         const { fName, lName, email, password, 'g-recaptcha-response': recaptchaToken } = req.body;
@@ -302,7 +302,7 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// Rutas de contactos
+
 app.post('/api/contact', async (req, res) => {
     try {
         const { firstName, lastName, email, message, 'g-recaptcha-response': recaptchaToken } = req.body;
@@ -357,7 +357,7 @@ app.get('/api/contacts', requireAuth, (req, res) => {
     );
 });
 
-// Rutas de pagos
+
 app.post('/api/payment', async (req, res) => {
     try {
         const { 'g-recaptcha-response': recaptchaToken } = req.body;
@@ -397,7 +397,7 @@ app.get('/api/payments', requireAuth, (req, res) => {
 
 app.get('/api/payments/:transaction_id', requireAuth, paymentsController.getTransactionDetails.bind(paymentsController));
 
-// Rutas de vistas
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -426,7 +426,7 @@ app.get('/admin/contacts.html', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'contacts.html'));
 });
 
-// Iniciar servidor
+
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 
