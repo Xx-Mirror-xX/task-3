@@ -133,7 +133,7 @@ class PaymentsController {
         if (!req.session.userId) {
             return res.status(403).send('Acceso denegado');
         }
-        res.sendFile(path.join(__dirname, '../public/admin/payments.html'));
+        res.sendFile(path.join(__dirname, '../public/payments.html'));
     }
 
     async getPayments(req, res) {
