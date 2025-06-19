@@ -27,43 +27,24 @@ const db = new sqlite3.Database('./database.db', (err) => {
         console.log('Conectado a la base de datos SQLite');
 
         db.serialize(() => {
-            // Verificar y crear tablas con estructura correcta
+            // Crear tabla users con todas las columnas necesarias desde el principio
             db.run(`CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 firstName TEXT,
                 lastName TEXT,
                 email TEXT UNIQUE,
                 password TEXT,
-                googleId TEXT UNIQUE,
+                googleId TEXT,
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
             )`, (err) => {
                 if (err) {
                     console.error('Error al crear tabla users:', err);
                 } else {
-                    // Verificar si la columna googleId existe
-                    db.get("PRAGMA table_info(users)", [], (err, result) => {
+                    // Crear índice único para googleId después de crear la tabla
+                    db.run("CREATE UNIQUE INDEX IF NOT EXISTS idx_googleId ON users(googleId) WHERE googleId IS NOT NULL", (err) => {
                         if (err) {
-                            console.error('Error al verificar estructura de tabla:', err);
-                            return;
+                            console.error('Error al crear índice único para googleId:', err);
                         }
-
-                        db.all("PRAGMA table_info(users)", [], (err, columns) => {
-                            if (err) {
-                                console.error('Error al obtener columnas:', err);
-                                return;
-                            }
-
-                            const hasGoogleId = columns.some(col => col.name === 'googleId');
-                            if (!hasGoogleId) {
-                                db.run("ALTER TABLE users ADD COLUMN googleId TEXT UNIQUE", (alterErr) => {
-                                    if (alterErr) {
-                                        console.error('Error al añadir columna googleId:', alterErr);
-                                    } else {
-                                        console.log('Columna googleId añadida exitosamente');
-                                    }
-                                });
-                            }
-                        });
                     });
                 }
             });
@@ -112,32 +93,28 @@ passport.use(new GoogleStrategy({
         const firstName = nameParts[0];
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
-        // Primero buscar por email
-        db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+        // Primero buscar por googleId
+        db.get('SELECT * FROM users WHERE googleId = ?', [profile.id], async (err, googleUser) => {
             if (err) return done(err);
-
-            if (user) {
-                // Si el usuario existe pero no tiene googleId, actualizarlo
-                if (!user.googleId) {
-                    db.run('UPDATE users SET googleId = ? WHERE id = ?', [profile.id, user.id], (err) => {
-                        if (err) return done(err);
-                        return done(null, user);
-                    });
-                } else {
-                    // Si ya tiene googleId, verificar que coincida
-                    if (user.googleId === profile.id) {
-                        return done(null, user);
-                    } else {
-                        return done(null, false, { message: 'Este email ya está registrado con otra cuenta de Google' });
-                    }
-                }
+            
+            if (googleUser) {
+                return done(null, googleUser);
             } else {
-                // Si no existe por email, buscar por googleId
-                db.get('SELECT * FROM users WHERE googleId = ?', [profile.id], (err, googleUser) => {
+                // Si no existe por googleId, buscar por email
+                db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
                     if (err) return done(err);
-                    
-                    if (googleUser) {
-                        return done(null, googleUser);
+
+                    if (user) {
+                        // Si el usuario existe pero no tiene googleId, actualizarlo
+                        if (!user.googleId) {
+                            db.run('UPDATE users SET googleId = ? WHERE id = ?', [profile.id, user.id], (err) => {
+                                if (err) return done(err);
+                                return done(null, user);
+                            });
+                        } else {
+                            // Si ya tiene googleId diferente, error
+                            return done(null, false, { message: 'Este email ya está registrado con otra cuenta de Google' });
+                        }
                     } else {
                         // Crear nuevo usuario
                         db.run(
