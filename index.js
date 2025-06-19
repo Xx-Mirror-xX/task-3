@@ -27,6 +27,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
         console.log('Conectado a la base de datos SQLite');
 
         db.serialize(() => {
+            // Verificar y crear tablas con estructura correcta
             db.run(`CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 firstName TEXT,
@@ -35,7 +36,37 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 password TEXT,
                 googleId TEXT UNIQUE,
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-            )`);
+            )`, (err) => {
+                if (err) {
+                    console.error('Error al crear tabla users:', err);
+                } else {
+                    // Verificar si la columna googleId existe
+                    db.get("PRAGMA table_info(users)", [], (err, result) => {
+                        if (err) {
+                            console.error('Error al verificar estructura de tabla:', err);
+                            return;
+                        }
+
+                        db.all("PRAGMA table_info(users)", [], (err, columns) => {
+                            if (err) {
+                                console.error('Error al obtener columnas:', err);
+                                return;
+                            }
+
+                            const hasGoogleId = columns.some(col => col.name === 'googleId');
+                            if (!hasGoogleId) {
+                                db.run("ALTER TABLE users ADD COLUMN googleId TEXT UNIQUE", (alterErr) => {
+                                    if (alterErr) {
+                                        console.error('Error al añadir columna googleId:', alterErr);
+                                    } else {
+                                        console.log('Columna googleId añadida exitosamente');
+                                    }
+                                });
+                            }
+                        });
+                    });
+                }
+            });
 
             db.run(`CREATE TABLE IF NOT EXISTS contacts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -81,31 +112,48 @@ passport.use(new GoogleStrategy({
         const firstName = nameParts[0];
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
-        db.get('SELECT * FROM users WHERE email = ? OR googleId = ?', [email, profile.id], async (err, user) => {
+        // Primero buscar por email
+        db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
             if (err) return done(err);
 
             if (user) {
+                // Si el usuario existe pero no tiene googleId, actualizarlo
                 if (!user.googleId) {
                     db.run('UPDATE users SET googleId = ? WHERE id = ?', [profile.id, user.id], (err) => {
                         if (err) return done(err);
                         return done(null, user);
                     });
                 } else {
-                    return done(null, user);
+                    // Si ya tiene googleId, verificar que coincida
+                    if (user.googleId === profile.id) {
+                        return done(null, user);
+                    } else {
+                        return done(null, false, { message: 'Este email ya está registrado con otra cuenta de Google' });
+                    }
                 }
             } else {
-                db.run(
-                    'INSERT INTO users (firstName, lastName, email, googleId) VALUES (?, ?, ?, ?)',
-                    [firstName, lastName, email, profile.id],
-                    function(err) {
-                        if (err) return done(err);
-                        
-                        db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, newUser) => {
-                            if (err) return done(err);
-                            return done(null, newUser);
-                        });
+                // Si no existe por email, buscar por googleId
+                db.get('SELECT * FROM users WHERE googleId = ?', [profile.id], (err, googleUser) => {
+                    if (err) return done(err);
+                    
+                    if (googleUser) {
+                        return done(null, googleUser);
+                    } else {
+                        // Crear nuevo usuario
+                        db.run(
+                            'INSERT INTO users (firstName, lastName, email, googleId) VALUES (?, ?, ?, ?)',
+                            [firstName, lastName, email, profile.id],
+                            function(err) {
+                                if (err) return done(err);
+                                
+                                db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, newUser) => {
+                                    if (err) return done(err);
+                                    return done(null, newUser);
+                                });
+                            }
+                        );
                     }
-                );
+                });
             }
         });
     } catch (error) {
