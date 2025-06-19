@@ -15,7 +15,7 @@ const paymentsController = new PaymentsController();
 const RECAPTCHA_SECRET_KEY = '6LcojE4rAAAAAEcJGKd1KJh2-Uepd0HPQLL1Rkvh';
 const GOOGLE_CLIENT_ID = '237117412868-qu524rceddvoeko90ev60b626gl540qt.apps.googleusercontent.com';
 const GOOGLE_CLIENT_SECRET = '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';
-const GOOGLE_CALLBACK_URL = 'http://localhost:3000/auth/google/callback';
+const GOOGLE_CALLBACK_URL = 'https://creating-social-network-2.onrender.com/auth/google/callback';
 const GEOLOCATION_TIMEOUT = 3000;
 const GEOLOCATION_CACHE = new Map();
 
