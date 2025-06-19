@@ -4,19 +4,22 @@ const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const path = require('path');
 const axios = require('axios');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const app = express();
-require('dotenv').config();
-
 
 const PaymentsController = require('./controllers/PaymentsController');
 const paymentsController = new PaymentsController();
 
-
-const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY || '6LcojE4rAAAAAEcJGKd1KJh2-Uepd0HPQLL1Rkvh';
-const GEOLOCATION_TIMEOUT = 3000; 
+// Configuración sin .env
+const RECAPTCHA_SECRET_KEY = '6LcojE4rAAAAAEcJGKd1KJh2-Uepd0HPQLL1Rkvh';
+const GOOGLE_CLIENT_ID = '237117412868-qu524rceddvoeko90ev60b626gl540qt.apps.googleusercontent.com';
+const GOOGLE_CLIENT_SECRET = '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';
+const GOOGLE_CALLBACK_URL = 'http://localhost:3000/auth/google/callback';
+const GEOLOCATION_TIMEOUT = 3000;
 const GEOLOCATION_CACHE = new Map();
 
-
+// Configuración de la base de datos
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
         console.error('Error al conectar con la base de datos:', err.message);
@@ -30,6 +33,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 lastName TEXT,
                 email TEXT UNIQUE,
                 password TEXT,
+                googleId TEXT UNIQUE,
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
             )`);
 
@@ -64,7 +68,62 @@ const db = new sqlite3.Database('./database.db', (err) => {
     }
 });
 
+// Configuración de Passport para Google OAuth
+passport.use(new GoogleStrategy({
+    clientID: GOOGLE_CLIENT_ID,
+    clientSecret: GOOGLE_CLIENT_SECRET,
+    callbackURL: GOOGLE_CALLBACK_URL,
+    passReqToCallback: true
+}, async (req, accessToken, refreshToken, profile, done) => {
+    try {
+        const email = profile.emails[0].value;
+        const nameParts = profile.displayName.split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
+        db.get('SELECT * FROM users WHERE email = ? OR googleId = ?', [email, profile.id], async (err, user) => {
+            if (err) return done(err);
+
+            if (user) {
+                if (!user.googleId) {
+                    db.run('UPDATE users SET googleId = ? WHERE id = ?', [profile.id, user.id], (err) => {
+                        if (err) return done(err);
+                        return done(null, user);
+                    });
+                } else {
+                    return done(null, user);
+                }
+            } else {
+                db.run(
+                    'INSERT INTO users (firstName, lastName, email, googleId) VALUES (?, ?, ?, ?)',
+                    [firstName, lastName, email, profile.id],
+                    function(err) {
+                        if (err) return done(err);
+                        
+                        db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, newUser) => {
+                            if (err) return done(err);
+                            return done(null, newUser);
+                        });
+                    }
+                );
+            }
+        });
+    } catch (error) {
+        return done(error);
+    }
+}));
+
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+    db.get('SELECT * FROM users WHERE id = ?', [id], (err, user) => {
+        done(err, user);
+    });
+});
+
+// Middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use('/stylesheet', express.static(path.join(__dirname, 'public', 'stylesheet')));
@@ -73,22 +132,38 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
     secret: 'secreto',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { 
         secure: false, 
         maxAge: 24 * 60 * 60 * 1000 
     }
 }));
+app.use(passport.initialize());
+app.use(passport.session());
 
-
+// Middleware de autenticación
 const requireAuth = (req, res, next) => {
-    if (!req.session.userId) {
+    if (!req.isAuthenticated()) {
         return res.status(403).send('Acceso denegado');
     }
     next();
 };
 
+// Middleware de administrador
+const requireAdmin = (req, res, next) => {
+    if (!req.isAuthenticated()) {
+        return res.status(403).send('Acceso denegado');
+    }
+    
+    const adminEmail = 'xxsandovalluisxx@gmail.com';
+    if (req.user.email !== adminEmail) {
+        return res.status(403).send('Acceso denegado - Solo para administradores');
+    }
+    
+    next();
+};
 
+// Función para verificar reCAPTCHA
 const verifyRecaptcha = async (token, ipAddress, action = '') => {
     if (!token) {
         return { 
@@ -119,7 +194,7 @@ const verifyRecaptcha = async (token, ipAddress, action = '') => {
     }
 };
 
-
+// Función para obtener geolocalización
 const getGeolocation = async (ipAddress) => {
     if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
         try {
@@ -184,7 +259,25 @@ const getGeolocation = async (ipAddress) => {
     };
 };
 
+// Rutas de autenticación con Google
+app.get('/auth/google', 
+    passport.authenticate('google', { 
+        scope: ['profile', 'email'],
+        prompt: 'select_account' 
+    })
+);
 
+app.get('/auth/google/callback', 
+    passport.authenticate('google', { 
+        failureRedirect: '/index.html',
+        failureMessage: true 
+    }),
+    (req, res) => {
+        res.redirect('/indice');
+    }
+);
+
+// Ruta para verificar reCAPTCHA
 app.post('/api/verify-recaptcha', async (req, res) => {
     const { token, action } = req.body;
     const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -201,7 +294,7 @@ app.post('/api/verify-recaptcha', async (req, res) => {
     });
 });
 
-
+// Ruta de registro
 app.post('/register', async (req, res) => {
     try {
         const { fName, lName, email, password, 'g-recaptcha-response': recaptchaToken } = req.body;
@@ -244,6 +337,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
+// Ruta de login
 app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -270,6 +364,13 @@ app.post('/login', async (req, res) => {
                 });
             }
 
+            if (user.googleId && !user.password) {
+                return res.status(401).json({ 
+                    success: false,
+                    message: 'Este email está registrado con Google. Por favor inicie sesión con Google.' 
+                });
+            }
+
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) {
                 return res.status(401).json({ 
@@ -278,10 +379,18 @@ app.post('/login', async (req, res) => {
                 });
             }
 
-            req.session.userId = user.id;
-            res.json({ 
-                success: true,
-                redirect: '/indice'
+            req.login(user, (err) => {
+                if (err) {
+                    return res.status(500).json({ 
+                        success: false,
+                        message: 'Error en el servidor' 
+                    });
+                }
+                
+                res.json({ 
+                    success: true,
+                    redirect: '/indice'
+                });
             });
         });
     } catch (error) {
@@ -293,16 +402,22 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// Ruta de logout
 app.get('/logout', (req, res) => {
-    req.session.destroy(err => {
+    req.logout((err) => {
         if (err) {
             return res.status(500).json({ error: 'Error al cerrar sesión' });
         }
-        res.redirect('/');
+        req.session.destroy(err => {
+            if (err) {
+                return res.status(500).json({ error: 'Error al cerrar sesión' });
+            }
+            res.redirect('/');
+        });
     });
 });
 
-
+// Ruta de contacto
 app.post('/api/contact', async (req, res) => {
     try {
         const { firstName, lastName, email, message, 'g-recaptcha-response': recaptchaToken } = req.body;
@@ -344,6 +459,7 @@ app.post('/api/contact', async (req, res) => {
     }
 });
 
+// Ruta para obtener contactos
 app.get('/api/contacts', requireAuth, (req, res) => {
     db.all(
         "SELECT * FROM contacts ORDER BY createdAt DESC",
@@ -357,7 +473,7 @@ app.get('/api/contacts', requireAuth, (req, res) => {
     );
 });
 
-
+// Ruta de pagos
 app.post('/api/payment', async (req, res) => {
     try {
         const { 'g-recaptcha-response': recaptchaToken } = req.body;
@@ -382,6 +498,7 @@ app.post('/api/payment', async (req, res) => {
     }
 });
 
+// Ruta para obtener pagos
 app.get('/api/payments', requireAuth, (req, res) => {
     db.all(
         "SELECT * FROM payments ORDER BY paymentDate DESC",
@@ -395,9 +512,10 @@ app.get('/api/payments', requireAuth, (req, res) => {
     );
 });
 
+// Ruta para detalles de transacción
 app.get('/api/payments/:transaction_id', requireAuth, paymentsController.getTransactionDetails.bind(paymentsController));
 
-
+// Rutas de vistas
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -422,11 +540,16 @@ app.get('/indice', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'vistas', 'indice.html'));
 });
 
-app.get('/admin/contacts.html', requireAuth, (req, res) => {
+app.get('/admin/contacts.html', requireAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'contacts.html'));
 });
 
+// Ruta de registro solo para administradores
+app.get('/register.html', requireAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'register.html'));
+});
 
+// Iniciar servidor
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 
