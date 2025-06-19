@@ -24,6 +24,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Botón de Google Login
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
+    if (googleLoginBtn) {
+        googleLoginBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '/auth/google';
+        });
+    }
 
     function showError(message, type = 'error') {
         const errorContainer = document.getElementById('errorContainer');
@@ -52,10 +60,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-
     async function getGeolocation(ip) {
         try {
-
             const response = await fetch(`https://ip-api.com/json/${ip}?fields=country,city`);
             if (response.ok) {
                 const data = await response.json();
@@ -83,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function() {
             city: 'Desconocida'
         };
     }
-
 
     const contactForm = document.getElementById('contactFormData');
     if (contactForm) {
@@ -116,183 +121,177 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-try {
+            try {
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                const ipAddress = ipData.ip;
+                
+                const { country, city } = await getGeolocation(ipAddress);
 
-    const ipResponse = await fetch('https://api.ipify.org?format=json');
-    const ipData = await ipResponse.json();
-    const ipAddress = ipData.ip;
-    
+                const contactData = {
+                    firstName: this.firstName.value.trim(),
+                    lastName: this.lastName.value.trim(),
+                    email: this.email.value.trim(),
+                    message: this.message.value.trim(),
+                    ipAddress: ipAddress,
+                    country: country,
+                    city: city,
+                    date: new Date().toLocaleString(),
+                    'g-recaptcha-response': window.grecaptcha ? grecaptcha.getResponse() : ''
+                };
 
-    const { country, city } = await getGeolocation(ipAddress);
+                const serverResponse = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify(contactData)
+                });
+                
+                const serverResult = await serverResponse.json();
 
+                if (serverResponse.ok) {
+                    try {
+                        const emailjsResponse = await emailjs.send(
+                            'service_52jvu4t',
+                            'template_1mmq126',
+                            {
+                                name: `${contactData.firstName} ${contactData.lastName}`,
+                                firstName: contactData.firstName,
+                                lastName: contactData.lastName,
+                                email: contactData.email,
+                                message: contactData.message,
+                                ip: contactData.ipAddress,
+                                city: contactData.city,
+                                country: contactData.country,
+                                location: `${contactData.city}, ${contactData.country}`,
+                                date: contactData.date
+                            }
+                        );
+                        
+                        console.log('EmailJS success:', emailjsResponse.status, emailjsResponse.text);
+                    } catch (emailError) {
+                        console.error('EmailJS failed:', emailError);
+                    }
 
-    const contactData = {
-        firstName: this.firstName.value.trim(),
-        lastName: this.lastName.value.trim(),
-        email: this.email.value.trim(),
-        message: this.message.value.trim(),
-        ipAddress: ipAddress,
-        country: country,
-        city: city,
-        date: new Date().toLocaleString(),
-        'g-recaptcha-response': window.grecaptcha ? grecaptcha.getResponse() : ''
-    };
-
-
-    const serverResponse = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json' 
-        },
-        body: JSON.stringify(contactData)
-    });
-    
-    const serverResult = await serverResponse.json();
-
-    if (serverResponse.ok) {
-
-        try {
-            const emailjsResponse = await emailjs.send(
-                'service_52jvu4t',
-                'template_1mmq126',
-                {
-                    name: `${contactData.firstName} ${contactData.lastName}`,
-                    firstName: contactData.firstName,
-                    lastName: contactData.lastName,
-                    email: contactData.email,
-                    message: contactData.message,
-                    ip: contactData.ipAddress,
-                    city: contactData.city,
-                    country: contactData.country,
-                    location: `${contactData.city}, ${contactData.country}`,
-                    date: contactData.date
+                    showError('Mensaje enviado con éxito', 'success');
+                    this.reset();
+                    if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
+                        grecaptcha.reset();
+                    }
+                    setTimeout(() => {
+                        window.location.href = '/index.html';
+                    }, 1000);
+                } else {
+                    showError(serverResult.error || 'Error al enviar el mensaje');
+                    if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
+                        grecaptcha.reset();
+                    }
                 }
-            );
-            
-            console.log('EmailJS success:', emailjsResponse.status, emailjsResponse.text);
-        } catch (emailError) {
-            console.error('EmailJS failed:', emailError);
-        }
-
-        showError('Mensaje enviado con éxito', 'success');
-        this.reset();
-        if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
-            grecaptcha.reset();
-        }
-        setTimeout(() => {
-            window.location.href = '/index.html';
-        }, 1000);
-    } else {
-        showError(serverResult.error || 'Error al enviar el mensaje');
-        if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
-            grecaptcha.reset();
-        }
-    }
-} catch (error) {
-    console.error('Error:', error);
-    showError('Error al enviar el mensaje. Por favor intente nuevamente.');
-    if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
-        grecaptcha.reset();
-    }
-}
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error al enviar el mensaje. Por favor intente nuevamente.');
+                if (window.grecaptcha && typeof grecaptcha.reset === 'function') {
+                    grecaptcha.reset();
+                }
+            }
         });
     }
-
 
     const paymentForm = document.getElementById('paymentFormData');
-if (paymentForm) {
-    paymentForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
+    if (paymentForm) {
+        paymentForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-        const recaptchaResponse = window.grecaptcha ? grecaptcha.getResponse() : '';
-        if (!recaptchaResponse) {
-            showError('Por favor completa el reCAPTCHA');
-            return;
-        }
-
-        const requiredFields = ['email', 'cardName', 'cardNumber', 'expiryMonth', 
-                              'expiryYear', 'cvv', 'amount', 'currency'];
-        let isValid = true;
-        
-        requiredFields.forEach(field => {
-            const input = this.elements[field];
-            if (!input || !input.value.trim()) {
-                isValid = false;
-                if (input) input.style.borderBottom = '2px solid red';
-            } else if (input) {
-                input.style.borderBottom = '';
+            const recaptchaResponse = window.grecaptcha ? grecaptcha.getResponse() : '';
+            if (!recaptchaResponse) {
+                showError('Por favor completa el reCAPTCHA');
+                return;
             }
-        });
-        
-        if (!isValid) {
-            showError('Por favor complete todos los campos requeridos');
-            return;
-        }
 
-        const amount = parseFloat(this.amount.value.trim());
-        if (amount <= 0) {
-            showError('El monto debe ser mayor que 0');
-            this.amount.style.borderBottom = '2px solid red';
-            return;
-        }
-
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-        submitBtn.disabled = true;
-
-        try {
-            const response = await fetch('/api/payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: this.email.value.trim(),
-                    cardName: this.cardName.value.trim(),
-                    cardNumber: this.cardNumber.value.trim().replace(/\s/g, ''),
-                    expiryMonth: this.expiryMonth.value,
-                    expiryYear: this.expiryYear.value,
-                    cvv: this.cvv.value.trim(),
-                    amount: amount,
-                    currency: this.currency.value,
-                    service: "Servicio de Donación",
-                    'g-recaptcha-response': recaptchaResponse
-                })
+            const requiredFields = ['email', 'cardName', 'cardNumber', 'expiryMonth', 
+                                  'expiryYear', 'cvv', 'amount', 'currency'];
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                const input = this.elements[field];
+                if (!input || !input.value.trim()) {
+                    isValid = false;
+                    if (input) input.style.borderBottom = '2px solid red';
+                } else if (input) {
+                    input.style.borderBottom = '';
+                }
             });
             
-            const result = await response.json();
-
-            if (response.ok) {
-                let successMsg = result.message || 'Pago procesado con éxito';
-                if (result.paymentId) {
-                    successMsg += `<br><small>ID de transacción: ${result.paymentId}</small>`;
-                }
-                showError(successMsg, 'success');
-                
-                this.reset();
-                if (window.grecaptcha) grecaptcha.reset();
-                
-                setTimeout(() => {
-                    window.location.href = `/payment-receipt.html?paymentId=${result.paymentId}`;
-                }, 2000);
-            } else {
-                showError(result.error || 'Error al procesar el pago');
-                if (result.paymentId) {
-                    console.log('Pago registrado localmente con ID:', result.paymentId);
-                }
-                if (window.grecaptcha) grecaptcha.reset();
+            if (!isValid) {
+                showError('Por favor complete todos los campos requeridos');
+                return;
             }
-        } catch (error) {
-            console.error('Error:', error);
-            showError('Error de conexión con el servidor. Por favor intente nuevamente.');
-            if (window.grecaptcha) grecaptcha.reset();
-        } finally {
-            submitBtn.innerHTML = originalBtnText;
-            submitBtn.disabled = false;
-        }
-    });
-}
 
-     const loginForm = document.getElementById('loginForm');
+            const amount = parseFloat(this.amount.value.trim());
+            if (amount <= 0) {
+                showError('El monto debe ser mayor que 0');
+                this.amount.style.borderBottom = '2px solid red';
+                return;
+            }
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: this.email.value.trim(),
+                        cardName: this.cardName.value.trim(),
+                        cardNumber: this.cardNumber.value.trim().replace(/\s/g, ''),
+                        expiryMonth: this.expiryMonth.value,
+                        expiryYear: this.expiryYear.value,
+                        cvv: this.cvv.value.trim(),
+                        amount: amount,
+                        currency: this.currency.value,
+                        service: "Servicio de Donación",
+                        'g-recaptcha-response': recaptchaResponse
+                    })
+                });
+                
+                const result = await response.json();
+
+                if (response.ok) {
+                    let successMsg = result.message || 'Pago procesado con éxito';
+                    if (result.paymentId) {
+                        successMsg += `<br><small>ID de transacción: ${result.paymentId}</small>`;
+                    }
+                    showError(successMsg, 'success');
+                    
+                    this.reset();
+                    if (window.grecaptcha) grecaptcha.reset();
+                    
+                    setTimeout(() => {
+                        window.location.href = `/payment-receipt.html?paymentId=${result.paymentId}`;
+                    }, 2000);
+                } else {
+                    showError(result.error || 'Error al procesar el pago');
+                    if (result.paymentId) {
+                        console.log('Pago registrado localmente con ID:', result.paymentId);
+                    }
+                    if (window.grecaptcha) grecaptcha.reset();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error de conexión con el servidor. Por favor intente nuevamente.');
+                if (window.grecaptcha) grecaptcha.reset();
+            } finally {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+
+    const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -332,7 +331,7 @@ if (paymentForm) {
         });
     }
 
-   const registerForm = document.getElementById('registerForm');
+    const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -354,7 +353,6 @@ if (paymentForm) {
                 showError('Por favor complete todos los campos requeridos');
                 return;
             }
-
 
             const recaptchaResponse = window.grecaptcha ? grecaptcha.getResponse() : '';
             if (!recaptchaResponse) {
