@@ -11,7 +11,6 @@ const app = express();
 const PaymentsController = require('./controllers/PaymentsController');
 const paymentsController = new PaymentsController();
 
-// Configuración
 const RECAPTCHA_SECRET_KEY = '6LcojE4rAAAAAEcJGKd1KJh2-Uepd0HPQLL1Rkvh';
 const GOOGLE_CLIENT_ID = '237117412868-qu524rceddvoeko90ev60b626gl540qt.apps.googleusercontent.com';
 const GOOGLE_CLIENT_SECRET = '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';
@@ -19,13 +18,11 @@ const GOOGLE_CALLBACK_URL = 'https://creating-social-network-2.onrender.com/auth
 const GEOLOCATION_TIMEOUT = 3000;
 const GEOLOCATION_CACHE = new Map();
 
-// Configuración de la base de datos
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
         console.error('Error al conectar con la base de datos:', err.message);
     } else {
         console.log('Conectado a la base de datos SQLite');
-
         db.serialize(() => {
             db.run(`CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +34,6 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 isAdmin BOOLEAN DEFAULT FALSE,
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
             )`);
-
             db.run(`CREATE TABLE IF NOT EXISTS contacts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 firstName TEXT NOT NULL,
@@ -49,7 +45,6 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 city TEXT,
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
             )`);
-
             db.run(`CREATE TABLE IF NOT EXISTS payments (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 email TEXT,
@@ -69,7 +64,6 @@ const db = new sqlite3.Database('./database.db', (err) => {
     }
 });
 
-// Configuración de Passport
 passport.use(new GoogleStrategy({
     clientID: GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
@@ -97,13 +91,11 @@ passport.use(new GoogleStrategy({
                 }
             } else {
                 const isAdmin = isAdminLogin && email === 'xxsandovalluisxx@gmail.com';
-                
                 db.run(
                     'INSERT INTO users (firstName, lastName, email, googleId, isAdmin) VALUES (?, ?, ?, ?, ?)',
                     [firstName, lastName, email, profile.id, isAdmin],
                     function(err) {
                         if (err) return done(err);
-                        
                         db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, newUser) => {
                             if (err) return done(err);
                             return done(null, newUser);
@@ -127,7 +119,6 @@ passport.deserializeUser((id, done) => {
     });
 });
 
-// Middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use('/stylesheet', express.static(path.join(__dirname, 'public', 'stylesheet')));
@@ -147,7 +138,6 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Middleware de autenticación
 const requireAuth = (req, res, next) => {
     if (!req.isAuthenticated()) {
         return res.status(403).send('Acceso denegado');
@@ -155,20 +145,16 @@ const requireAuth = (req, res, next) => {
     next();
 };
 
-// Middleware de administrador
 const requireAdmin = (req, res, next) => {
     if (!req.isAuthenticated()) {
         return res.status(403).send('Acceso denegado');
     }
-    
     if (!req.user.isAdmin) {
         return res.status(403).send('Acceso denegado - Solo para administradores');
     }
-    
     next();
 };
 
-// Función para verificar reCAPTCHA
 const verifyRecaptcha = async (token, ipAddress, action = '') => {
     if (!token) {
         return { 
@@ -177,17 +163,10 @@ const verifyRecaptcha = async (token, ipAddress, action = '') => {
             'error-codes': ['missing-input-response']
         };
     }
-
     try {
         const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${token}&remoteip=${ipAddress}`;
         const response = await axios.post(verificationUrl);
-        const result = response.data;
-
-        return {
-            success: result.success,
-            score: result.score || 0.5,
-            'error-codes': result['error-codes'] || []
-        };
+        return response.data;
     } catch (error) {
         console.error('Error al verificar reCAPTCHA:', error);
         return {
@@ -198,7 +177,6 @@ const verifyRecaptcha = async (token, ipAddress, action = '') => {
     }
 };
 
-// Función para obtener geolocalización
 const getGeolocation = async (ipAddress) => {
     if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
         try {
@@ -221,16 +199,13 @@ const getGeolocation = async (ipAddress) => {
         const response = await axios.get(`http://ip-api.com/json/${ipAddress}?fields=country,city,status`, {
             timeout: GEOLOCATION_TIMEOUT
         });
-        
         if (response.data && response.data.status === 'success') {
             const result = {
                 country: response.data.country || 'Desconocido',
                 city: response.data.city || 'Desconocido'
             };
-            
             GEOLOCATION_CACHE.set(ipAddress, result);
             setTimeout(() => GEOLOCATION_CACHE.delete(ipAddress), 60 * 60 * 1000);
-            
             return result;
         }
     } catch (error) {
@@ -241,16 +216,13 @@ const getGeolocation = async (ipAddress) => {
         const response = await axios.get(`https://ipapi.co/${ipAddress}/json/`, {
             timeout: GEOLOCATION_TIMEOUT
         });
-        
         if (response.data) {
             const result = {
                 country: response.data.country_name || 'Desconocido',
                 city: response.data.city || 'Desconocido'
             };
-            
             GEOLOCATION_CACHE.set(ipAddress, result);
             setTimeout(() => GEOLOCATION_CACHE.delete(ipAddress), 60 * 60 * 1000);
-            
             return result;
         }
     } catch (error) {
@@ -263,7 +235,6 @@ const getGeolocation = async (ipAddress) => {
     };
 };
 
-// Rutas de autenticación con Google
 app.get('/auth/google', 
     passport.authenticate('google', { 
         scope: ['profile', 'email'],
@@ -293,7 +264,6 @@ app.get('/auth/google/callback',
     }
 );
 
-// Ruta de login para admin manual
 app.post('/admin/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -307,6 +277,7 @@ app.post('/admin/login', async (req, res) => {
 
         db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
             if (err) {
+                console.error('Error en la consulta SQL:', err);
                 return res.status(500).json({ 
                     success: false,
                     message: 'Error en el servidor' 
@@ -320,34 +291,49 @@ app.post('/admin/login', async (req, res) => {
                 });
             }
 
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) {
+            if (!user.password) {
                 return res.status(401).json({ 
                     success: false,
-                    message: 'Credenciales incorrectas' 
+                    message: 'Este usuario no tiene contraseña configurada' 
                 });
             }
 
-            if (!user.isAdmin) {
-                return res.status(403).json({ 
-                    success: false,
-                    message: 'Acceso denegado - Solo para administradores' 
-                });
-            }
-
-            req.login(user, (err) => {
-                if (err) {
-                    return res.status(500).json({ 
+            try {
+                const isMatch = await bcrypt.compare(password.toString(), user.password.toString());
+                if (!isMatch) {
+                    return res.status(401).json({ 
                         success: false,
-                        message: 'Error en el servidor' 
+                        message: 'Credenciales incorrectas' 
                     });
                 }
-                
-                res.json({ 
-                    success: true,
-                    redirect: '/admin/contacts.html'
+
+                if (!user.isAdmin) {
+                    return res.status(403).json({ 
+                        success: false,
+                        message: 'Acceso denegado - Solo para administradores' 
+                    });
+                }
+
+                req.login(user, (err) => {
+                    if (err) {
+                        console.error('Error en req.login:', err);
+                        return res.status(500).json({ 
+                            success: false,
+                            message: 'Error en el servidor' 
+                        });
+                    }
+                    res.json({ 
+                        success: true,
+                        redirect: '/admin/contacts.html'
+                    });
                 });
-            });
+            } catch (bcryptError) {
+                console.error('Error en bcrypt.compare:', bcryptError);
+                return res.status(500).json({ 
+                    success: false,
+                    message: 'Error al verificar contraseña' 
+                });
+            }
         });
     } catch (error) {
         console.error('Error en login admin:', error);
@@ -358,7 +344,6 @@ app.post('/admin/login', async (req, res) => {
     }
 });
 
-// Ruta de registro
 app.post('/register', async (req, res) => {
     try {
         const { fName, lName, email, password, 'g-recaptcha-response': recaptchaToken } = req.body;
@@ -401,7 +386,6 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// Ruta de registro de administradores
 app.post('/admin/register', requireAdmin, async (req, res) => {
     try {
         const { fName, lName, email, password } = req.body;
@@ -435,7 +419,6 @@ app.post('/admin/register', requireAdmin, async (req, res) => {
     }
 });
 
-// Ruta de login normal
 app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -449,6 +432,7 @@ app.post('/login', async (req, res) => {
 
         db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
             if (err) {
+                console.error('Error en la consulta SQL:', err);
                 return res.status(500).json({ 
                     success: false,
                     message: 'Error en el servidor' 
@@ -469,27 +453,42 @@ app.post('/login', async (req, res) => {
                 });
             }
 
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) {
+            if (!user.password) {
                 return res.status(401).json({ 
                     success: false,
-                    message: 'Credenciales incorrectas' 
+                    message: 'Este usuario no tiene contraseña configurada' 
                 });
             }
 
-            req.login(user, (err) => {
-                if (err) {
-                    return res.status(500).json({ 
+            try {
+                const isMatch = await bcrypt.compare(password.toString(), user.password.toString());
+                if (!isMatch) {
+                    return res.status(401).json({ 
                         success: false,
-                        message: 'Error en el servidor' 
+                        message: 'Credenciales incorrectas' 
                     });
                 }
-                
-                res.json({ 
-                    success: true,
-                    redirect: '/vistas/indice.html'
+
+                req.login(user, (err) => {
+                    if (err) {
+                        console.error('Error en req.login:', err);
+                        return res.status(500).json({ 
+                            success: false,
+                            message: 'Error en el servidor' 
+                        });
+                    }
+                    res.json({ 
+                        success: true,
+                        redirect: '/vistas/indice.html'
+                    });
                 });
-            });
+            } catch (bcryptError) {
+                console.error('Error en bcrypt.compare:', bcryptError);
+                return res.status(500).json({ 
+                    success: false,
+                    message: 'Error al verificar contraseña' 
+                });
+            }
         });
     } catch (error) {
         console.error('Error en login:', error);
@@ -500,7 +499,6 @@ app.post('/login', async (req, res) => {
     }
 });
 
-// Ruta de logout
 app.get('/logout', (req, res) => {
     req.logout((err) => {
         if (err) {
@@ -515,7 +513,6 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// Ruta de contacto
 app.post('/api/contact', async (req, res) => {
     try {
         const { firstName, lastName, email, message, 'g-recaptcha-response': recaptchaToken } = req.body;
@@ -557,7 +554,6 @@ app.post('/api/contact', async (req, res) => {
     }
 });
 
-// Ruta para obtener contactos
 app.get('/api/contacts', requireAuth, (req, res) => {
     db.all(
         "SELECT * FROM contacts ORDER BY createdAt DESC",
@@ -571,7 +567,6 @@ app.get('/api/contacts', requireAuth, (req, res) => {
     );
 });
 
-// Ruta de pagos
 app.post('/api/payment', async (req, res) => {
     try {
         const { 'g-recaptcha-response': recaptchaToken } = req.body;
@@ -596,7 +591,6 @@ app.post('/api/payment', async (req, res) => {
     }
 });
 
-// Ruta para obtener pagos
 app.get('/api/payments', requireAuth, (req, res) => {
     db.all(
         "SELECT * FROM payments ORDER BY paymentDate DESC",
@@ -610,10 +604,8 @@ app.get('/api/payments', requireAuth, (req, res) => {
     );
 });
 
-// Ruta para detalles de transacción
 app.get('/api/payments/:transaction_id', requireAuth, paymentsController.getTransactionDetails.bind(paymentsController));
 
-// Rutas de vistas
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -630,7 +622,6 @@ app.get('/admin/register.html', requireAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'register.html'));
 });
 
-// Rutas para indice.html (corregidas)
 app.get('/indice.html', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'vistas', 'indice.html'));
 });
@@ -651,7 +642,6 @@ app.get('/payment-receipt.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'payment-receipt.html'));
 });
 
-// Iniciar servidor
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 
