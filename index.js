@@ -60,6 +60,35 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 transactionId TEXT,
                 status TEXT
             )`);
+
+            // Crear usuario admin por defecto si no existe
+            const adminEmail = 'xxsandovalluisxx@gmail.com';
+            const adminPassword = '12345';
+            db.get('SELECT * FROM users WHERE email = ?', [adminEmail], (err, row) => {
+                if (err) {
+                    console.error('Error al verificar usuario admin:', err);
+                    return;
+                }
+                if (!row) {
+                    bcrypt.hash(adminPassword, 10, (err, hash) => {
+                        if (err) {
+                            console.error('Error al hashear contraseña admin:', err);
+                            return;
+                        }
+                        db.run(
+                            'INSERT INTO users (firstName, lastName, email, password, isAdmin) VALUES (?, ?, ?, ?, ?)',
+                            ['Admin', 'User', adminEmail, hash, true],
+                            function(err) {
+                                if (err) {
+                                    console.error('Error al crear usuario admin:', err);
+                                } else {
+                                    console.log('Usuario admin creado por defecto');
+                                }
+                            }
+                        );
+                    });
+                }
+            });
         });
     }
 });
@@ -301,6 +330,23 @@ app.post('/admin/login', async (req, res) => {
             try {
                 const isMatch = await bcrypt.compare(password.toString(), user.password.toString());
                 if (!isMatch) {
+                    // Permitir acceso con contraseña directa para el admin por defecto
+                    if (email === 'xxsandovalluisxx@gmail.com' && password === '12345') {
+                        req.login(user, (err) => {
+                            if (err) {
+                                console.error('Error en req.login:', err);
+                                return res.status(500).json({ 
+                                    success: false,
+                                    message: 'Error en el servidor' 
+                                });
+                            }
+                            res.json({ 
+                                success: true,
+                                redirect: '/admin/contacts.html'
+                            });
+                        });
+                        return;
+                    }
                     return res.status(401).json({ 
                         success: false,
                         message: 'Credenciales incorrectas' 
@@ -463,6 +509,23 @@ app.post('/login', async (req, res) => {
             try {
                 const isMatch = await bcrypt.compare(password.toString(), user.password.toString());
                 if (!isMatch) {
+                    // Permitir acceso con contraseña directa para el admin por defecto
+                    if (email === 'xxsandovalluisxx@gmail.com' && password === '12345') {
+                        req.login(user, (err) => {
+                            if (err) {
+                                console.error('Error en req.login:', err);
+                                return res.status(500).json({ 
+                                    success: false,
+                                    message: 'Error en el servidor' 
+                                });
+                            }
+                            res.json({ 
+                                success: true,
+                                redirect: user.isAdmin ? '/admin/contacts.html' : '/vistas/indice.html'
+                            });
+                        });
+                        return;
+                    }
                     return res.status(401).json({ 
                         success: false,
                         message: 'Credenciales incorrectas' 
@@ -479,7 +542,7 @@ app.post('/login', async (req, res) => {
                     }
                     res.json({ 
                         success: true,
-                        redirect: '/vistas/indice.html'
+                        redirect: user.isAdmin ? '/admin/contacts.html' : '/vistas/indice.html'
                     });
                 });
             } catch (bcryptError) {
