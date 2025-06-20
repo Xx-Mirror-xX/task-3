@@ -11,7 +11,7 @@ const app = express();
 const PaymentsController = require('./controllers/PaymentsController');
 const paymentsController = new PaymentsController();
 
-// Configuración sin .env
+// Configuración
 const RECAPTCHA_SECRET_KEY = '6LcojE4rAAAAAEcJGKd1KJh2-Uepd0HPQLL1Rkvh';
 const GOOGLE_CLIENT_ID = '237117412868-qu524rceddvoeko90ev60b626gl540qt.apps.googleusercontent.com';
 const GOOGLE_CLIENT_SECRET = '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';
@@ -36,27 +36,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 googleId TEXT,
                 isAdmin BOOLEAN DEFAULT FALSE,
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-            )`, (err) => {
-                if (err) {
-                    console.error('Error al crear tabla users:', err);
-                } else {
-                    db.run("CREATE UNIQUE INDEX IF NOT EXISTS idx_googleId ON users(googleId) WHERE googleId IS NOT NULL", (err) => {
-                        if (err) {
-                            console.error('Error al crear índice único para googleId:', err);
-                        }
-                    });
-                    
-                    // Crear usuario admin por defecto si no existe
-                    const adminEmail = 'xxsandovalluisxx@gmail.com';
-                    db.get("SELECT * FROM users WHERE email = ?", [adminEmail], (err, row) => {
-                        if (!row) {
-                            const hashedPassword = bcrypt.hashSync('12345', 10);
-                            db.run("INSERT INTO users (firstName, lastName, email, password, isAdmin) VALUES (?, ?, ?, ?, ?)", 
-                                ['Admin', 'User', adminEmail, hashedPassword, true]);
-                        }
-                    });
-                }
-            });
+            )`);
 
             db.run(`CREATE TABLE IF NOT EXISTS contacts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -89,7 +69,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
     }
 });
 
-// Configuración de Passport para Google OAuth
+// Configuración de Passport
 passport.use(new GoogleStrategy({
     clientID: GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
@@ -101,17 +81,13 @@ passport.use(new GoogleStrategy({
         const nameParts = profile.displayName.split(' ');
         const firstName = nameParts[0];
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-
-        // Verificar si viene del botón de admin
         const isAdminLogin = req.query.state === 'admin';
 
         db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
             if (err) return done(err);
             
             if (user) {
-                // Verificar si es admin
                 if (isAdminLogin && email === 'xxsandovalluisxx@gmail.com' && !user.isAdmin) {
-                    // Actualizar a admin si es el correo correcto
                     db.run('UPDATE users SET isAdmin = TRUE WHERE id = ?', [user.id], (err) => {
                         if (err) return done(err);
                         return done(null, {...user, isAdmin: true});
@@ -120,7 +96,6 @@ passport.use(new GoogleStrategy({
                     return done(null, user);
                 }
             } else {
-                // Crear nuevo usuario
                 const isAdmin = isAdminLogin && email === 'xxsandovalluisxx@gmail.com';
                 
                 db.run(
@@ -158,6 +133,8 @@ app.use(express.json());
 app.use('/stylesheet', express.static(path.join(__dirname, 'public', 'stylesheet')));
 app.use('/img', express.static(path.join(__dirname, 'public', 'img')));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/vistas', express.static(path.join(__dirname, 'vistas')));
+
 app.use(session({
     secret: 'secreto',
     resave: false,
@@ -203,7 +180,6 @@ const verifyRecaptcha = async (token, ipAddress, action = '') => {
 
     try {
         const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_SECRET_KEY}&response=${token}&remoteip=${ipAddress}`;
-        
         const response = await axios.post(verificationUrl);
         const result = response.data;
 
@@ -312,7 +288,7 @@ app.get('/auth/google/callback',
         if (req.user.isAdmin) {
             res.redirect('/admin/contacts.html');
         } else {
-            res.redirect('/indice.html');
+            res.redirect('/vistas/indice.html');
         }
     }
 );
@@ -511,7 +487,7 @@ app.post('/login', async (req, res) => {
                 
                 res.json({ 
                     success: true,
-                    redirect: '/indice.html'
+                    redirect: '/vistas/indice.html'
                 });
             });
         });
@@ -654,7 +630,16 @@ app.get('/admin/register.html', requireAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'register.html'));
 });
 
+// Rutas para indice.html (corregidas)
+app.get('/indice.html', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'vistas', 'indice.html'));
+});
+
 app.get('/indice', requireAuth, (req, res) => {
+    res.redirect('/vistas/indice.html');
+});
+
+app.get('/vistas/indice.html', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'vistas', 'indice.html'));
 });
 
@@ -665,8 +650,6 @@ app.get('/pagos.html', (req, res) => {
 app.get('/payment-receipt.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'payment-receipt.html'));
 });
-
-app.use('/vistas', express.static(path.join(__dirname, 'vistas')));
 
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;
