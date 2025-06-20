@@ -316,12 +316,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const result = await response.json();
 
-                if (response.ok) {
-                    showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
-                    setTimeout(() => {
-                        window.location.href = result.redirect || '/indice';
-                    }, 1000);
-                } else {
+if (response.ok) {
+    showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
+    setTimeout(() => {
+        window.location.href = result.redirect || '/vistas/indice.html';
+    }, 1000);
+} else {
                     showError(result.message || 'Credenciales incorrectas');
                 }
             } catch (error) {
