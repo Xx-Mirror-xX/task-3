@@ -104,46 +104,86 @@ passport.use(new GoogleStrategy({
         const firstName = nameParts[0];
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
-        // Primero buscar por googleId
-        db.get('SELECT * FROM users WHERE googleId = ?', [profile.id], async (err, googleUser) => {
-            if (err) return done(err);
-            
-            if (googleUser) {
-                return done(null, googleUser);
-            } else {
-                // Si no existe por googleId, buscar por email
-                db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-                    if (err) return done(err);
-
-                    if (user) {
-                        // Si el usuario existe pero no tiene googleId, actualizarlo
-                        if (!user.googleId) {
-                            db.run('UPDATE users SET googleId = ? WHERE id = ?', [profile.id, user.id], (err) => {
+        // Verificar si es el admin
+        if (email === 'xxsandovalluisxx@gmail.com') {
+            // Buscar o crear el admin
+            db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+                if (err) return done(err);
+                
+                if (user) {
+                    // Actualizar si no tiene googleId
+                    if (!user.googleId) {
+                        db.run('UPDATE users SET googleId = ?, isAdmin = TRUE WHERE id = ?', 
+                              [profile.id, user.id], (err) => {
+                            if (err) return done(err);
+                            return done(null, {...user, isAdmin: true});
+                        });
+                    } else {
+                        // Verificar si es admin
+                        if (!user.isAdmin) {
+                            db.run('UPDATE users SET isAdmin = TRUE WHERE id = ?', 
+                                  [user.id], (err) => {
                                 if (err) return done(err);
-                                return done(null, user);
+                                return done(null, {...user, isAdmin: true});
                             });
                         } else {
-                            // Si ya tiene googleId diferente, error
-                            return done(null, false, { message: 'Este email ya está registrado con otra cuenta de Google' });
+                            return done(null, user);
                         }
-                    } else {
-                        // Crear nuevo usuario
-                        db.run(
-                            'INSERT INTO users (firstName, lastName, email, googleId) VALUES (?, ?, ?, ?)',
-                            [firstName, lastName, email, profile.id],
-                            function(err) {
-                                if (err) return done(err);
-                                
-                                db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, newUser) => {
-                                    if (err) return done(err);
-                                    return done(null, newUser);
-                                });
-                            }
-                        );
                     }
-                });
-            }
-        });
+                } else {
+                    // Crear nuevo admin
+                    db.run(
+                        'INSERT INTO users (firstName, lastName, email, googleId, isAdmin) VALUES (?, ?, ?, ?, ?)',
+                        [firstName, lastName, email, profile.id, true],
+                        function(err) {
+                            if (err) return done(err);
+                            
+                            db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, newUser) => {
+                                if (err) return done(err);
+                                return done(null, newUser);
+                            });
+                        }
+                    );
+                }
+            });
+        } else {
+            // Usuario normal
+            db.get('SELECT * FROM users WHERE googleId = ?', [profile.id], async (err, googleUser) => {
+                if (err) return done(err);
+                
+                if (googleUser) {
+                    return done(null, googleUser);
+                } else {
+                    db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+                        if (err) return done(err);
+
+                        if (user) {
+                            if (!user.googleId) {
+                                db.run('UPDATE users SET googleId = ? WHERE id = ?', [profile.id, user.id], (err) => {
+                                    if (err) return done(err);
+                                    return done(null, user);
+                                });
+                            } else {
+                                return done(null, false, { message: 'Este email ya está registrado con otra cuenta de Google' });
+                            }
+                        } else {
+                            db.run(
+                                'INSERT INTO users (firstName, lastName, email, googleId) VALUES (?, ?, ?, ?)',
+                                [firstName, lastName, email, profile.id],
+                                function(err) {
+                                    if (err) return done(err);
+                                    
+                                    db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, newUser) => {
+                                        if (err) return done(err);
+                                        return done(null, newUser);
+                                    });
+                                }
+                            );
+                        }
+                    });
+                }
+            });
+        }
     } catch (error) {
         return done(error);
     }
@@ -308,8 +348,21 @@ app.get('/auth/google/callback',
         failureMessage: true 
     }),
     (req, res) => {
-        res.redirect('/indice');
+        if (req.user.isAdmin) {
+            res.redirect('/admin/contacts.html');
+        } else {
+            res.redirect('/indice');
+        }
     }
+);
+
+// Ruta especial para admin con Google
+app.get('/auth/google/admin', 
+    passport.authenticate('google', { 
+        scope: ['profile', 'email'],
+        prompt: 'select_account',
+        state: 'admin' 
+    })
 );
 
 // Ruta para verificar reCAPTCHA
