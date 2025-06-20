@@ -654,8 +654,8 @@ app.get('/admin/register.html', requireAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'register.html'));
 });
 
-app.get('/indice.html', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'indice.html'));
+app.get('/indice', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'vistas', 'indice.html'));
 });
 
 app.get('/pagos.html', (req, res) => {
@@ -665,6 +665,8 @@ app.get('/pagos.html', (req, res) => {
 app.get('/payment-receipt.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'payment-receipt.html'));
 });
+
+app.use('/vistas', express.static(path.join(__dirname, 'vistas')));
 
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;
