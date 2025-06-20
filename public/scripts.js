@@ -24,14 +24,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Botón de Google Login
-    const googleLoginBtn = document.getElementById('googleLoginBtn');
-    if (googleLoginBtn) {
-        googleLoginBtn.addEventListener('click', function(e) {
+    // Botón de Google Login (para login normal)
+    const googleLoginBtns = document.querySelectorAll('#googleLoginBtn');
+    googleLoginBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
             e.preventDefault();
             window.location.href = '/auth/google';
         });
-    }
+    });
 
     function showError(message, type = 'error') {
         const errorContainer = document.getElementById('errorContainer');
@@ -399,10 +399,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // ADMIN SECTION
     const adminBtn = document.querySelector('.admin-btn');
     const adminModal = document.getElementById('adminLoginModal');
     const closeBtn = document.querySelector('.admin-close-btn');
     const adminLoginForm = document.getElementById('adminLoginForm');
+    const adminGoogleBtn = document.getElementById('adminGoogleLoginBtn');
 
     if (adminBtn && adminModal) {
         adminBtn.addEventListener('click', function(e) {
@@ -425,25 +427,61 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    if (adminGoogleBtn) {
+        adminGoogleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '/auth/google?admin=true';
+        });
+    }
+
     if (adminLoginForm) {
-        adminLoginForm.addEventListener('submit', function(e) {
+        adminLoginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const email = document.getElementById('adminEmail')?.value;
             const password = document.getElementById('adminPassword')?.value;
 
-            const validEmail = 'xxsandovalluisxx@gmail.com';
-            const validPassword = '12345';
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
 
-            if (email === validEmail && password === validPassword) {
-                window.location.href = '/admin/contacts.html';
-                if (adminModal) adminModal.style.display = 'none';
-            } else {
-                showError('Credenciales incorrectas. Inténtalo de nuevo.');
+                const result = await response.json();
+
+                if (response.ok) {
+                    // Verificar si es admin
+                    const userResponse = await fetch('/api/current-user');
+                    const userData = await userResponse.json();
+                    
+                    if (userResponse.ok && userData.isAdmin) {
+                        showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
+                        
+                        // Mostrar opciones de redirección para admin
+                        const redirectChoice = confirm('¿A dónde deseas ir?\nAceptar: Panel de Contactos\nCancelar: Registrar nuevo Admin');
+                        
+                        setTimeout(() => {
+                            if (redirectChoice) {
+                                window.location.href = '/admin/contacts.html';
+                            } else {
+                                window.location.href = '/admin/register.html';
+                            }
+                        }, 1000);
+                    } else {
+                        showError('Acceso denegado - Solo para administradores');
+                    }
+                } else {
+                    showError(result.message || 'Credenciales incorrectas');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error de conexión con el servidor');
             }
         });
     }
 
+    // Cargar contactos si estamos en la página de contactos
     if (document.getElementById('contactsTable')) {
         async function loadContacts() {
             try {
@@ -479,4 +517,20 @@ document.addEventListener('DOMContentLoaded', function() {
         
         loadContacts();
     }
+
+    // Cargar datos del usuario actual
+    async function loadCurrentUser() {
+        try {
+            const response = await fetch('/api/current-user');
+            if (response.ok) {
+                const user = await response.json();
+                // Puedes usar esta información para personalizar la UI
+                console.log('Usuario actual:', user);
+            }
+        } catch (error) {
+            console.error('Error al cargar usuario:', error);
+        }
+    }
+    
+    loadCurrentUser();
 });
