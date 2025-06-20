@@ -404,7 +404,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const adminModal = document.getElementById('adminLoginModal');
     const closeBtn = document.querySelector('.admin-close-btn');
     const adminLoginForm = document.getElementById('adminLoginForm');
-    const adminGoogleBtn = document.getElementById('adminGoogleLoginBtn');
+    const adminGoogleBtn = document.getElementById('adminGoogleBtn');
 
     if (adminBtn && adminModal) {
         adminBtn.addEventListener('click', function(e) {
@@ -447,45 +447,22 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = true;
 
             try {
-                // Primero hacemos login
-                const loginResponse = await fetch('/login', {
+                const response = await fetch('/admin/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
 
-                if (!loginResponse.ok) {
-                    const errorData = await loginResponse.json();
-                    throw new Error(errorData.message || 'Credenciales incorrectas');
+                const result = await response.json();
+
+                if (response.ok) {
+                    window.location.href = result.redirect || '/admin/contacts.html';
+                } else {
+                    showError(result.message || 'Credenciales incorrectas o no tiene permisos de admin');
                 }
-
-                // Luego verificamos si es admin
-                const userResponse = await fetch('/api/current-user');
-                if (!userResponse.ok) {
-                    throw new Error('No se pudo verificar el usuario');
-                }
-
-                const userData = await userResponse.json();
-                
-                if (!userData.isAdmin) {
-                    throw new Error('Acceso denegado - Solo para administradores');
-                }
-
-                showError('Autenticación exitosa', 'success');
-                
-                // Opciones de redirección
-                setTimeout(() => {
-                    const wantsContacts = confirm('¿Deseas ir al Panel de Contactos? (Aceptar) \nO prefieres Registrar nuevo Admin? (Cancelar)');
-                    if (wantsContacts) {
-                        window.location.href = '/admin/contacts.html';
-                    } else {
-                        window.location.href = '/admin/register.html';
-                    }
-                }, 1000);
-
             } catch (error) {
                 console.error('Error en login admin:', error);
-                showError(error.message || 'Error de conexión con el servidor');
+                showError('Error de conexión con el servidor');
             } finally {
                 submitBtn.innerHTML = originalBtnText;
                 submitBtn.disabled = false;
@@ -536,7 +513,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch('/api/current-user');
             if (response.ok) {
                 const user = await response.json();
-                // Puedes usar esta información para personalizar la UI
                 console.log('Usuario actual:', user);
             }
         } catch (error) {
