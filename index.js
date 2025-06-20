@@ -27,7 +27,6 @@ const db = new sqlite3.Database('./database.db', (err) => {
         console.log('Conectado a la base de datos SQLite');
 
         db.serialize(() => {
-            // Crear tabla users con todas las columnas necesarias desde el principio
             db.run(`CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 firstName TEXT,
@@ -41,7 +40,6 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 if (err) {
                     console.error('Error al crear tabla users:', err);
                 } else {
-                    // Crear índice único para googleId después de crear la tabla
                     db.run("CREATE UNIQUE INDEX IF NOT EXISTS idx_googleId ON users(googleId) WHERE googleId IS NOT NULL", (err) => {
                         if (err) {
                             console.error('Error al crear índice único para googleId:', err);
@@ -104,86 +102,41 @@ passport.use(new GoogleStrategy({
         const firstName = nameParts[0];
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
-        // Verificar si es el admin
-        if (email === 'xxsandovalluisxx@gmail.com') {
-            // Buscar o crear el admin
-            db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-                if (err) return done(err);
-                
-                if (user) {
-                    // Actualizar si no tiene googleId
-                    if (!user.googleId) {
-                        db.run('UPDATE users SET googleId = ?, isAdmin = TRUE WHERE id = ?', 
-                              [profile.id, user.id], (err) => {
-                            if (err) return done(err);
-                            return done(null, {...user, isAdmin: true});
-                        });
-                    } else {
-                        // Verificar si es admin
-                        if (!user.isAdmin) {
-                            db.run('UPDATE users SET isAdmin = TRUE WHERE id = ?', 
-                                  [user.id], (err) => {
-                                if (err) return done(err);
-                                return done(null, {...user, isAdmin: true});
-                            });
-                        } else {
-                            return done(null, user);
-                        }
-                    }
-                } else {
-                    // Crear nuevo admin
-                    db.run(
-                        'INSERT INTO users (firstName, lastName, email, googleId, isAdmin) VALUES (?, ?, ?, ?, ?)',
-                        [firstName, lastName, email, profile.id, true],
-                        function(err) {
-                            if (err) return done(err);
-                            
-                            db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, newUser) => {
-                                if (err) return done(err);
-                                return done(null, newUser);
-                            });
-                        }
-                    );
-                }
-            });
-        } else {
-            // Usuario normal
-            db.get('SELECT * FROM users WHERE googleId = ?', [profile.id], async (err, googleUser) => {
-                if (err) return done(err);
-                
-                if (googleUser) {
-                    return done(null, googleUser);
-                } else {
-                    db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-                        if (err) return done(err);
+        // Verificar si viene del botón de admin
+        const isAdminLogin = req.query.state === 'admin';
 
-                        if (user) {
-                            if (!user.googleId) {
-                                db.run('UPDATE users SET googleId = ? WHERE id = ?', [profile.id, user.id], (err) => {
-                                    if (err) return done(err);
-                                    return done(null, user);
-                                });
-                            } else {
-                                return done(null, false, { message: 'Este email ya está registrado con otra cuenta de Google' });
-                            }
-                        } else {
-                            db.run(
-                                'INSERT INTO users (firstName, lastName, email, googleId) VALUES (?, ?, ?, ?)',
-                                [firstName, lastName, email, profile.id],
-                                function(err) {
-                                    if (err) return done(err);
-                                    
-                                    db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, newUser) => {
-                                        if (err) return done(err);
-                                        return done(null, newUser);
-                                    });
-                                }
-                            );
-                        }
+        db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+            if (err) return done(err);
+            
+            if (user) {
+                // Verificar si es admin
+                if (isAdminLogin && email === 'xxsandovalluisxx@gmail.com' && !user.isAdmin) {
+                    // Actualizar a admin si es el correo correcto
+                    db.run('UPDATE users SET isAdmin = TRUE WHERE id = ?', [user.id], (err) => {
+                        if (err) return done(err);
+                        return done(null, {...user, isAdmin: true});
                     });
+                } else {
+                    return done(null, user);
                 }
-            });
-        }
+            } else {
+                // Crear nuevo usuario
+                const isAdmin = isAdminLogin && email === 'xxsandovalluisxx@gmail.com';
+                
+                db.run(
+                    'INSERT INTO users (firstName, lastName, email, googleId, isAdmin) VALUES (?, ?, ?, ?, ?)',
+                    [firstName, lastName, email, profile.id, isAdmin],
+                    function(err) {
+                        if (err) return done(err);
+                        
+                        db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, newUser) => {
+                            if (err) return done(err);
+                            return done(null, newUser);
+                        });
+                    }
+                );
+            }
+        });
     } catch (error) {
         return done(error);
     }
@@ -342,6 +295,14 @@ app.get('/auth/google',
     })
 );
 
+app.get('/auth/google/admin', 
+    passport.authenticate('google', { 
+        scope: ['profile', 'email'],
+        prompt: 'select_account',
+        state: 'admin'
+    })
+);
+
 app.get('/auth/google/callback', 
     passport.authenticate('google', { 
         failureRedirect: '/index.html',
@@ -356,30 +317,69 @@ app.get('/auth/google/callback',
     }
 );
 
-// Ruta especial para admin con Google
-app.get('/auth/google/admin', 
-    passport.authenticate('google', { 
-        scope: ['profile', 'email'],
-        prompt: 'select_account',
-        state: 'admin' 
-    })
-);
+// Ruta de login para admin manual
+app.post('/admin/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        if (!email || !password) {
+            return res.status(400).json({ 
+                success: false,
+                message: 'Todos los campos son requeridos' 
+            });
+        }
 
-// Ruta para verificar reCAPTCHA
-app.post('/api/verify-recaptcha', async (req, res) => {
-    const { token, action } = req.body;
-    const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    
-    const result = await verifyRecaptcha(token, ipAddress, action);
-    
-    if (!result.success) {
-        return res.status(400).json(result);
+        db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+            if (err) {
+                return res.status(500).json({ 
+                    success: false,
+                    message: 'Error en el servidor' 
+                });
+            }
+            
+            if (!user) {
+                return res.status(401).json({ 
+                    success: false,
+                    message: 'Credenciales incorrectas' 
+                });
+            }
+
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                return res.status(401).json({ 
+                    success: false,
+                    message: 'Credenciales incorrectas' 
+                });
+            }
+
+            if (!user.isAdmin) {
+                return res.status(403).json({ 
+                    success: false,
+                    message: 'Acceso denegado - Solo para administradores' 
+                });
+            }
+
+            req.login(user, (err) => {
+                if (err) {
+                    return res.status(500).json({ 
+                        success: false,
+                        message: 'Error en el servidor' 
+                    });
+                }
+                
+                res.json({ 
+                    success: true,
+                    redirect: '/admin/contacts.html'
+                });
+            });
+        });
+    } catch (error) {
+        console.error('Error en login admin:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Error en el servidor' 
+        });
     }
-    
-    res.json({
-        success: true,
-        score: result.score
-    });
 });
 
 // Ruta de registro
@@ -459,7 +459,7 @@ app.post('/admin/register', requireAdmin, async (req, res) => {
     }
 });
 
-// Ruta de login
+// Ruta de login normal
 app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -646,20 +646,8 @@ app.get('/index.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/contactos.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'contactos.html'));
-});
-
-app.get('/pagos.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'pagos.html'));
-});
-
-app.get('/payment-receipt.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'payment-receipt.html'));
-});
-
-app.get('/indice', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'vistas', 'indice.html'));
+app.get('/contactos.html', requireAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'contacts.html'));
 });
 
 app.get('/admin/contacts.html', requireAdmin, (req, res) => {
@@ -668,6 +656,18 @@ app.get('/admin/contacts.html', requireAdmin, (req, res) => {
 
 app.get('/admin/register.html', requireAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'register.html'));
+});
+
+app.get('/indice', requireAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'indice.html'));
+});
+
+app.get('/pagos.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'pagos.html'));
+});
+
+app.get('/payment-receipt.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'payment-receipt.html'));
 });
 
 // Iniciar servidor
