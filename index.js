@@ -35,6 +35,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 email TEXT UNIQUE,
                 password TEXT,
                 googleId TEXT,
+                isAdmin BOOLEAN DEFAULT FALSE,
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
             )`, (err) => {
                 if (err) {
@@ -44,6 +45,16 @@ const db = new sqlite3.Database('./database.db', (err) => {
                     db.run("CREATE UNIQUE INDEX IF NOT EXISTS idx_googleId ON users(googleId) WHERE googleId IS NOT NULL", (err) => {
                         if (err) {
                             console.error('Error al crear índice único para googleId:', err);
+                        }
+                    });
+                    
+                    // Crear usuario admin por defecto si no existe
+                    const adminEmail = 'xxsandovalluisxx@gmail.com';
+                    db.get("SELECT * FROM users WHERE email = ?", [adminEmail], (err, row) => {
+                        if (!row) {
+                            const hashedPassword = bcrypt.hashSync('12345', 10);
+                            db.run("INSERT INTO users (firstName, lastName, email, password, isAdmin) VALUES (?, ?, ?, ?, ?)", 
+                                ['Admin', 'User', adminEmail, hashedPassword, true]);
                         }
                     });
                 }
@@ -180,8 +191,7 @@ const requireAdmin = (req, res, next) => {
         return res.status(403).send('Acceso denegado');
     }
     
-    const adminEmail = 'xxsandovalluisxx@gmail.com';
-    if (req.user.email !== adminEmail) {
+    if (!req.user.isAdmin) {
         return res.status(403).send('Acceso denegado - Solo para administradores');
     }
     
@@ -358,6 +368,40 @@ app.post('/register', async (req, res) => {
         );
     } catch (error) {
         console.error('Error en registro:', error);
+        res.status(500).json({ error: 'Error en el servidor' });
+    }
+});
+
+// Ruta de registro de administradores
+app.post('/admin/register', requireAdmin, async (req, res) => {
+    try {
+        const { fName, lName, email, password } = req.body;
+        
+        if (!fName || !lName || !email || !password) {
+            return res.status(400).json({ error: 'Todos los campos son requeridos' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        db.run(
+            'INSERT INTO users (firstName, lastName, email, password, isAdmin) VALUES (?, ?, ?, ?, ?)',
+            [fName, lName, email, hashedPassword, true],
+            function(err) {
+                if (err) {
+                    if (err.message.includes('UNIQUE')) {
+                        return res.status(400).json({ error: 'Email ya registrado' });
+                    }
+                    return res.status(500).json({ error: 'Error al registrar administrador' });
+                }
+                res.json({ 
+                    success: true, 
+                    message: 'Administrador registrado con éxito',
+                    email: email
+                });
+            }
+        );
+    } catch (error) {
+        console.error('Error en registro de administrador:', error);
         res.status(500).json({ error: 'Error en el servidor' });
     }
 });
@@ -569,9 +613,8 @@ app.get('/admin/contacts.html', requireAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'contacts.html'));
 });
 
-// Ruta de registro solo para administradores
-app.get('/register.html', requireAdmin, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'register.html'));
+app.get('/admin/register.html', requireAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'register.html'));
 });
 
 // Iniciar servidor
