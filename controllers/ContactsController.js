@@ -1,20 +1,12 @@
 const ContactsModel = require('../models/ContactsModel');
-const path = require('path');
-const axios = require('axios');
 const mailService = require('../services/mailService'); 
-
-mailService.sendContactNotification(contactData)
-    .then(() => console.log('Correo enviado exitosamente'))
-    .catch(err => {
-        console.error('Error al enviar correo:', err);
-    });
 
 class ContactsController {
     constructor() {
         this.model = new ContactsModel();
     }
 
-  async addContact(req, res) {
+    async addContact(req, res) {
         try {
             const { firstName, lastName, email, message } = req.body;
             
@@ -88,7 +80,7 @@ class ContactsController {
 
     async getContacts(req, res) {
         try {
-            if (!req.session.userId) {
+            if (!req.isAuthenticated() || !req.user.isAdmin) {
                 return res.status(403).json({ 
                     error: 'Acceso no autorizado' 
                 });
