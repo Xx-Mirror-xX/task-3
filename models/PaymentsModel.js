@@ -21,7 +21,8 @@ class PaymentsModel {
                 service TEXT,
                 paymentDate DATETIME DEFAULT CURRENT_TIMESTAMP,
                 transactionId TEXT,
-                status TEXT
+                status TEXT,
+                errorDetails TEXT
             )
         `);
     }
