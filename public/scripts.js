@@ -490,7 +490,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('contactsTable')) {
         async function loadContacts() {
             try {
-                const response = await fetch('/api/contacts');
+                const response = await fetch('/api/contacts', {
+                    credentials: 'include'  // Añadido para enviar cookies
+                });
                 if (!response.ok) {
                     throw new Error('Error al cargar contactos');
                 }
@@ -528,7 +530,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         async function loadPayments() {
             try {
-                const response = await fetch('/api/payments');
+                const response = await fetch('/api/payments', {
+                    credentials: 'include'  // Añadido para enviar cookies
+                });
                 if (!response.ok) {
                     throw new Error('Error al cargar pagos');
                 }
