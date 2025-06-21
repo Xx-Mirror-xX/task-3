@@ -31,7 +31,8 @@ class PaymentsController {
                    amount, currency, service } = req.body;
 
             // Validaciones mejoradas
-            if (!/^\d{13,19}$/.test(cardNumber.replace(/\s/g, ''))) {
+            const cleanedCardNumber = cardNumber.replace(/\s/g, '');
+            if (!/^\d{13,19}$/.test(cleanedCardNumber)) {
                 return res.status(400).json({ error: "Número de tarjeta inválido" });
             }
 
@@ -53,7 +54,7 @@ class PaymentsController {
             // Preparar datos según la nueva especificación
             const paymentData = {
                 amount: amountValue,
-                "card-number": cardNumber.replace(/\s/g, ''),
+                "card-number": cleanedCardNumber,
                 cvv: cvv,
                 "expiration-month": expiryMonth.toString().padStart(2, '0'),
                 "expiration-year": expiryYear.toString(),
@@ -73,6 +74,12 @@ class PaymentsController {
 
                 // Manejar diferentes respuestas de la API
                 if (response.data.status === 'APPROVED') {
+                    // Actualizar el pago en la base de datos local
+                    await this.model.updatePayment(localPaymentId, {
+                        transactionId: response.data.transaction_id,
+                        status: 'completed'
+                    });
+                    
                     return res.status(201).json({ 
                         success: true,
                         paymentId: localPaymentId,
@@ -107,9 +114,27 @@ class PaymentsController {
             '004': 'Fondos insuficientes'
         };
 
-        // Manejar tanto códigos de error como estados
-        const status = apiResponse.status || apiResponse.error_code || 'error';
+        // Determinar el estado basado en el nombre o código de error
+        let status = 'error';
+        if (apiResponse.status) {
+            status = apiResponse.status;
+        } else if (apiResponse.error_code) {
+            status = apiResponse.error_code;
+        } else if (apiResponse.full_name) {
+            // Si el nombre es una palabra clave especial
+            const specialNames = ['APPROVED', 'REJECTED', 'ERROR', 'INSUFFICIENT'];
+            if (specialNames.includes(apiResponse.full_name.toUpperCase())) {
+                status = apiResponse.full_name.toUpperCase();
+            }
+        }
+
         const errorMessage = errorMessages[status] || 'Error al procesar el pago';
+
+        // Actualizar estado en la base de datos
+        this.model.updatePayment(localPaymentId, {
+            status: status.toLowerCase(),
+            errorDetails: JSON.stringify(apiResponse)
+        });
 
         return res.status(400).json({
             success: false,
@@ -121,6 +146,12 @@ class PaymentsController {
 
     handleApiError(error, res, localPaymentId) {
         console.error('Error con la API de pagos:', error.message);
+        
+        // Actualizar estado en la base de datos
+        this.model.updatePayment(localPaymentId, {
+            status: 'api_error',
+            errorDetails: error.message
+        });
 
         if (error.response) {
             // Error específico de la API
