@@ -15,10 +15,60 @@
     </script>
     
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <style>
+        .test-instructions {
+            background: #f0f7ff;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .test-instructions h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-instructions ul {
+            margin-bottom: 0;
+        }
+        .test-instructions li {
+            margin-bottom: 5px;
+        }
+        .test-instructions code {
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
 </head>
 <body>
     <div class="container" id="paymentForm">
         <h1 class="form-title">Realizar Pago</h1>
+        
+        <div class="test-instructions">
+            <h3><i class="fas fa-info-circle"></i> Instrucciones para pruebas</h3>
+            <p>Para simular diferentes resultados, usa estos datos:</p>
+            <ul>
+                <li><strong>Tarjetas válidas:</strong> 
+                    <ul>
+                        <li>Visa: <code>4111111111111111</code></li>
+                        <li>Mastercard: <code>5555555555554444</code></li>
+                    </ul>
+                </li>
+                <li><strong>Nombres especiales:</strong>
+                    <ul>
+                        <li><code>APPROVED</code> - Pago exitoso</li>
+                        <li><code>REJECTED</code> - Pago rechazado</li>
+                        <li><code>ERROR</code> - Error en procesamiento</li>
+                        <li><code>INSUFFICIENT</code> - Fondos insuficientes</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        
         <form id="paymentFormData">
             <div class="input-group">
                 <i class="fas fa-envelope"></i>
@@ -27,12 +77,13 @@
             </div>
             <div class="input-group">
                 <i class="fas fa-user"></i>
-                <input type="text" name="cardName" placeholder="Nombre del titular" required>
+                <input type="text" name="cardName" placeholder="Nombre del titular (ej: APPROVED)" required>
                 <label for="cardName">Nombre del titular</label>
             </div>
             <div class="input-group">
                 <i class="fas fa-credit-card"></i>
-                <input type="text" name="cardNumber" placeholder="Número de tarjeta" required>
+                <input type="text" name="cardNumber" placeholder="Número de tarjeta (ej: 4111111111111111)" 
+                       pattern="\d{13,19}" title="Debe tener 13-19 dígitos" required>
                 <label for="cardNumber">Número de tarjeta</label>
             </div>
             <div class="input-group">
@@ -68,12 +119,12 @@
             </div>
             <div class="input-group">
                 <i class="fas fa-lock"></i>
-                <input type="text" name="cvv" placeholder="CVV" required>
+                <input type="text" name="cvv" placeholder="CVV" pattern="\d{3,4}" title="3-4 dígitos" required>
                 <label for="cvv">CVV</label>
             </div>
             <div class="input-group">
                 <i class="fas fa-dollar-sign"></i>
-                <input type="number" name="amount" placeholder="Monto" required>
+                <input type="number" name="amount" placeholder="Monto" min="1" step="0.01" value="10" required>
                 <label for="amount">Monto</label>
             </div>
             <div class="input-group">
@@ -82,7 +133,7 @@
                     <option value="">Seleccione moneda</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
-                    <option value="MXN">VES</option>
+                    <option value="VES">VES</option>
                 </select>
                 <label for="currency" style="top: -0.01em;">Moneda</label>
             </div>
@@ -103,4 +154,3 @@
     <script src="scripts.js"></script>
 </body>
 </html>
-
