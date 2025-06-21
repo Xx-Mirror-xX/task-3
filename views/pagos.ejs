@@ -7,7 +7,7 @@
     <meta property="og:title" content="Panel de Pagos - Creating Social Network">
     <meta property="og:description" content="Administra transacciones y pagos en tu panel de administración">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://creatingsocialnetwork.com/admin/payments.ejs">
+    <meta property="og:url" content="https://creatingsocialnetwork.com/admin/pagos.ejs">
     <meta property="og:image" content="https://creatingsocialnetwork.com/images/payments-og.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -15,8 +15,8 @@
     <meta name="twitter:title" content="Panel de Pagos - Creating Social Network">
     <meta name="twitter:description" content="Gestión profesional de transacciones financieras">
     <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/payments-twitter.jpg">
-    <link rel="stylesheet" href="/stylesheet/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="/stylesheet/styles.css">
     <style>
         :root {
             --primary: #3498db;
@@ -75,11 +75,11 @@
             font-size: 0.9rem;
         }
         
-        .contacts-btn {
+        .contactos-btn {
             background-color: var(--primary);
         }
         
-        .contacts-btn:hover {
+        .contactos-btn:hover {
             background-color: #2980b9;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
@@ -105,76 +105,48 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
         
-        .filters-container {
+        .search-container {
             margin: 20px 0;
             display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
+            justify-content: space-between;
             align-items: center;
             background-color: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             border-left: 4px solid var(--accent);
         }
         
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            min-width: 180px;
-        }
-        
-        .filter-label {
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--dark);
-            font-size: 0.9rem;
-        }
-        
-        .filter-input, .filter-select {
-            padding: 10px 12px;
+        .search-input {
+            padding: 10px 15px;
+            width: 300px;
             border: 1px solid var(--border);
             border-radius: 4px;
             font-size: 0.9rem;
             transition: all 0.3s ease;
         }
         
-        .filter-input:focus, .filter-select:focus {
+        .search-input:focus {
             border-color: var(--accent);
             box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.2);
             outline: none;
         }
         
-        .apply-filters-btn, .reset-filters-btn {
+        .refresh-btn {
             padding: 8px 16px;
+            background-color: var(--primary);
+            color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             display: flex;
             align-items: center;
             gap: 5px;
-            font-weight: 500;
             transition: all 0.3s ease;
         }
         
-        .apply-filters-btn {
-            background-color: var(--primary);
-            color: white;
-        }
-        
-        .apply-filters-btn:hover {
+        .refresh-btn:hover {
             background-color: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-        
-        .reset-filters-btn {
-            background-color: var(--danger);
-            color: white;
-        }
-        
-        .reset-filters-btn:hover {
-            background-color: #c0392b;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
@@ -261,12 +233,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         
-        .filters-actions {
-            display: flex;
-            gap: 10px;
-            margin-left: auto;
-        }
-        
         .amount-cell {
             font-weight: 600;
             color: var(--dark);
@@ -282,23 +248,17 @@
             font-size: 0.9em;
         }
         
-        .refresh-btn {
-            padding: 8px 16px;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        .filters-container {
             display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s ease;
+            gap: 15px;
+            margin-bottom: 15px;
         }
         
-        .refresh-btn:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -307,7 +267,7 @@
         <div class="admin-header">
             <h1><i class="fas fa-money-bill-wave"></i> Pagos Recibidos</h1>
             <div class="nav-buttons">
-                <a href="/admin/contacts" class="nav-btn contacts-btn">
+                <a href="/admin/contactos" class="nav-btn contactos-btn">
                     <i class="fas fa-address-book"></i> Contactos
                 </a>
                 <a href="/admin/register" class="nav-btn register-admin-btn">
@@ -319,51 +279,28 @@
             </div>
         </div>
         
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="Buscar por email o servicio...">
+            <button id="refreshBtn" class="refresh-btn">
+                <i class="fas fa-sync-alt"></i> Actualizar
+            </button>
+        </div>
+
         <div class="filters-container">
-            <div class="filter-group">
-                <label class="filter-label">Servicio:</label>
-                <select id="serviceFilter" class="filter-select">
-                    <option value="">Todos</option>
-                    <option value="Servicio de Donación">Servicio de Donación</option>
-                    <option value="Suscripción Premium">Suscripción Premium</option>
-                    <option value="Publicidad">Publicidad</option>
-                    <option value="Servicio Personalizado">Servicio Personalizado</option>
-                </select>
-            </div>
+            <select id="serviceFilter" class="filter-select">
+                <option value="">Todos los servicios</option>
+                <option value="Servicio de Donación">Servicio de Donación</option>
+                <option value="Suscripción Premium">Suscripción Premium</option>
+                <option value="Publicidad">Publicidad</option>
+                <option value="Servicio Personalizado">Servicio Personalizado</option>
+            </select>
             
-            <div class="filter-group">
-                <label class="filter-label">Estado:</label>
-                <select id="statusFilter" class="filter-select">
-                    <option value="">Todos</option>
-                    <option value="completed">Completado</option>
-                    <option value="pending">Pendiente</option>
-                    <option value="failed">Fallido</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Fecha desde:</label>
-                <input type="date" id="dateFromFilter" class="filter-input">
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Fecha hasta:</label>
-                <input type="date" id="dateToFilter" class="filter-input">
-            </div>
-            
-            <div class="filters-actions">
-                <button id="applyFiltersBtn" class="apply-filters-btn">
-                    <i class="fas fa-filter"></i> Filtrar
-                </button>
-                
-                <button id="resetFiltersBtn" class="reset-filters-btn">
-                    <i class="fas fa-times"></i> Limpiar
-                </button>
-                
-                <button id="refreshBtn" class="refresh-btn">
-                    <i class="fas fa-sync-alt"></i> Actualizar
-                </button>
-            </div>
+            <select id="statusFilter" class="filter-select">
+                <option value="">Todos los estados</option>
+                <option value="completed">Completado</option>
+                <option value="pending">Pendiente</option>
+                <option value="failed">Fallido</option>
+            </select>
         </div>
 
         <div class="table-container">
@@ -440,12 +377,19 @@
             }
             
             function filterPayments() {
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
                 const service = document.getElementById('serviceFilter').value;
                 const status = document.getElementById('statusFilter').value;
-                const dateFrom = document.getElementById('dateFromFilter').value;
-                const dateTo = document.getElementById('dateToFilter').value;
                 
                 let filtered = [...allPayments];
+                
+                if (searchTerm) {
+                    filtered = filtered.filter(p => 
+                        (p.email && p.email.toLowerCase().includes(searchTerm)) || 
+                        (p.service && p.service.toLowerCase().includes(searchTerm)) ||
+                        (p.transactionId && p.transactionId.toLowerCase().includes(searchTerm))
+                    );
+                }
                 
                 if (service) {
                     filtered = filtered.filter(p => p.service === service);
@@ -455,45 +399,30 @@
                     filtered = filtered.filter(p => p.status === status);
                 }
                 
-                if (dateFrom) {
-                    const fromDate = new Date(dateFrom);
-                    filtered = filtered.filter(p => new Date(p.paymentDate) >= fromDate);
-                }
-                
-                if (dateTo) {
-                    const toDate = new Date(dateTo);
-                    toDate.setDate(toDate.getDate() + 1); // Incluir todo el día seleccionado
-                    filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
-                }
-                
                 renderPayments(filtered);
-            }
-            
-            function resetFilters() {
-                document.getElementById('serviceFilter').value = '';
-                document.getElementById('statusFilter').value = '';
-                document.getElementById('dateFromFilter').value = '';
-                document.getElementById('dateToFilter').value = '';
-                renderPayments(allPayments);
             }
             
             document.addEventListener('DOMContentLoaded', () => {
                 loadPayments();
                 
-                document.getElementById('applyFiltersBtn').addEventListener('click', (e) => {
-                    e.preventDefault();
+                document.getElementById('searchInput').addEventListener('input', () => {
                     filterPayments();
                 });
                 
-                document.getElementById('resetFiltersBtn').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    resetFilters();
+                document.getElementById('serviceFilter').addEventListener('change', () => {
+                    filterPayments();
+                });
+                
+                document.getElementById('statusFilter').addEventListener('change', () => {
+                    filterPayments();
                 });
                 
                 document.getElementById('refreshBtn').addEventListener('click', (e) => {
                     e.preventDefault();
                     loadPayments();
-                    resetFilters();
+                    document.getElementById('searchInput').value = '';
+                    document.getElementById('serviceFilter').value = '';
+                    document.getElementById('statusFilter').value = '';
                 });
             });
         </script>
