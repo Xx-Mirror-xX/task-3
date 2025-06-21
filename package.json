@@ -14,6 +14,7 @@
     "axios": "^1.9.0",
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
+    "connect-pg-simple": "^10.0.0",
     "csurf": "^1.2.2",
     "dotenv": "^16.5.0",
     "ejs": "^3.1.10",
@@ -25,6 +26,7 @@
     "nodemailer": "^7.0.3",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "pg": "^8.16.2",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
   }
