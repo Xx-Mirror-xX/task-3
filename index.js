@@ -65,7 +65,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
             // Crear usuario admin por defecto si no existe
             const adminEmail = 'xxsandovalluisxx@gmail.com';
             const adminPassword = '12345';
-            db.get('SELECT * FROM users WHERE email = ?', [adminEmail], (err, row) => {
+            db.get('SELECT * FROM users WHERE email = ?', [adminEmail], async (err, row) => {
                 if (err) {
                     console.error('Error al verificar usuario admin:', err);
                     return;
