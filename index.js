@@ -6,6 +6,7 @@ const path = require('path');
 const axios = require('axios');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const mailService = require('./mailservices'); // Importar el servicio de correo
 const app = express();
 
 // Importar controladores
@@ -616,6 +617,18 @@ app.post('/api/contact', async (req, res) => {
 
         const { country, city } = await getGeolocation(ipAddress);
 
+        // Construir objeto de datos de contacto
+        const contactData = {
+            firstName,
+            lastName,
+            email,
+            message,
+            ipAddress,
+            country,
+            city,
+            createdAt: new Date()
+        };
+
         db.run(
             `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -625,6 +638,11 @@ app.post('/api/contact', async (req, res) => {
                     console.error('Error al guardar contacto:', err);
                     return res.status(500).json({ error: "Error al guardar contacto" });
                 }
+                
+                // Enviar notificación por correo
+                mailService.sendContactNotification(contactData)
+                    .catch(err => console.error('Error enviando correo de contacto:', err));
+                
                 res.json({ 
                     success: true, 
                     message: "Contacto guardado exitosamente",
