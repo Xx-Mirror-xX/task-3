@@ -317,7 +317,9 @@
             
             async function loadPayments() {
                 try {
-                    const response = await fetch('/api/payments');
+                    const response = await fetch('/api/payments', {
+                        credentials: 'include'  // Añadido para enviar cookies
+                    });
                     if (!response.ok) {
                         throw new Error('Error al cargar pagos');
                     }
