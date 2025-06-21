@@ -708,7 +708,7 @@ app.get('/indice.html', requireAuth, (req, res) => {
 });
 
 app.get('/indice', requireAuth, (req, res) => {
-    res.redirect('/vistas/indice.html');
+    res.redirect('/vistas/indice.html'));
 });
 
 app.get('/vistas/indice.html', requireAuth, (req, res) => {
