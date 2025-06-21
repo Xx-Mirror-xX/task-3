@@ -6,7 +6,7 @@ class PaymentsController {
         this.model = new PaymentsModel();
         this.apiConfig = {
             baseURL: 'https://fakepayment.onrender.com',
-            timeout: 50000,  
+            timeout: 30000,  // 30 segundos para evitar timeouts
             headers: {
                 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmFrZSBwYXltZW50IiwiZGF0ZSI6IjIwMjUtMDYtMjFUMDM6NTM6NTYuMzU5WiIsImlhdCI6MTc1MDQ3ODAzNn0.ZfPxNnfGQHcXANsG1r48yDYx2ElrWzpxTijillHQW9E',
                 'Content-Type': 'application/json'
