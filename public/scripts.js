@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    const paymentForm = document.getElementById('paymentFormData');
+ const paymentForm = document.getElementById('paymentFormData');
     if (paymentForm) {
         paymentForm.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -267,31 +267,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    let successMsg = 'Pago procesado con éxito';
-                    if (result.transactionId) {
-                        successMsg += `<br><small>ID de transacción: ${result.transactionId}</small>`;
-                    }
-                    if (result.paymentId) {
-                        successMsg += `<br><small>ID local: ${result.paymentId}</small>`;
-                    }
-                    showError(successMsg, 'success');
-                    
-                    this.reset();
-                    if (window.grecaptcha) grecaptcha.reset();
-                    
-                    // Redirigir a la página principal después de 2 segundos
-                    setTimeout(() => {
-                        window.location.href = '/index.html';
-                    }, 2000);
+                    // Redirigir a la página de pagos de administración
+                    window.location.href = '/admin/payments.html';
                 } else {
+                    // Mostrar error y permitir reintentar
                     let errorMsg = result.error || 'Error al procesar el pago';
                     if (result.paymentId) {
                         errorMsg += `<br><small>ID local: ${result.paymentId}</small>`;
                     }
                     
-                    // Mostrar detalles adicionales del error si están disponibles
                     if (result.details) {
-                        // Manejar códigos de error específicos
                         const errorCodes = {
                             '001': 'Número de tarjeta inválido',
                             '002': 'Pago rechazado por el procesador',
@@ -322,6 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
 
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
