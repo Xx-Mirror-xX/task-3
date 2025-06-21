@@ -58,14 +58,14 @@ class PaymentsController {
                 cvv: cvv,
                 "expiration-month": expiryMonth.toString().padStart(2, '0'),
                 "expiration-year": expiryYear.toString(),
-                "full-name": cardName, // Usaremos el nombre ingresado
+                "full-name": cardName,
                 currency: currency,
                 description: service,
                 reference: `local-${localPaymentId}`
             };
 
             try {
-                // Endpoint corregido según documentación (plural)
+                // Endpoint corregido
                 const response = await axios.post(
                     `${this.apiConfig.baseURL}/payments`,
                     paymentData,
@@ -87,10 +87,10 @@ class PaymentsController {
                         message: 'Pago procesado exitosamente'
                     });
                 } else {
-                    return this.handlePaymentError(response.data, res, localPaymentId);
+                    return await this.handlePaymentError(response.data, res, localPaymentId);
                 }
             } catch (apiError) {
-                return this.handleApiError(apiError, res, localPaymentId);
+                return await this.handleApiError(apiError, res, localPaymentId);
             }
         } catch (error) {
             console.error('Error al procesar pago:', error);
@@ -101,7 +101,7 @@ class PaymentsController {
         }
     }
 
-    handlePaymentError(apiResponse, res, localPaymentId) {
+    async handlePaymentError(apiResponse, res, localPaymentId) {
         const errorMessages = {
             'REJECTED': 'Pago rechazado por el procesador',
             'ERROR': 'Error en el procesamiento del pago',
@@ -114,25 +114,21 @@ class PaymentsController {
             '004': 'Fondos insuficientes'
         };
 
-        // Determinar el estado basado en el nombre o código de error
-        let status = 'error';
+        let status = 'failed';
+        let errorCode = '';
+
         if (apiResponse.status) {
-            status = apiResponse.status;
+            status = apiResponse.status.toLowerCase();
+            errorCode = apiResponse.status;
         } else if (apiResponse.error_code) {
-            status = apiResponse.error_code;
-        } else if (apiResponse.full_name) {
-            // Si el nombre es una palabra clave especial
-            const specialNames = ['APPROVED', 'REJECTED', 'ERROR', 'INSUFFICIENT'];
-            if (specialNames.includes(apiResponse.full_name.toUpperCase())) {
-                status = apiResponse.full_name.toUpperCase();
-            }
+            errorCode = apiResponse.error_code;
         }
 
-        const errorMessage = errorMessages[status] || 'Error al procesar el pago';
+        const errorMessage = errorMessages[errorCode] || 'Error al procesar el pago';
 
         // Actualizar estado en la base de datos
-        this.model.updatePayment(localPaymentId, {
-            status: status.toLowerCase(),
+        await this.model.updatePayment(localPaymentId, {
+            status: 'failed',
             errorDetails: JSON.stringify(apiResponse)
         });
 
@@ -144,28 +140,23 @@ class PaymentsController {
         });
     }
 
-    handleApiError(error, res, localPaymentId) {
+    async handleApiError(error, res, localPaymentId) {
         console.error('Error con la API de pagos:', error.message);
         
         // Actualizar estado en la base de datos
-        this.model.updatePayment(localPaymentId, {
-            status: 'api_error',
+        await this.model.updatePayment(localPaymentId, {
+            status: 'failed',
             errorDetails: error.message
         });
 
         if (error.response) {
-            // Error específico de la API
-            const status = error.response.status;
-            const errorData = error.response.data || {};
-            
-            return res.status(status).json({
+            return res.status(error.response.status).json({
                 success: false,
                 paymentId: localPaymentId,
-                error: `Error en el procesador de pagos (${status})`,
-                details: errorData
+                error: `Error en el procesador de pagos (${error.response.status})`,
+                details: error.response.data
             });
         } else if (error.request) {
-            // La solicitud fue hecha pero no hubo respuesta
             return res.status(503).json({
                 success: false,
                 paymentId: localPaymentId,
@@ -173,7 +164,6 @@ class PaymentsController {
                 details: error.message
             });
         } else {
-            // Error al configurar la solicitud
             return res.status(500).json({
                 success: false,
                 paymentId: localPaymentId,
@@ -191,7 +181,6 @@ class PaymentsController {
                 return res.status(400).json({ error: "Se requiere el ID de transacción" });
             }
 
-            // Endpoint corregido (plural)
             const response = await axios.get(
                 `${this.apiConfig.baseURL}/payments/${transaction_id}`,
                 this.apiConfig
