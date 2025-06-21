@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Administrador</title>
+    <meta property="og:title" content="Registro de Administrador - Creating Social Network">
+    <meta property="og:description" content="Crea nuevas cuentas de administrador para tu plataforma">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://creatingsocialnetwork.com/admin/register.html">
+    <meta property="og:image" content="https://creatingsocialnetwork.com/images/register-og.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Registro de Administrador - Creating Social Network">
+    <meta name="twitter:description" content="Gestión de cuentas administrativas">
+    <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/register-twitter.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/stylesheet/styles.css">
     <style>
@@ -189,7 +200,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(adminData),
-                        credentials: 'include' // Importante para enviar cookies de sesión
+                        credentials: 'include' 
                     });
 
                     const result = await response.json();
