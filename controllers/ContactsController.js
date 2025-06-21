@@ -1,5 +1,5 @@
 const ContactsModel = require('../models/ContactsModel');
-const mailService = require('../services/mailService'); 
+const axios = require('axios');
 
 class ContactsController {
     constructor() {
@@ -61,9 +61,6 @@ class ContactsController {
             };
 
             await this.model.addContact(contactData);
-
-            mailService.sendContactNotification(contactData)
-                .catch(err => console.error('Error al enviar correo:', err));
 
             res.status(201).json({ 
                 success: true,
