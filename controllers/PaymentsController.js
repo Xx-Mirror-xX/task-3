@@ -64,9 +64,9 @@ class PaymentsController {
             };
 
             try {
-                // Endpoint corregido (singular)
+                // Endpoint corregido (ahora usa /payments en plural)
                 const response = await axios.post(
-                    `${this.apiConfig.baseURL}/payment`,
+                    `${this.apiConfig.baseURL}/payments`,  // Cambiado a plural
                     paymentData,
                     this.apiConfig
                 );
