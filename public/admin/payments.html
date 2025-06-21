@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Pagos</title>
+    <link rel="stylesheet" href="/stylesheet/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        table { 
+            width: 100%; 
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td { 
+            padding: 12px 15px; 
+            border: 1px solid #ddd; 
+            text-align: left; 
+        }
+        th { 
+            background-color: #f2f2f2;
+            position: sticky;
+            top: 0;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .logout-btn {
+            float: right;
+            padding: 8px 16px;
+            background-color: #f44336;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+        .filters-container {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .filter-label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .filter-input, .filter-select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .apply-filters-btn, .reset-filters-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .apply-filters-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .apply-filters-btn:hover {
+            background-color: #45a049;
+        }
+        .reset-filters-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        .reset-filters-btn:hover {
+            background-color: #d32f2f;
+        }
+        .status-completed {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .status-pending {
+            color: #FFC107;
+            font-weight: bold;
+        }
+        .status-failed {
+            color: #f44336;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Pagos Recibidos</h1>
+        <a href="/logout" class="logout-btn">Cerrar sesión</a>
+        
+        <div class="filters-container">
+            <div class="filter-group">
+                <label class="filter-label">Servicio:</label>
+                <select id="serviceFilter" class="filter-select">
+                    <option value="">Todos</option>
+                    <option value="Servicio de Donación">Servicio de Donación</option>
+                    <!-- Agrega más opciones según tus servicios -->
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Estado:</label>
+                <select id="statusFilter" class="filter-select">
+                    <option value="">Todos</option>
+                    <option value="completed">Completado</option>
+                    <option value="pending">Pendiente</option>
+                    <option value="failed">Fallido</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Fecha desde:</label>
+                <input type="date" id="dateFromFilter" class="filter-input">
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Fecha hasta:</label>
+                <input type="date" id="dateToFilter" class="filter-input">
+            </div>
+            
+            <button id="applyFiltersBtn" class="apply-filters-btn">
+                <i class="fas fa-filter"></i> Filtrar
+            </button>
+            
+            <button id="resetFiltersBtn" class="reset-filters-btn">
+                <i class="fas fa-times"></i> Limpiar
+            </button>
+        </div>
+
+        <table id="paymentsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Servicio</th>
+                    <th>Monto</th>
+                    <th>Moneda</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>ID Transacción</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <script>
+            let allPayments = [];
+            
+            async function loadPayments() {
+                try {
+                    const response = await fetch('/api/payments');
+                    if (!response.ok) {
+                        throw new Error('Error al cargar pagos');
+                    }
+                    allPayments = await response.json();
+                    renderPayments(allPayments);
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert(error.message);
+                }
+            }
+            
+            function renderPayments(payments) {
+                const tbody = document.querySelector('#paymentsTable tbody');
+                tbody.innerHTML = '';
+                
+                payments.forEach(payment => {
+                    const row = document.createElement('tr');
+                    const statusClass = `status-${payment.status || 'pending'}`;
+                    
+                    row.innerHTML = `
+                        <td>${payment.id}</td>
+                        <td>${payment.email}</td>
+                        <td>${payment.service}</td>
+                        <td>${payment.amount}</td>
+                        <td>${payment.currency}</td>
+                        <td class="${statusClass}">${getStatusText(payment.status)}</td>
+                        <td>${new Date(payment.paymentDate).toLocaleString()}</td>
+                        <td>${payment.transactionId || 'N/A'}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+            
+            function getStatusText(status) {
+                switch(status) {
+                    case 'completed': return 'Completado';
+                    case 'pending': return 'Pendiente';
+                    case 'failed': return 'Fallido';
+                    default: return 'Pendiente';
+                }
+            }
+            
+            function filterPayments() {
+                const service = document.getElementById('serviceFilter').value;
+                const status = document.getElementById('statusFilter').value;
+                const dateFrom = document.getElementById('dateFromFilter').value;
+                const dateTo = document.getElementById('dateToFilter').value;
+                
+                let filtered = [...allPayments];
+                
+                if (service) {
+                    filtered = filtered.filter(p => p.service === service);
+                }
+                
+                if (status) {
+                    filtered = filtered.filter(p => p.status === status);
+                }
+                
+                if (dateFrom) {
+                    const fromDate = new Date(dateFrom);
+                    filtered = filtered.filter(p => new Date(p.paymentDate) >= fromDate);
+                }
+                
+                if (dateTo) {
+                    const toDate = new Date(dateTo);
+                    toDate.setDate(toDate.getDate() + 1); // Incluir todo el día seleccionado
+                    filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
+                }
+                
+                renderPayments(filtered);
+            }
+            
+            function resetFilters() {
+                document.getElementById('serviceFilter').value = '';
+                document.getElementById('statusFilter').value = '';
+                document.getElementById('dateFromFilter').value = '';
+                document.getElementById('dateToFilter').value = '';
+                renderPayments(allPayments);
+            }
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                loadPayments();
+                
+                document.getElementById('applyFiltersBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    filterPayments();
+                });
+                
+                document.getElementById('resetFiltersBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    resetFilters();
+                });
+            });
+        </script>
+    </div>
+</body>
+</html>
