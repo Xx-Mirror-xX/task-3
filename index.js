@@ -58,7 +58,8 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 service TEXT,
                 paymentDate DATETIME DEFAULT CURRENT_TIMESTAMP,
                 transactionId TEXT,
-                status TEXT
+                status TEXT,
+                errorDetails TEXT
             )`);
 
             // Crear usuario admin por defecto si no existe
@@ -727,8 +728,8 @@ app.get('/vistas/indice.html', requireAuth, (req, res) => {
 });
 
 // Manejo de errores 404
-app.use((req, res, next) => {
-    res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+app.use((req, res) => {
+    res.status(404).send('Página no encontrada');
 });
 
 const PORT = process.env.PORT || 3000;
