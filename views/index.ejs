@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio Y Registro</title>
+    <meta property="og:title" content="Creating Social Network - Plataforma de conexiones">
+    <meta property="og:description" content="Únete a nuestra red social para crear conexiones significativas">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://creatingsocialnetwork.com/index.html">
+    <meta property="og:image" content="https://creatingsocialnetwork.com/images/home-og.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Creating Social Network - Conecta y crece">
+    <meta name="twitter:description" content="La red social para profesionales y creadores">
+    <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/home-twitter.jpg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <div class="error-container" id="errorContainer" style="display: none;">
+        <div class="error-message" id="errorMessage"></div>
+    </div>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-DCK5HDLZ0N');
+    </script>
+
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<div class="container" id="SignUp" style="display: none;">
+    <h1 class="form-title">Registro</h1>
+    <form id="registerForm">
+        <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input type="text" name="fName" id="fName" placeholder="Nombre" required>
+            <label for="fName">Nombre</label>
+        </div>
+        <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input type="text" name="lName" id="lName" placeholder="Apellido" required>
+            <label for="lName">Apellido</label>
+        </div>
+        <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" name="email" id="email" placeholder="Email" required>
+            <label for="email">Email</label>
+        </div>
+        <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" name="password" id="password" placeholder="Contraseña" required>
+            <label for="password">Contraseña</label>
+        </div>
+        
+        <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></div>
+        
+        <button class="btn" id="registerBtn" type="submit">
+            Registrarse
+        </button>
+    </form>
+    <p class="or">
+-------------------------- O --------------------------
+        <div class="icons"> 
+            <button id="googleLoginBtn" style="background: none; border: none; cursor: pointer;">
+                <i class="fab fa-google"></i>
+            </button>
+        </div>
+        <div class="links">
+            <p> ¿Ya tienes una cuenta?</p>
+            <button id="SignInButton">Iniciar Sesión</button>
+        </div>
+    </p>
+</div>
+
+    <div class="container" id="SignIn">
+        <h1 class="form-title">Inicio de Sesión</h1>
+        <form id="loginForm">
+            <div class="input-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" id="loginEmail" placeholder="Email" required>
+                <label for="email">Email</label>
+            </div>
+            <div class="input-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" id="loginPassword" placeholder="Contraseña" required>
+                <label for="password">Contraseña</label>
+            </div>
+            <p class="recover">
+                <a href="#">¿Olvidaste tu contraseña?</a>
+            </p>
+
+            <button class="btn" id="loginBtn" type="submit">
+                Iniciar Sesión
+            </button>
+        </form>
+<div class="or">
+-------------------------- O --------------------------
+    
+    <div class="icons"> 
+        <button id="googleLoginBtn" style="background: none; border: none; cursor: pointer;">
+            <i class="fab fa-google"></i>
+        </button>
+    </div>
+    <div class="links">
+        <p> ¿No tienes una cuenta?</p>
+        <button id="SignUpButton">Registrarse</button>
+    </div>
+</p>
+    </div>
+    <script src="scripts.js"></script>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <a href="/contactos.html" class="btn" id="showContactForm" style="display: block; margin: 20px auto; width: 200px; text-align: center;">
+            <i class="fas fa-envelope"></i> Formulario de Contacto
+        </a>
+
+        <a href="/pagos.html" class="btn" id="showPaymentForm" style="display: block; margin: 20px auto; width: 200px; text-align: center; text-decoration: none;">
+            <i class="fas fa-credit-card"></i> Realizar Pago
+        </a>
+    </div>
+</body>
+</html>
