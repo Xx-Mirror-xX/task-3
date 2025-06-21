@@ -106,10 +106,10 @@ class ContactsController {
     }
 
     async index(req, res) {
-        if (!req.session.userId) {
+        if (!req.isAuthenticated() || !req.user.isAdmin) {
             return res.status(403).send('Acceso denegado');
         }
-        res.sendFile(path.join(__dirname, '../public/admin/contacts.html'));
+        res.render('admin/contacts');
     }
 }
 
