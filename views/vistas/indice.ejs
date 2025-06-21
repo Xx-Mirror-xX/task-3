@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
     <meta property="og:title" content="Creating Social Network - Conectando personas">
     <meta property="og:description" content="Descubre una nueva forma de conectar y compartir en nuestra red social">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://creatingsocialnetwork.com/indice.ejs">
+    <meta property="og:url" content="https://creatingsocialnetwork.com/indice.html">
     <meta property="og:image" content="https://creatingsocialnetwork.com/images/main-og.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -15,141 +15,589 @@
     <meta name="twitter:title" content="Creating Social Network - Tu comunidad digital">
     <meta name="twitter:description" content="Únete a miles de usuarios en nuestra plataforma">
     <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/main-twitter.jpg">
-    <link rel="stylesheet" href="/stylesheet/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-DCK5HDLZ0N');
-</script>
-
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        header {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #e63946;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo img {
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #e63946;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #ff9a9e, #fad0c4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+        
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            padding: 8px 15px;
+            border-radius: 5px;
+        }
+        
+        nav a:hover {
+            background: #e63946;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(230, 57, 70, 0.4);
+        }
+        
+        .hero {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 20px;
+            text-align: center;
+        }
+        
+        .hero h2 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #ff9a9e, #fad0c4, #a1c4fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .hero p {
+            font-size: 1.4rem;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+        
+        .features {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 70px auto;
+            padding: 0 20px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            width: 350px;
+            text-align: center;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            background: rgba(230, 57, 70, 0.2);
+            border-color: #e63946;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #e63946;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .feature-card p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #f0f0f0;
+        }
+        
+        .cta {
+            text-align: center;
+            margin: 80px 0;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: #e63946;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(230, 57, 70, 0.4);
+        }
+        
+        .btn:hover {
+            background: #c1121f;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(230, 57, 70, 0.6);
+        }
+        
+        footer {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            text-align: center;
+            margin-top: 80px;
+            border-top: 2px solid #e63946;
+        }
+        
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .social-icons a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #e63946;
+            color: white;
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .social-icons a:hover {
+            transform: translateY(-5px);
+            background: #c1121f;
+            box-shadow: 0 5px 15px rgba(230, 57, 70, 0.4);
+        }
+        
+        .copyright {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            color: #aaa;
+        }
+        
+        /* Estilos para el modal */
+        .admin-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .admin-modal-content {
+            background: linear-gradient(135deg, #2c3e50, #1a2533);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            border: 2px solid #e63946;
+        }
+        
+        .admin-close-btn {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #aaa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .admin-close-btn:hover {
+            color: #e63946;
+        }
+        
+        .admin-modal-content h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #fff;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .admin-modal-content h2 i {
+            color: #e63946;
+        }
+        
+        .admin-form-group {
+            margin-bottom: 20px;
+        }
+        
+        .admin-form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #f0f0f0;
+        }
+        
+        .admin-form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .admin-form-control:focus {
+            border-color: #e63946;
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .admin-btn {
+            background-color: #e63946;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+        
+        .admin-btn:hover {
+            background-color: #c1121f;
+        }
+        
+        .admin-alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: none;
+            text-align: center;
+        }
+        
+        .admin-alert.error {
+            background-color: rgba(248, 215, 218, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(245, 198, 203, 0.3);
+        }
+        
+        .admin-alert.success {
+            background-color: rgba(212, 237, 218, 0.2);
+            color: #6bff8f;
+            border: 1px solid rgba(195, 230, 203, 0.3);
+        }
+        
+        .admin-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .admin-back-btn {
+            display: inline-block;
+            margin-top: 15px;
+            color: #e63946;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .admin-back-btn:hover {
+            color: #c1121f;
+            text-decoration: underline;
+        }
+        
+        .or-divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #aaa;
+        }
+        
+        .or-divider::before,
+        .or-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #444;
+        }
+        
+        .or-divider span {
+            padding: 0 15px;
+        }
+        
+        .google-login-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: #db4437;
+            color: white;
+            padding: 12px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            width: 100%;
+            font-weight: 500;
+        }
+        
+        .google-login-btn:hover {
+            background: #c23326;
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 <body>
-    <div class="div-bienvenida">
-        <div class="img-bienvenida">
-            <div class="div-text-bienvenida">
-            
-                <div class="div-info">
-                    <div class="div-logo">
-                        <img src="/img/logo.jpeg" alt="" srcset="" style="height: 20vh;margin-left: 30px;margin-top: 50px;border-radius: 80px;">
-                    </div>
-                    <div class="div-info-bienveida">
-                        <h2>¡Bienvenido a Creating Social Network ! </h2>
-                    </div>
-                    <div class="div-info-text">
-                        <span>En Creating Social Network, hemos diseñado un espacio digital donde puedes construir relaciones significativas, expresarte libremente y descubrir comunidades afines. Ya seas un usuario individual, un emprendedor o una empresa, aquí encontrarás las herramientas necesarias para crecer y conectar en el mundo digital.
-
-                        </span>
-                    </div>
-                </div>
-            </div>
+    <header>
+        <div class="logo">
+            <img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" alt="Logo">
+            <h1>Creating Social Network</h1>
         </div>
+        <nav>
+            <ul>
+                <li><a href="#"><i class="fas fa-home"></i> Inicio</a></li>
+                <li><a href="#"><i class="fas fa-users"></i> Comunidad</a></li>
+                <li><a href="#"><i class="fas fa-bell"></i> Notificaciones</a></li>
+                <li><a href="#"><i class="fas fa-envelope"></i> Mensajes</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <div class="hero">
+        <h2>Conecta, Comparte, Crece</h2>
+        <p>La red social donde puedes expresarte libremente, conectar con personas afines y descubrir nuevas oportunidades.</p>
+        <a href="#" class="btn"><i class="fas fa-user-plus"></i> Únete Ahora</a>
     </div>
-
-    <div class="div-Características">
-        <div class="img-Características ">
-            <div class="div-info-Características ">
-                <div class="div-titulo">
-                    <h2>Características Principales</h2>
-                </div>
-                <div class="div-text-Características ">
-                    <span>1. Registro rápido y sencillo – Únete en segundos y comienza a explorar.</span>
-                    <span>2. Perfiles 100% personalizables – Diseña tu perfil a tu estilo.</span>
-                    <span>3. Conexiones inteligentes – Añade amigos, sigue perfiles y únete a grupos temáticos.</span>
-                    <span>4. Comparte contenido multimedia – Publica fotos, videos, textos y más.</span>
-                    <span>5. Mensajería privada y chats grupales – Comunícate de forma directa y segura.</span>
-                    <span>6. Eventos y actividades – Organiza y participa en encuentros virtuales o presenciales.</span>
-                </div>
+    
+    <div class="features">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-user-friends"></i>
             </div>
+            <h3>Conexiones Reales</h3>
+            <p>Conecta con personas que comparten tus intereses y pasiones. Amplía tu red profesional y personal.</p>
         </div>
         
-    </div>
-
-    <div class="div-Ventajas">
-        <div class="img-Ventajas">
-            <div class="div-info-Ventajas">
-                <div class="div-titulo">
-                    <h2>Ventajas de Usar CSN</h2>
-                </div>
-                <div class="div-text-Ventajas">
-                    <span>• Conecta con personas de todo el mundo – Rompe barreras geográficas.</span>
-                    <span>• Potencia tu creatividad – Comparte ideas, proyectos y pasiones.</span>
-                    <span>• Networking profesional – Encuentra oportunidades laborales y colaboraciones.</span>
-                    <span>• Marketing efectivo para empresas – Llega a tu audiencia ideal.</span>
-                    <span>• Información en tiempo real – Mantente al día con tendencias y noticias.</span>
-                </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-share-alt"></i>
             </div>
+            <h3>Comparte Contenido</h3>
+            <p>Publica fotos, videos, pensamientos y experiencias. Tu creatividad no tiene límites.</p>
         </div>
         
-    </div>
-
-    <div class="div-Beneficios">
-        <div class="img-Beneficios">
-            <div class="div-info-Beneficios">
-                <div class="div-titulo">
-                    <h2>Beneficios de Usar CSN</h2>
-                </div>
-                <div class="div-text-Beneficios">
-                    <span>- Comunidades activas – Únete a grupos de interés y participa en debates.</span>
-                    <span>- Interacción personalizada – Recibe notificaciones relevantes y mensajes directos.</span>
-                    <span>- Monetización flexible – Opciones de suscripción premium y publicidad.</span>
-                    <span>- Experiencia segura – Moderación proactiva contra el spam y contenido inapropiado.</span>
-                    <span>- Soporte 24/7 – Asistencia técnica rápida y eficiente.</span>
-                </div>
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-lock"></i>
             </div>
+            <h3>Privacidad Garantizada</h3>
+            <p>Controla quién ve tu contenido con nuestras avanzadas herramientas de privacidad.</p>
         </div>
-        
     </div>
-
-    <footer class="footer">
-        <span>#CSN #RedSocialPersonalizada #ConectaYCrece</span>
+    
+    <div class="cta">
+        <h3 style="font-size: 2.2rem; margin-bottom: 25px;">¿Listo para unirte a nuestra comunidad?</h3>
+        <a href="#" class="btn"><i class="fas fa-rocket"></i> Comenzar Ahora</a>
+    </div>
+    
+    <footer>
         <div class="social-icons">
-            <a href="https://facebook.com" target="_blank">
-                <img src="/img/face.svg" alt="Facebook" style="width: 40px; height: 40px;">
-            </a>
-            <a href="https://x.com" target="_blank">
-                <img src="/img/x.svg" alt="Twitter" style="width: 40px; height: 40px;">
-            </a>
-            <a href="https://instagram.com" target="_blank">
-                <img src="/img/ig.svg" alt="Twitter" style="width: 40px; height: 40px;">
-            </a>
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
         </div>
         
-
-   <button class="admin-btn">Acceso Solo Para Admins</button>
-
-   <div id="adminLoginModal" class="admin-modal">
-       <div class="admin-modal-content">
-           <span class="admin-close-btn">&times;</span>
-           <h2>Ingreso de Administrador</h2>
-           <div style="text-align: center; margin: 20px 0;">
-               <button id="adminGoogleBtn" style="background: #DB4437; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-                   <i class="fab fa-google"></i> Ingresar con Google
-               </button>
-           </div>
-           <p style="text-align: center;">O</p>
-           <form id="adminLoginForm">
-               <div class="admin-form-group">
-                   <label for="adminEmail">Correo:</label>
-                   <input type="email" id="adminEmail" required>
-               </div>
-               <div class="admin-form-group">
-                   <label for="adminPassword">Contraseña:</label>
-                   <input type="password" id="adminPassword" required>
-               </div>
-               <button type="submit" class="admin-submit-btn">Ingresar</button>
-           </form>
-       </div>
-   </div>
-
-    <span>© 2025 Creating Social Networks C.A. Todos los derechos reservados.</span>
+        <button id="adminAccessBtn" class="btn"><i class="fas fa-user-shield"></i> Acceso Administradores</button>
+        
+        <p class="copyright">© 2025 Creating Social Network. Todos los derechos reservados.</p>
     </footer>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <script src="/scripts.js"></script>
+    
+    <!-- Modal de acceso para administradores -->
+    <div id="adminLoginModal" class="admin-modal">
+        <div class="admin-modal-content">
+            <span class="admin-close-btn">&times;</span>
+            <h2><i class="fas fa-user-shield"></i> Acceso de Administrador</h2>
+            
+            <div id="adminAlert" class="admin-alert"></div>
+            
+            <button class="google-login-btn" id="adminGoogleBtn">
+                <i class="fab fa-google"></i> Ingresar con Google
+            </button>
+            
+            <div class="or-divider">
+                <span>O</span>
+            </div>
+            
+            <form id="adminLoginForm">
+                <div class="admin-form-group">
+                    <label for="adminEmail"><i class="fas fa-envelope"></i> Correo Electrónico</label>
+                    <input type="email" id="adminEmail" class="admin-form-control" placeholder="admin@ejemplo.com" required>
+                </div>
+                
+                <div class="admin-form-group">
+                    <label for="adminPassword"><i class="fas fa-lock"></i> Contraseña</label>
+                    <input type="password" id="adminPassword" class="admin-form-control" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="admin-btn" id="adminLoginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+            </form>
+            
+            <div class="admin-footer">
+                <a href="#" class="admin-back-btn"><i class="fas fa-arrow-left"></i> Volver al sitio</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Referencias a elementos del DOM
+            const adminModal = document.getElementById('adminLoginModal');
+            const adminAccessBtn = document.getElementById('adminAccessBtn');
+            const adminCloseBtn = document.querySelector('.admin-close-btn');
+            const adminLoginForm = document.getElementById('adminLoginForm');
+            const adminGoogleBtn = document.getElementById('adminGoogleBtn');
+            const adminAlert = document.getElementById('adminAlert');
+            
+            // Mostrar modal
+            adminAccessBtn.addEventListener('click', function() {
+                adminModal.style.display = 'block';
+            });
+            
+            // Cerrar modal al hacer clic en la X
+            adminCloseBtn.addEventListener('click', function() {
+                adminModal.style.display = 'none';
+            });
+            
+            // Cerrar modal al hacer clic fuera del contenido
+            window.addEventListener('click', function(event) {
+                if (event.target === adminModal) {
+                    adminModal.style.display = 'none';
+                }
+            });
+            
+            // Función para mostrar alertas
+            function showAdminAlert(message, type = 'error') {
+                adminAlert.textContent = message;
+                adminAlert.className = `admin-alert ${type}`;
+                adminAlert.style.display = 'block';
+                
+                setTimeout(() => {
+                    adminAlert.style.display = 'none';
+                }, 5000);
+            }
+            
+            // Simular inicio de sesión con Google
+            adminGoogleBtn.addEventListener('click', function() {
+                showAdminAlert('Redirigiendo a Google para autenticación...', 'success');
+                
+                setTimeout(() => {
+                    // Simular autenticación exitosa
+                    showAdminAlert('¡Autenticación exitosa! Redirigiendo al panel...', 'success');
+                    
+                    setTimeout(() => {
+                        adminModal.style.display = 'none';
+                        alert('Redirigiendo al panel de administración...');
+                        // En una implementación real, redirigiríamos al panel
+                        // window.location.href = '/admin/contacts';
+                    }, 2000);
+                }, 1500);
+            });
+            
+            // Manejar envío del formulario
+            adminLoginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('adminEmail').value;
+                const password = document.getElementById('adminPassword').value;
+                
+                // Mostrar estado de carga
+                const originalBtnText = document.getElementById('adminLoginBtn').innerHTML;
+                document.getElementById('adminLoginBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+                document.getElementById('adminLoginBtn').disabled = true;
+                
+                // Simular verificación de credenciales
+                setTimeout(() => {
+                    // Credenciales de administrador de ejemplo
+                    const adminEmail = 'xxsandovalluisxx@gmail.com';
+                    const adminPassword = '12345';
+                    
+                    if (email === adminEmail && password === adminPassword) {
+                        showAdminAlert('¡Credenciales correctas! Redirigiendo al panel...', 'success');
+                        
+                        setTimeout(() => {
+                            adminModal.style.display = 'none';
+                            document.getElementById('adminLoginBtn').innerHTML = originalBtnText;
+                            document.getElementById('adminLoginBtn').disabled = false;
+                            alert('Redirigiendo al panel de administración...');
+                            // En una implementación real, redirigiríamos al panel
+                            // window.location.href = '/admin/contacts';
+                        }, 1500);
+                    } else {
+                        showAdminAlert('Credenciales incorrectas. Intente nuevamente.', 'error');
+                        document.getElementById('adminLoginBtn').innerHTML = originalBtnText;
+                        document.getElementById('adminLoginBtn').disabled = false;
+                    }
+                }, 1500);
+            });
+        });
+    </script>
 </body>
 </html>
