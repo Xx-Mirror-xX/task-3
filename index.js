@@ -65,7 +65,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
             // Crear usuario admin por defecto si no existe
             const adminEmail = 'xxsandovalluisxx@gmail.com';
             const adminPassword = '12345';
-            db.get('SELECT * FROM users WHERE email = ?', [adminEmail], async (err, row) => {
+            db.get('SELECT * FROM users WHERE email = ?', [adminEmail], (err, row) => {
                 if (err) {
                     console.error('Error al verificar usuario admin:', err);
                     return;
@@ -148,6 +148,10 @@ passport.deserializeUser((id, done) => {
         done(err, user);
     });
 });
+
+// Configurar EJS
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -292,9 +296,9 @@ app.get('/auth/google/callback',
     }),
     (req, res) => {
         if (req.user.isAdmin) {
-            res.redirect('/admin/contacts.html');
+            res.redirect('/admin/contacts');
         } else {
-            res.redirect('/vistas/indice.html');
+            res.redirect('/indice');
         }
     }
 );
@@ -347,7 +351,7 @@ app.post('/admin/login', async (req, res) => {
                             }
                             res.json({ 
                                 success: true,
-                                redirect: '/admin/contacts.html'
+                                redirect: '/admin/contacts'
                             });
                         });
                         return;
@@ -375,7 +379,7 @@ app.post('/admin/login', async (req, res) => {
                     }
                     res.json({ 
                         success: true,
-                        redirect: '/admin/contacts.html'
+                        redirect: '/admin/contacts'
                     });
                 });
             } catch (bcryptError) {
@@ -525,7 +529,7 @@ app.post('/login', async (req, res) => {
                             }
                             res.json({ 
                                 success: true,
-                                redirect: user.isAdmin ? '/admin/contacts.html' : '/vistas/indice.html'
+                                redirect: user.isAdmin ? '/admin/contacts' : '/indice'
                             });
                         });
                         return;
@@ -546,7 +550,7 @@ app.post('/login', async (req, res) => {
                     }
                     res.json({ 
                         success: true,
-                        redirect: user.isAdmin ? '/admin/contacts.html' : '/vistas/indice.html'
+                        redirect: user.isAdmin ? '/admin/contacts' : '/indice'
                     });
                 });
             } catch (bcryptError) {
@@ -691,45 +695,33 @@ db.get(
 
 // Rutas principales
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.render('index');
 });
 
-app.get('/index.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get('/contactos', (req, res) => {
+    res.render('contactos');
 });
 
-app.get('/contactos.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'contactos.html'));
-});
-
-app.get('/pagos.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'pagos.html'));
+app.get('/pagos', (req, res) => {
+    res.render('pagos');
 });
 
 // Rutas de administración
-app.get('/admin/contacts.html', requireAdmin, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin', 'contacts.html'));
+app.get('/admin/contacts', requireAdmin, (req, res) => {
+    res.render('admin/contacts');
 });
 
-app.get('/admin/register.html', requireAdmin, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin', 'register.html'));
+app.get('/admin/register', requireAdmin, (req, res) => {
+    res.render('admin/register');
 });
 
-app.get('/admin/payments.html', requireAdmin, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin', 'payments.html'));
+app.get('/admin/payments', requireAdmin, (req, res) => {
+    res.render('admin/payments');
 });
 
 // Rutas de vistas autenticadas
-app.get('/indice.html', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'vistas', 'indice.html'));
-});
-
 app.get('/indice', requireAuth, (req, res) => {
-    res.redirect('/vistas/indice.html');
-});
-
-app.get('/vistas/indice.html', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'vistas', 'indice.html'));
+    res.render('vistas/indice');
 });
 
 // Manejo de errores 404
