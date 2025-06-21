@@ -8,77 +8,71 @@ class PaymentsController {
             baseURL: 'https://fakepayment.onrender.com',
             timeout: 10000,
             headers: {
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmFrZSBwYXltZW50IiwiZGF0ZSI6IjIwMjUtMDUtMzFUMDY6NTA6MDguODk0WiIsImlhdCI6MTc0ODY3NDIwOH0.qXRCwAZ7_6JawqcSVz3Wh9bBqXtyZYRZv5bI1MmjCag',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmFrZSBwYXltZW50IiwiZGF0ZSI6IjIwMjUtMDYtMjFUMDA6NTk6MzEuNTIxWiIsImlhdCI6MTc1MDQ2NzU3MX0.7dmBc4cOLBIzGn46tof09GvBgaFPTXCXeUM6sP0slz4',
                 'Content-Type': 'application/json'
             }
         };
     }
 
-async addPayment(req, res) {
-    try {
-        const requiredFields = ['email', 'cardName', 'cardNumber', 'expiryMonth', 
-                              'expiryYear', 'cvv', 'amount', 'currency', 'service'];
-        
-        const missingFields = requiredFields.filter(field => !req.body[field]);
-        if (missingFields.length > 0) {
-            return res.status(400).json({ 
-                error: "Todos los campos son requeridos",
-                missingFields
-            });
-        }
+    async addPayment(req, res) {
+        try {
+            const requiredFields = ['email', 'cardName', 'cardNumber', 'expiryMonth', 
+                                  'expiryYear', 'cvv', 'amount', 'currency', 'service'];
+            
+            const missingFields = requiredFields.filter(field => !req.body[field]);
+            if (missingFields.length > 0) {
+                return res.status(400).json({ 
+                    error: "Todos los campos son requeridos",
+                    missingFields
+                });
+            }
 
-        const { email, cardName, cardNumber, expiryMonth, expiryYear, cvv, 
-               amount, currency, service } = req.body;
+            const { email, cardName, cardNumber, expiryMonth, expiryYear, cvv, 
+                   amount, currency, service } = req.body;
 
+            if (!/^\d{13,19}$/.test(cardNumber.replace(/\s/g, ''))) {
+                return res.status(400).json({ error: "Número de tarjeta inválido" });
+            }
 
-        if (cardNumber.length < 13 || cardNumber.length > 19) {
-            return res.status(400).json({ error: "Número de tarjeta inválido" });
-        }
+            if (!/^\d{3,4}$/.test(cvv)) {
+                return res.status(400).json({ error: "CVV inválido" });
+            }
 
-        if (cvv.length < 3 || cvv.length > 4) {
-            return res.status(400).json({ error: "CVV inválido" });
-        }
-
-
-        const amountValue = parseFloat(amount);
-        if (amountValue <= 0) {
-            return res.status(400).json({ error: "Monto Insuficiente" });
-        }
-
+            const amountValue = parseFloat(amount);
+            if (isNaN(amountValue) || amountValue <= 0) {
+                return res.status(400).json({ error: "Monto inválido" });
+            }
 
             const localPaymentId = await this.model.addPayment({
                 email, cardName, cardNumber, expiryMonth, expiryYear, cvv, 
-                amount, currency, service
+                amount: amountValue, currency, service
             });
 
-
             const paymentData = {
-                "amount": parseFloat(amount),
-                "card-number": cardNumber,
-                "cvv": cvv,
+                amount: amountValue,
+                "card-number": cardNumber.replace(/\s/g, ''),
+                cvv: cvv,
                 "expiration-month": expiryMonth,
-                "expiration-year": expiryYear,
+                "expiration-year": expiryYear.toString().slice(-2),
                 "full-name": cardName,
-                "currency": currency,
-                "description": service,
-                "reference": `local-${localPaymentId}`
+                currency: currency,
+                description: service,
+                reference: `local-${localPaymentId}`
             };
 
             try {
-
                 const response = await axios.post(
-                    `${this.apiConfig.baseURL}/payments`,
+                    `${this.apiConfig.baseURL}/payment`,
                     paymentData,
                     this.apiConfig
                 );
 
-
-                if (response.data.status === 'APPROVED') {
+                if (response.data.status === 'success') {
                     return res.status(201).json({ 
                         success: true,
-                        paymentId: response.data.transaction_id || `local-${localPaymentId}`,
-                        message: 'Pago procesado exitosamente',
-                        details: response.data
+                        paymentId: localPaymentId,
+                        transactionId: response.data.transactionId,
+                        message: 'Pago procesado exitosamente'
                     });
                 } else {
                     return this.handlePaymentError(response.data, res, localPaymentId);
@@ -97,21 +91,20 @@ async addPayment(req, res) {
 
     handlePaymentError(apiResponse, res, localPaymentId) {
         const errorMessages = {
-            'REJECTED': 'Pago rechazado por el procesador',
-            'ERROR': 'Error en el procesamiento del pago',
-            'INSUFFICIENT': 'Fondos insuficientes',
-            'INVALID_CARD': 'Tarjeta inválida',
-            'EXPIRED_CARD': 'Tarjeta expirada'
+            'failed': 'Pago rechazado por el procesador',
+            'declined': 'Transacción declinada',
+            'invalid_card': 'Tarjeta inválida',
+            'expired_card': 'Tarjeta expirada',
+            'insufficient_funds': 'Fondos insuficientes'
         };
 
-        const errorMessage = apiResponse.message || 
-                           errorMessages[apiResponse.status] || 
-                           'Error al procesar el pago';
-
+        const status = apiResponse.status || 'error';
+        const errorCode = apiResponse.errorCode || 'unknown';
+        
         return res.status(400).json({
             success: false,
-            paymentId: `local-${localPaymentId}`,
-            error: errorMessage,
+            paymentId: localPaymentId,
+            error: errorMessages[errorCode] || `Error en el pago (${status})`,
             details: apiResponse
         });
     }
@@ -120,28 +113,28 @@ async addPayment(req, res) {
         console.error('Error con la API de pagos:', error.message);
 
         if (error.response) {
-
-            const errorData = error.response.data;
-            const errorCodes = {
-                '001': 'Número de tarjeta inválido',
-                '002': 'Pago rechazado',
-                '003': 'Error en el procesamiento',
-                '004': 'Fondos insuficientes'
-            };
-
-            return res.status(400).json({
+            const status = error.response.status;
+            const errorData = error.response.data || {};
+            
+            return res.status(status).json({
                 success: false,
-                paymentId: `local-${localPaymentId}`,
-                error: errorCodes[errorData.error_code] || 'Error al procesar el pago',
+                paymentId: localPaymentId,
+                error: `Error en el procesador de pagos (${status})`,
                 details: errorData
             });
+        } else if (error.request) {
+            return res.status(503).json({
+                success: false,
+                paymentId: localPaymentId,
+                error: 'El procesador de pagos no respondió',
+                details: error.message
+            });
         } else {
-
-            return res.status(201).json({
-                success: true,
-                paymentId: `local-${localPaymentId}`,
-                message: 'Pago registrado localmente (error en conexión con procesador de pagos)',
-                warning: 'Por favor verifique el estado del pago más tarde'
+            return res.status(500).json({
+                success: false,
+                paymentId: localPaymentId,
+                error: 'Error al contactar el procesador de pagos',
+                details: error.message
             });
         }
     }
