@@ -7,7 +7,7 @@
     <meta property="og:title" content="Registro de Administrador - Creating Social Network">
     <meta property="og:description" content="Crea nuevas cuentas de administrador para tu plataforma">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://creatingsocialnetwork.com/admin/register.html">
+    <meta property="og:url" content="https://creatingsocialnetwork.com/admin/register.ejs">
     <meta property="og:image" content="https://creatingsocialnetwork.com/images/register-og.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -146,7 +146,7 @@
         </form>
 
         <div class="admin-footer">
-            <a href="/admin/contacts.html" class="admin-back-btn">
+            <a href="/admin/contacts.ejs" class="admin-back-btn">
                 <i class="fas fa-arrow-left"></i> Volver al Panel
             </a>
         </div>
@@ -209,7 +209,7 @@
                         showAdminAlert('Administrador registrado con éxito', 'success');
                         adminRegisterForm.reset();
                         setTimeout(() => {
-                            window.location.href = '/admin/contacts.html';
+                            window.location.href = '/admin/contacts';
                         }, 2000);
                     } else {
                         showAdminAlert(result.error || 'Error al registrar administrador');
