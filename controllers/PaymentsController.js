@@ -6,7 +6,7 @@ class PaymentsController {
         this.model = new PaymentsModel();
         this.apiConfig = {
             baseURL: 'https://fakepayment.onrender.com',
-            timeout: 30000,  // 30 segundos para evitar timeouts
+            timeout: 30000,
             headers: {
                 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmFrZSBwYXltZW50IiwiZGF0ZSI6IjIwMjUtMDYtMjFUMDM6NTM6NTYuMzU5WiIsImlhdCI6MTc1MDQ3ODAzNn0.ZfPxNnfGQHcXANsG1r48yDYx2ElrWzpxTijillHQW9E',
                 'Content-Type': 'application/json'
@@ -30,7 +30,6 @@ class PaymentsController {
             const { email, cardName, cardNumber, expiryMonth, expiryYear, cvv, 
                    amount, currency, service } = req.body;
 
-            // Validaciones mejoradas
             const cleanedCardNumber = cardNumber.replace(/\s/g, '');
             if (!/^\d{13,19}$/.test(cleanedCardNumber)) {
                 return res.status(400).json({ error: "Número de tarjeta inválido" });
@@ -45,20 +44,18 @@ class PaymentsController {
                 return res.status(400).json({ error: "Monto inválido" });
             }
 
-            // Guardar en base de datos local primero
             const localPaymentId = await this.model.addPayment({
                 email, cardName, cardNumber, expiryMonth, expiryYear, cvv, 
                 amount: amountValue, currency, service
             });
 
-            // Preparar datos según la nueva especificación
             const paymentData = {
                 amount: amountValue,
                 "card-number": cleanedCardNumber,
                 cvv: cvv,
                 "expiration-month": expiryMonth.toString().padStart(2, '0'),
                 "expiration-year": expiryYear.toString(),
-                "full-name": cardName, // Usaremos el nombre ingresado
+                "full-name": cardName,
                 currency: currency,
                 description: service,
                 reference: `local-${localPaymentId}`
@@ -71,9 +68,7 @@ class PaymentsController {
                     this.apiConfig
                 );
 
-                // Manejar diferentes respuestas de la API
                 if (response.data.status === 'APPROVED') {
-                    // Actualizar el pago en la base de datos local
                     await this.model.updatePayment(localPaymentId, {
                         transactionId: response.data.transaction_id,
                         status: 'completed'
@@ -113,14 +108,12 @@ class PaymentsController {
             '004': 'Fondos insuficientes'
         };
 
-        // Determinar el estado basado en el nombre o código de error
         let status = 'error';
         if (apiResponse.status) {
             status = apiResponse.status;
         } else if (apiResponse.error_code) {
             status = apiResponse.error_code;
         } else if (apiResponse.full_name) {
-            // Si el nombre es una palabra clave especial
             const specialNames = ['APPROVED', 'REJECTED', 'ERROR', 'INSUFFICIENT'];
             if (specialNames.includes(apiResponse.full_name.toUpperCase())) {
                 status = apiResponse.full_name.toUpperCase();
@@ -129,7 +122,6 @@ class PaymentsController {
 
         const errorMessage = errorMessages[status] || 'Error al procesar el pago';
 
-        // Actualizar estado en la base de datos
         this.model.updatePayment(localPaymentId, {
             status: status.toLowerCase(),
             errorDetails: JSON.stringify(apiResponse)
@@ -146,14 +138,12 @@ class PaymentsController {
     handleApiError(error, res, localPaymentId) {
         console.error('Error con la API de pagos:', error.message);
         
-        // Actualizar estado en la base de datos
         this.model.updatePayment(localPaymentId, {
             status: 'api_error',
             errorDetails: error.message
         });
 
         if (error.response) {
-            // Error específico de la API
             const status = error.response.status;
             const errorData = error.response.data || {};
             
@@ -164,7 +154,6 @@ class PaymentsController {
                 details: errorData
             });
         } else if (error.request) {
-            // La solicitud fue hecha pero no hubo respuesta
             return res.status(503).json({
                 success: false,
                 paymentId: localPaymentId,
@@ -172,7 +161,6 @@ class PaymentsController {
                 details: error.message
             });
         } else {
-            // Error al configurar la solicitud
             return res.status(500).json({
                 success: false,
                 paymentId: localPaymentId,
@@ -182,54 +170,16 @@ class PaymentsController {
         }
     }
 
-    async getTransactionDetails(req, res) {
-        try {
-            const { transaction_id } = req.params;
-            
-            if (!transaction_id) {
-                return res.status(400).json({ error: "Se requiere el ID de transacción" });
-            }
-
-            const response = await axios.get(
-                `${this.apiConfig.baseURL}/payments/${transaction_id}`,
-                this.apiConfig
-            );
-            
-            res.json({
-                success: true,
-                transaction: response.data
-            });
-            
-        } catch (error) {
-            console.error('Error al obtener detalles:', error.message);
-            
-            if (error.response) {
-                res.status(error.response.status).json({
-                    success: false,
-                    error: error.response.data.message || 'Error al obtener detalles',
-                    details: error.response.data
-                });
-            } else {
-                res.status(503).json({
-                    success: false,
-                    error: 'No se pudo conectar con el servicio de pagos',
-                    details: error.message
-                });
-            }
-        }
-    }
-
     async index(req, res) {
         if (!req.isAuthenticated() || !req.user.isAdmin) {
             return res.status(403).send('Acceso denegado');
         }
         res.render('admin/payments');
     }
-}
 
     async getPayments(req, res) {
         try {
-            if (!req.session.userId) {
+            if (!req.isAuthenticated() || !req.user.isAdmin) {
                 return res.status(403).json({ error: 'No autorizado' });
             }
             
