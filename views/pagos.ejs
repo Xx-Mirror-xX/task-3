@@ -14,7 +14,7 @@
     <meta name="twitter:description" content="Transacciones seguras y rápidas">
     <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/payment-twitter.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/stylesheet/styles.css">
     
     <style>
         .test-instructions {
@@ -42,6 +42,13 @@
             padding: 2px 6px;
             border-radius: 4px;
             font-family: monospace;
+        }
+        
+        /* Estilos para el reCAPTCHA */
+        .g-recaptcha {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
         }
     </style>
 </head>
@@ -119,6 +126,7 @@
                 <label for="currency" style="top: -0.01em;">Moneda</label>
             </div>
             
+            <!-- reCAPTCHA añadido aquí -->
             <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></div>
             
             <div style="display: flex; justify-content: space-between; margin-top: 20px;">
@@ -132,6 +140,7 @@
         </form>
     </div>
 
-    <script src="scripts.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="/scripts.js"></script>
 </body>
 </html>
