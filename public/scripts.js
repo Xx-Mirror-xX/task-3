@@ -484,7 +484,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     window.location.href = result.redirect || '/admin/contacts.html';
                 } else {
-                    showError(result.message || 'Credenciales incorrectas o no tiene permisos de admin');
+                    // Manejar específicamente el caso de usuario sin contraseña
+                    if (result.message.includes('no tiene contraseña configurada')) {
+                        showError('Este usuario fue registrado con Google. Por favor use el botón de Google.');
+                    } else {
+                        showError(result.message || 'Credenciales incorrectas o no tiene permisos de admin');
+                    }
                 }
             } catch (error) {
                 console.error('Error en login admin:', error);
