@@ -414,6 +414,76 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    const adminBtn = document.querySelector('.admin-btn');
+    const adminModal = document.getElementById('adminLoginModal');
+    const closeBtn = document.querySelector('.admin-close-btn');
+    const adminLoginForm = document.getElementById('adminLoginForm');
+    const adminGoogleBtn = document.getElementById('adminGoogleBtn');
+
+    if (adminBtn && adminModal) {
+        adminBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            adminModal.style.display = 'block';
+        });
+    }
+
+    if (closeBtn && adminModal) {
+        closeBtn.addEventListener('click', function() {
+            adminModal.style.display = 'none';
+        });
+    }
+
+    if (adminModal) {
+        window.addEventListener('click', function(e) {
+            if (e.target === adminModal) {
+                adminModal.style.display = 'none';
+            }
+        });
+    }
+
+    if (adminGoogleBtn) {
+        adminGoogleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = '/auth/google/admin';
+        });
+    }
+
+    if (adminLoginForm) {
+        adminLoginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('adminEmail')?.value;
+            const password = document.getElementById('adminPassword')?.value;
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    window.location.href = result.redirect || '/admin/contacts';
+                } else {
+                    showError(result.message || 'Credenciales incorrectas o no tiene permisos de admin');
+                }
+            } catch (error) {
+                console.error('Error en login admin:', error);
+                showError('Error de conexión con el servidor');
+            } finally {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
+
     if (document.getElementById('contactsTable')) {
         async function loadContacts() {
             try {
