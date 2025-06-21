@@ -1,10 +1,10 @@
 const path = require('path');
 
 const toIndex = (req, res) => {
-    if (req.session.userId) {
-        res.sendFile(path.join(__dirname, '../vistas', 'indice.html'));
+    if (req.isAuthenticated()) {
+        res.render('vistas/indice');
     } else {
-        res.sendFile(path.join(__dirname, '../public', 'index.html'));
+        res.render('index');
     }
 }
 
