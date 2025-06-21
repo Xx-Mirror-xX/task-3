@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         grecaptcha.reset();
                     }
                     setTimeout(() => {
-                        window.location.href = '/';
+                        window.location.href = '/'; // Redirigir a la página principal
                     }, 1000);
                 } else {
                     showError(serverResult.error || 'Error al enviar el mensaje');
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    window.location.href = '/admin/payments';
+                    window.location.href = '/admin/payments'; // Redirigir a la página de pagos
                 } else {
                     let errorMsg = result.error || 'Error al procesar el pago';
                     if (result.paymentId) {
@@ -334,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
                     setTimeout(() => {
-                        window.location.href = result.redirect || '/indice';
+                        window.location.href = result.redirect || '/indice'; // Redirigir a la vista de índice
                     }, 1000);
                 } else {
                     showError(result.message || 'Credenciales incorrectas');
@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', function() {
         async function loadContacts() {
             try {
                 const response = await fetch('/api/contacts', {
-                    credentials: 'include'
+                    credentials: 'include'  // Incluir credenciales para enviar la cookie de sesión
                 });
                 if (!response.ok) {
                     throw new Error('Error al cargar contactos');
@@ -458,7 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
         async function loadPayments() {
             try {
                 const response = await fetch('/api/payments', {
-                    credentials: 'include'
+                    credentials: 'include'  // Incluir credenciales para enviar la cookie de sesión
                 });
                 if (!response.ok) {
                     throw new Error('Error al cargar pagos');
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (dateTo) {
                 const toDate = new Date(dateTo);
-                toDate.setDate(toDate.getDate() + 1);
+                toDate.setDate(toDate.getDate() + 1); // Incluir todo el día seleccionado
                 filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
             }
             
