@@ -8,9 +8,16 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const app = express();
 
+// Importar controladores
 const PaymentsController = require('./controllers/PaymentsController');
 const paymentsController = new PaymentsController();
 
+const ContactsController = require('./controllers/ContactsController');
+const contactsController = new ContactsController();
+
+const indexController = require('./controllers/indexController');
+
+// Configuración
 const RECAPTCHA_SECRET_KEY = '6LcojE4rAAAAAEcJGKd1KJh2-Uepd0HPQLL1Rkvh';
 const GOOGLE_CLIENT_ID = '237117412868-qu524rceddvoeko90ev60b626gl540qt.apps.googleusercontent.com';
 const GOOGLE_CLIENT_SECRET = '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';
@@ -18,6 +25,7 @@ const GOOGLE_CALLBACK_URL = 'https://creating-social-network-2.onrender.com/auth
 const GEOLOCATION_TIMEOUT = 3000;
 const GEOLOCATION_CACHE = new Map();
 
+// Configuración de base de datos
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
         console.error('Error al conectar con la base de datos:', err.message);
@@ -62,7 +70,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 errorDetails TEXT
             )`);
 
-            // Crear usuario admin por defecto si no existe
+            // Crear usuario admin por defecto
             const adminEmail = 'xxsandovalluisxx@gmail.com';
             const adminPassword = '12345';
             db.get('SELECT * FROM users WHERE email = ?', [adminEmail], (err, row) => {
@@ -94,6 +102,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
     }
 });
 
+// Configuración de Passport
 passport.use(new GoogleStrategy({
     clientID: GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
@@ -153,6 +162,7 @@ passport.deserializeUser((id, done) => {
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use('/stylesheet', express.static(path.join(__dirname, 'public', 'stylesheet')));
@@ -160,23 +170,24 @@ app.use('/img', express.static(path.join(__dirname, 'public', 'img')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/vistas', express.static(path.join(__dirname, 'vistas')));
 
-// MEJORAS DE SEGURIDAD: Configuración de sesiones seguras
+// Configuración de sesiones
 const isProduction = process.env.NODE_ENV === 'production';
 app.use(session({
     secret: 'secreto',
     resave: false,
     saveUninitialized: false,
-    rolling: true,  // Renovar cookie en cada solicitud
+    rolling: true,
     cookie: { 
-        httpOnly: true,    // Prevenir acceso desde JavaScript
-        sameSite: 'lax',   // Prevenir ataques CSRF
-        secure: isProduction, // Solo enviar sobre HTTPS en producción
-        maxAge: 15 * 60 * 1000 // 15 minutos de inactividad (900000 ms)
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isProduction,
+        maxAge: 15 * 60 * 1000
     }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Funciones de middleware
 const requireAuth = (req, res, next) => {
     if (!req.isAuthenticated()) {
         return res.status(403).send('Acceso denegado');
@@ -274,6 +285,7 @@ const getGeolocation = async (ipAddress) => {
     };
 };
 
+// Rutas de autenticación
 app.get('/auth/google', 
     passport.authenticate('google', { 
         scope: ['profile', 'email'],
@@ -303,6 +315,7 @@ app.get('/auth/google/callback',
     }
 );
 
+// Rutas de API
 app.post('/admin/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -601,123 +614,113 @@ app.post('/api/contact', async (req, res) => {
             });
         }
 
-    const { country, city } = await getGeolocation(ipAddress);
+        const { country, city } = await getGeolocation(ipAddress);
 
-    db.run(
-        `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [firstName, lastName, email, message, ipAddress, country, city],
-        function(err) {
-            if (err) {
-                console.error('Error al guardar contacto:', err);
-                return res.status(500).json({ error: "Error al guardar contacto" });
+        db.run(
+            `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [firstName, lastName, email, message, ipAddress, country, city],
+            function(err) {
+                if (err) {
+                    console.error('Error al guardar contacto:', err);
+                    return res.status(500).json({ error: "Error al guardar contacto" });
+                }
+                res.json({ 
+                    success: true, 
+                    message: "Contacto guardado exitosamente",
+                    id: this.lastID
+                });
             }
-            res.json({ 
-                success: true, 
-                message: "Contacto guardado exitosamente",
-                id: this.lastID
-            });
-        }
-    );
-} catch (error) {
-    console.error('Error en /api/contact:', error);
-    res.status(500).json({ error: "Error en el servidor" });
-}
+        );
+    } catch (error) {
+        console.error('Error en /api/contact:', error);
+        res.status(500).json({ error: "Error en el servidor" });
+    }
 });
 
 app.get('/api/contacts', requireAuth, (req, res) => {
-db.all(
-    "SELECT * FROM contacts ORDER BY createdAt DESC",
-    (err, rows) => {
-        if (err) {
-            console.error('Error al obtener contactos:', err);
-            return res.status(500).json({ error: 'Error al obtener contactos' });
+    db.all(
+        "SELECT * FROM contacts ORDER BY createdAt DESC",
+        (err, rows) => {
+            if (err) {
+                console.error('Error al obtener contactos:', err);
+                return res.status(500).json({ error: 'Error al obtener contactos' });
+            }
+            res.json(rows);
         }
-        res.json(rows);
-    }
-);
+    );
 });
 
 app.post('/api/payment', async (req, res) => {
-try {
-    const { 'g-recaptcha-response': recaptchaToken } = req.body;
-    const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    try {
+        const { 'g-recaptcha-response': recaptchaToken } = req.body;
+        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-    if (!recaptchaToken) {
-        return res.status(400).json({ error: "Verificación de reCAPTCHA requerida" });
+        if (!recaptchaToken) {
+            return res.status(400).json({ error: "Verificación de reCAPTCHA requerida" });
+        }
+
+        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'payment');
+        if (!recaptchaResult.success || recaptchaResult.score < 0.5) {
+            return res.status(400).json({ 
+                error: "Verificación de reCAPTCHA fallida",
+                score: recaptchaResult.score
+            });
+        }
+
+        return paymentsController.addPayment(req, res);
+    } catch (error) {
+        console.error('Error en /api/payment:', error);
+        res.status(500).json({ error: "Error en el servidor" });
     }
-
-    const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'payment');
-    if (!recaptchaResult.success || recaptchaResult.score < 0.5) {
-        return res.status(400).json({ 
-            error: "Verificación de reCAPTCHA fallida",
-            score: recaptchaResult.score
-        });
-    }
-
-    return paymentsController.addPayment(req, res);
-} catch (error) {
-    console.error('Error en /api/payment:', error);
-    res.status(500).json({ error: "Error en el servidor" });
-}
 });
 
 app.get('/api/payments', requireAuth, (req, res) => {
-db.all(
-    "SELECT * FROM payments ORDER BY paymentDate DESC",
-    (err, rows) => {
-        if (err) {
-            console.error('Error al obtener pagos:', err);
-            return res.status(500).json({ error: 'Error al obtener pagos' });
+    db.all(
+        "SELECT * FROM payments ORDER BY paymentDate DESC",
+        (err, rows) => {
+            if (err) {
+                console.error('Error al obtener pagos:', err);
+                return res.status(500).json({ error: 'Error al obtener pagos' });
+            }
+            res.json(rows);
         }
-        res.json(rows);
-    }
-);
+    );
 });
 
 app.get('/api/payments/:payment_id', requireAuth, (req, res) => {
-const paymentId = req.params.payment_id;
-db.get(
-    "SELECT * FROM payments WHERE id = ?",
-    [paymentId],
-    (err, row) => {
-        if (err) {
-            console.error('Error al obtener pago:', err);
-            return res.status(500).json({ error: 'Error al obtener pago' });
+    const paymentId = req.params.payment_id;
+    db.get(
+        "SELECT * FROM payments WHERE id = ?",
+        [paymentId],
+        (err, row) => {
+            if (err) {
+                console.error('Error al obtener pago:', err);
+                return res.status(500).json({ error: 'Error al obtener pago' });
+            }
+            if (!row) {
+                return res.status(404).json({ error: 'Pago no encontrado' });
+            }
+            res.json(row);
         }
-        if (!row) {
-            return res.status(404).json({ error: 'Pago no encontrado' });
-        }
-        res.json(row);
-    }
-);
+    );
 });
 
 // Rutas principales
-app.get('/', (req, res) => {
-    res.render('index');
-});
-
+app.get('/', indexController);
 app.get('/contactos', (req, res) => {
     res.render('contactos');
 });
-
 app.get('/pagos', (req, res) => {
     res.render('pagos');
 });
 
 // Rutas de administración
-app.get('/admin/contacts', requireAdmin, (req, res) => {
-    res.render('admin/contacts');
-});
-
+app.get('/admin/contacts', requireAdmin, contactsController.index.bind(contactsController));
 app.get('/admin/register', requireAdmin, (req, res) => {
     res.render('admin/register');
 });
-
-app.get('/admin/payments', requireAdmin, (req, res) => {
-    res.render('admin/payments');
-});
+app.get('/admin/payments', requireAdmin, paymentsController.index.bind(paymentsController));
 
 // Rutas de vistas autenticadas
 app.get('/indice', requireAuth, (req, res) => {
@@ -729,6 +732,7 @@ app.use((req, res) => {
     res.status(404).send('Página no encontrada');
 });
 
+// Iniciar servidor
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 
