@@ -119,18 +119,23 @@ passport.use(new GoogleStrategy({
             if (user) {
                 // Si es login de admin y el usuario no es admin, verificar si debe ser promovido
                 if (isAdminLogin && !user.isAdmin) {
-                    // En este punto, req.user no está disponible porque es la primera autenticación.
-                    // Por lo tanto, no podemos verificar si el usuario actual es admin.
-                    // Cambiamos la lógica: solo permitimos que un administrador cree otros administradores durante el flujo normal, no en el login.
-                    // En este caso, denegamos el acceso.
-                    return done(null, false, { message: 'No tienes permisos para crear administradores. Contacta al administrador.' });
+                    // Verificar si el usuario actual tiene permisos para crear admins
+                    const currentUser = req.user;
+                    if (currentUser && currentUser.isAdmin) {
+                        // Promover a admin
+                        db.run('UPDATE users SET isAdmin = TRUE WHERE id = ?', [user.id], (err) => {
+                            if (err) return done(err);
+                            return done(null, {...user, isAdmin: true});
+                        });
+                    } else {
+                        return done(null, false, { message: 'No tienes permisos para crear administradores' });
+                    }
+                } else {
+                    return done(null, user);
                 }
-                return done(null, user);
             } else {
                 // Crear nuevo usuario
-                // Solo si es un flujo de administrador Y hay un usuario administrador autenticado (lo cual no es el caso en este flujo de autenticación inicial)
-                // Por lo tanto, no crearemos administradores en el primer login con Google.
-                const isAdmin = false; // Por defecto no es admin
+                const isAdmin = isAdminLogin && req.user && req.user.isAdmin;
                 
                 db.run(
                     'INSERT INTO users (firstName, lastName, email, googleId, isAdmin) VALUES (?, ?, ?, ?, ?)',
@@ -469,6 +474,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
+// Ruta para crear nuevos administradores
 app.post('/admin/register', requireAdmin, async (req, res) => {
     try {
         const { fName, lName, email, password } = req.body;
@@ -633,12 +639,12 @@ app.post('/api/contact', async (req, res) => {
             });
         }
 
-        const { country, city, isp } = await getGeolocation(ipAddress);
-
+        const locationData = await getGeolocation(ipAddress);
+        
         db.run(
             `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city, isp) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [firstName, lastName, email, message, ipAddress, country, city, isp],
+            [firstName, lastName, email, message, ipAddress, locationData.country, locationData.city, locationData.isp],
             function(err) {
                 if (err) {
                     console.error('Error al guardar contacto:', err);
@@ -732,10 +738,6 @@ app.get('/', (req, res) => {
 
 app.get('/contactos', (req, res) => {
     res.render('contactos');
-});
-
-app.get('/admin/register', requireAdmin, (req, res) => {
-    res.render('admin/register');
 });
 
 app.get('/pagos', (req, res) => {
