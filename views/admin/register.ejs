@@ -102,7 +102,7 @@
             text-decoration: none;
             font-weight: 600;
         }
-    </style>
+ </style>
 </head>
 <body>
     <div class="admin-container">
@@ -112,6 +112,9 @@
         </div>
 
         <div id="adminAlert" class="admin-alert"></div>
+        <div id="errorContainer" class="error-container" style="display: none;">
+            <p id="errorMessage"></p>
+        </div>
 
         <form id="adminRegisterForm">
             <div class="admin-form-group">
@@ -140,10 +143,19 @@
                 <input type="password" id="adminConfirmPassword" class="admin-form-control" required>
             </div>
 
+            <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAJdP_2u6jEgJxR1dQd5BdXpBp1hQ"></div>
+
             <button type="submit" class="admin-btn" id="adminRegisterBtn">
                 <i class="fas fa-user-plus"></i> Registrar Administrador
             </button>
         </form>
+
+        <div class="admin-oauth">
+            <p>O registra usando:</p>
+            <button id="adminGoogleBtn" class="google-btn">
+                <i class="fab fa-google"></i> Google
+            </button>
+        </div>
 
         <div class="admin-footer">
             <a href="/admin/contacts" class="admin-back-btn">
@@ -152,20 +164,41 @@
         </div>
     </div>
 
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
+        function showError(message, type = 'error') {
+            const errorContainer = document.getElementById('errorContainer');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (errorContainer && errorMessage) {
+                errorMessage.innerHTML = message;
+                errorContainer.style.display = 'block';
+                errorContainer.className = type === 'error' ? 'error-container' : 'error-container success';
+                
+                errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                setTimeout(() => {
+                    if (errorContainer) {
+                        errorContainer.style.display = 'none';
+                    }
+                }, 5000);
+            } else {
+                alert(message);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const adminRegisterForm = document.getElementById('adminRegisterForm');
             const adminAlert = document.getElementById('adminAlert');
             const adminRegisterBtn = document.getElementById('adminRegisterBtn');
+            const adminGoogleBtn = document.getElementById('adminGoogleBtn');
 
-            function showAdminAlert(message, type = 'error') {
-                adminAlert.textContent = message;
-                adminAlert.className = `admin-alert ${type}`;
-                adminAlert.style.display = 'block';
-                
-                setTimeout(() => {
-                    adminAlert.style.display = 'none';
-                }, 5000);
+            // Botón de Google para registro
+            if (adminGoogleBtn) {
+                adminGoogleBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = '/auth/google/admin';
+                });
             }
 
             adminRegisterForm.addEventListener('submit', async function(e) {
@@ -175,12 +208,21 @@
                 adminRegisterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
                 adminRegisterBtn.disabled = true;
 
+                // Validar reCAPTCHA
+                const recaptchaResponse = window.grecaptcha ? grecaptcha.getResponse() : '';
+                if (!recaptchaResponse) {
+                    showError('Por favor completa el reCAPTCHA');
+                    adminRegisterBtn.innerHTML = originalBtnText;
+                    adminRegisterBtn.disabled = false;
+                    return;
+                }
+
                 // Validar contraseñas
                 const password = document.getElementById('adminPassword').value;
                 const confirmPassword = document.getElementById('adminConfirmPassword').value;
                 
                 if (password !== confirmPassword) {
-                    showAdminAlert('Las contraseñas no coinciden');
+                    showError('Las contraseñas no coinciden');
                     adminRegisterBtn.innerHTML = originalBtnText;
                     adminRegisterBtn.disabled = false;
                     return;
@@ -190,7 +232,8 @@
                     fName: document.getElementById('adminFirstName').value.trim(),
                     lName: document.getElementById('adminLastName').value.trim(),
                     email: document.getElementById('adminEmail').value.trim(),
-                    password: password
+                    password: password,
+                    'g-recaptcha-response': recaptchaResponse
                 };
 
                 try {
@@ -200,26 +243,56 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(adminData),
-                        credentials: 'include'   // Añadido para enviar cookies
+                        credentials: 'include'
                     });
 
                     const result = await response.json();
 
                     if (response.ok) {
-                        showAdminAlert('Administrador registrado con éxito', 'success');
-                        adminRegisterForm.reset();
-                        setTimeout(() => {
-                            window.location.href = '/admin/contacts';
-                        }, 2000);
+                        showError('Administrador registrado con éxito', 'success');
+                        
+                        // Iniciar sesión automáticamente después del registro
+                        try {
+                            const loginResponse = await fetch('/login', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                    email: adminData.email, 
+                                    password: adminData.password
+                                })
+                            });
+                            
+                            const loginResult = await loginResponse.json();
+                            
+                            if (loginResponse.ok) {
+                                setTimeout(() => {
+                                    window.location.href = '/admin/contacts.html';
+                                }, 1500);
+                            } else {
+                                showError('Registro exitoso. Por favor inicia sesión manualmente');
+                                setTimeout(() => {
+                                    window.location.href = '/';
+                                }, 2000);
+                            }
+                        } catch (loginError) {
+                            console.error('Error en auto-login:', loginError);
+                            showError('Registro exitoso. Por favor inicia sesión');
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 2000);
+                        }
                     } else {
-                        showAdminAlert(result.error || 'Error al registrar administrador');
+                        showError(result.error || 'Error al registrar administrador');
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    showAdminAlert('Error de conexión con el servidor');
+                    showError('Error de conexión con el servidor');
                 } finally {
                     adminRegisterBtn.innerHTML = originalBtnText;
                     adminRegisterBtn.disabled = false;
+                    if (window.grecaptcha && grecaptcha.reset) {
+                        grecaptcha.reset();
+                    }
                 }
             });
         });
