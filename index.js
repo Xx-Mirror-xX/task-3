@@ -178,10 +178,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 const requireAuth = (req, res, next) => {
-    if (!req.isAuthenticated()) {
-        return res.status(403).send('Acceso denegado');
-    }
-    next();
+    if (req.isAuthenticated()) return next();
+    res.status(403).send('Acceso denegado');
 };
 
 const requireAdmin = (req, res, next) => {
@@ -295,11 +293,9 @@ app.get('/auth/google/callback',
         failureMessage: true 
     }),
     (req, res) => {
-        if (req.user.isAdmin) {
-            res.redirect('/admin/contacts');
-        } else {
-            res.redirect('/indice');
-        }
+        req.session.save(() => {
+            res.redirect(req.user.isAdmin ? '/admin/contacts' : '/indice');
+        });
     }
 );
 
@@ -349,9 +345,11 @@ app.post('/admin/login', async (req, res) => {
                                     message: 'Error en el servidor' 
                                 });
                             }
-                            res.json({ 
-                                success: true,
-                                redirect: '/admin/contacts'
+                            req.session.save(() => {
+                                res.json({ 
+                                    success: true,
+                                    redirect: '/admin/contacts'
+                                });
                             });
                         });
                         return;
@@ -377,9 +375,11 @@ app.post('/admin/login', async (req, res) => {
                             message: 'Error en el servidor' 
                         });
                     }
-                    res.json({ 
-                        success: true,
-                        redirect: '/admin/contacts'
+                    req.session.save(() => {
+                        res.json({ 
+                            success: true,
+                            redirect: '/admin/contacts'
+                        });
                     });
                 });
             } catch (bcryptError) {
@@ -527,9 +527,11 @@ app.post('/login', async (req, res) => {
                                     message: 'Error en el servidor' 
                                 });
                             }
-                            res.json({ 
-                                success: true,
-                                redirect: user.isAdmin ? '/admin/contacts' : '/indice'
+                            req.session.save(() => {
+                                res.json({ 
+                                    success: true,
+                                    redirect: user.isAdmin ? '/admin/contacts' : '/indice'
+                                });
                             });
                         });
                         return;
@@ -548,9 +550,11 @@ app.post('/login', async (req, res) => {
                             message: 'Error en el servidor' 
                         });
                     }
-                    res.json({ 
-                        success: true,
-                        redirect: user.isAdmin ? '/admin/contacts' : '/indice'
+                    req.session.save(() => {
+                        res.json({ 
+                            success: true,
+                            redirect: user.isAdmin ? '/admin/contacts' : '/indice'
+                        });
                     });
                 });
             } catch (bcryptError) {
