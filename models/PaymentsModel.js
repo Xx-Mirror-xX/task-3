@@ -24,7 +24,26 @@ class PaymentsModel {
                 status TEXT,
                 errorDetails TEXT
             )
-        `);
+        `, () => {
+            // Verificar si la columna errorDetails existe y crearla si no
+            this.db.get("PRAGMA table_info(payments)", (err, rows) => {
+                if (err) {
+                    console.error('Error al verificar esquema:', err);
+                    return;
+                }
+                
+                const hasErrorDetails = rows.some(row => row.name === 'errorDetails');
+                if (!hasErrorDetails) {
+                    this.db.run('ALTER TABLE payments ADD COLUMN errorDetails TEXT', (alterErr) => {
+                        if (alterErr) {
+                            console.error('Error al agregar columna errorDetails:', alterErr);
+                        } else {
+                            console.log('Columna errorDetails agregada a la tabla payments');
+                        }
+                    });
+                }
+            });
+        });
     }
 
     addPayment(paymentData) {
