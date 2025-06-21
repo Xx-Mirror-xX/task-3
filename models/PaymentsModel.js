@@ -19,7 +19,9 @@ class PaymentsModel {
                 amount REAL,
                 currency TEXT,
                 service TEXT,
-                paymentDate DATETIME DEFAULT CURRENT_TIMESTAMP
+                paymentDate DATETIME DEFAULT CURRENT_TIMESTAMP,
+                transactionId TEXT,
+                status TEXT
             )
         `);
     }
@@ -45,6 +47,29 @@ class PaymentsModel {
                 function(err) {
                     if (err) reject(err);
                     else resolve(this.lastID);
+                }
+            );
+        });
+    }
+
+    updatePayment(id, updateData) {
+        return new Promise((resolve, reject) => {
+            const setClauses = [];
+            const values = [];
+            
+            for (const [key, value] of Object.entries(updateData)) {
+                setClauses.push(`${key} = ?`);
+                values.push(value);
+            }
+            
+            values.push(id);
+            
+            this.db.run(
+                `UPDATE payments SET ${setClauses.join(', ')} WHERE id = ?`,
+                values,
+                function(err) {
+                    if (err) reject(err);
+                    else resolve(this.changes);
                 }
             );
         });
