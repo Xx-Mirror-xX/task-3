@@ -734,6 +734,10 @@ app.get('/contactos', (req, res) => {
     res.render('contactos');
 });
 
+app.get('/admin/register', requireAdmin, (req, res) => {
+    res.render('admin/register');
+});
+
 app.get('/pagos', (req, res) => {
     res.render('pagos');
 });
