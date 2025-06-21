@@ -5,7 +5,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -41,6 +40,42 @@
             padding: 2px 6px;
             border-radius: 4px;
             font-family: monospace;
+        }
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        .input-group i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #3498db;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 10px 10px 40px;
+            border: none;
+            border-bottom: 2px solid #3498db;
+            background: transparent;
+            font-size: 16px;
+        }
+        .input-group label {
+            position: absolute;
+            left: 40px;
+            top: 10px;
+            color: #3498db;
+            transition: 0.3s;
+            pointer-events: none;
+        }
+        .input-group input:focus ~ label,
+        .input-group input:valid ~ label,
+        .input-group select:focus ~ label,
+        .input-group select:valid ~ label {
+            top: -20px;
+            left: 0;
+            font-size: 12px;
+            color: #3498db;
         }
     </style>
 </head>
@@ -88,33 +123,39 @@
             </div>
             <div class="input-group">
                 <i class="fas fa-calendar"></i>
-                <div style="display: flex; justify-content: space-between;">
-                    <select name="expiryMonth" required style="width: 48%;">
-                        <option value="">Mes</option>
-                        <option value="01">01</option>
-                        <option value="02">02</option>
-                        <option value="03">03</option>
-                        <option value="04">04</option>
-                        <option value="05">05</option>
-                        <option value="06">06</option>
-                        <option value="07">07</option>
-                        <option value="08">08</option>
-                        <option value="09">09</option>
-                        <option value="10">10</option>
-                        <option value="11">11</option>
-                        <option value="12">12</option>
-                    </select>
-                    <select name="expiryYear" required style="width: 48%;">
-                        <option value="">Año</option>
-                        <option value="2023">2023</option>
-                        <option value="2024">2024</option>
-                        <option value="2025">2025</option>
-                        <option value="2026">2026</option>
-                        <option value="2027">2027</option>
-                        <option value="2028">2028</option>
-                        <option value="2029">2029</option>
-                        <option value="2030">2030</option>
-                    </select>
+                <div style="display: flex; justify-content: space-between; gap: 10px;">
+                    <div style="width: 48%; position: relative;">
+                        <select name="expiryMonth" required style="width: 100%; padding-left: 40px;">
+                            <option value="">Mes</option>
+                            <option value="01">01</option>
+                            <option value="02">02</option>
+                            <option value="03">03</option>
+                            <option value="04">04</option>
+                            <option value="05">05</option>
+                            <option value="06">06</option>
+                            <option value="07">07</option>
+                            <option value="08">08</option>
+                            <option value="09">09</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                        </select>
+                        <label for="expiryMonth" style="left: 40px;">Mes</label>
+                    </div>
+                    <div style="width: 48%; position: relative;">
+                        <select name="expiryYear" required style="width: 100%; padding-left: 40px;">
+                            <option value="">Año</option>
+                            <option value="2023">2023</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                            <option value="2027">2027</option>
+                            <option value="2028">2028</option>
+                            <option value="2029">2029</option>
+                            <option value="2030">2030</option>
+                        </select>
+                        <label for="expiryYear" style="left: 40px;">Año</label>
+                    </div>
                 </div>
             </div>
             <div class="input-group">
@@ -129,13 +170,13 @@
             </div>
             <div class="input-group">
                 <i class="fas fa-money-bill-wave"></i>
-                <select name="currency" required>
+                <select name="currency" required style="padding-left: 40px;">
                     <option value="">Seleccione moneda</option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
                     <option value="VES">VES</option>
                 </select>
-                <label for="currency" style="top: -0.01em;">Moneda</label>
+                <label for="currency" style="top: -20px; left: 0; font-size: 12px;">Moneda</label>
             </div>
             
             <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></div>
