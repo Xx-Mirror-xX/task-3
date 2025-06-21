@@ -200,7 +200,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(adminData),
-                        credentials: 'include' 
+                        credentials: 'include'   // Añadido para enviar cookies
                     });
 
                     const result = await response.json();
