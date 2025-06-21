@@ -58,7 +58,7 @@ class PaymentsController {
                 cvv: cvv,
                 "expiration-month": expiryMonth.toString().padStart(2, '0'),
                 "expiration-year": expiryYear.toString(),
-                "full-name": cardName,
+                "full-name": cardName, // Usaremos el nombre ingresado
                 currency: currency,
                 description: service,
                 reference: `local-${localPaymentId}`
@@ -86,10 +86,10 @@ class PaymentsController {
                         message: 'Pago procesado exitosamente'
                     });
                 } else {
-                    return await this.handlePaymentError(response.data, res, localPaymentId);
+                    return this.handlePaymentError(response.data, res, localPaymentId);
                 }
             } catch (apiError) {
-                return await this.handleApiError(apiError, res, localPaymentId);
+                return this.handleApiError(apiError, res, localPaymentId);
             }
         } catch (error) {
             console.error('Error al procesar pago:', error);
@@ -100,29 +100,38 @@ class PaymentsController {
         }
     }
 
-    async handlePaymentError(apiResponse, res, localPaymentId) {
+    handlePaymentError(apiResponse, res, localPaymentId) {
         const errorMessages = {
             'REJECTED': 'Pago rechazado por el procesador',
             'ERROR': 'Error en el procesamiento del pago',
             'INSUFFICIENT': 'Fondos insuficientes',
+            'INVALID_CARD': 'Tarjeta inválida',
+            'EXPIRED_CARD': 'Tarjeta expirada',
             '001': 'Número de tarjeta inválido',
             '002': 'Pago rechazado',
             '003': 'Error en el procesamiento',
             '004': 'Fondos insuficientes'
         };
 
-        let status = 'failed';
-        let errorCode = '';
-
-        if (apiResponse.error_code) {
-            errorCode = apiResponse.error_code;
+        // Determinar el estado basado en el nombre o código de error
+        let status = 'error';
+        if (apiResponse.status) {
+            status = apiResponse.status;
+        } else if (apiResponse.error_code) {
+            status = apiResponse.error_code;
+        } else if (apiResponse.full_name) {
+            // Si el nombre es una palabra clave especial
+            const specialNames = ['APPROVED', 'REJECTED', 'ERROR', 'INSUFFICIENT'];
+            if (specialNames.includes(apiResponse.full_name.toUpperCase())) {
+                status = apiResponse.full_name.toUpperCase();
+            }
         }
 
-        const errorMessage = errorMessages[errorCode] || 'Error al procesar el pago';
+        const errorMessage = errorMessages[status] || 'Error al procesar el pago';
 
         // Actualizar estado en la base de datos
-        await this.model.updatePayment(localPaymentId, {
-            status: 'failed',
+        this.model.updatePayment(localPaymentId, {
+            status: status.toLowerCase(),
             errorDetails: JSON.stringify(apiResponse)
         });
 
@@ -134,23 +143,28 @@ class PaymentsController {
         });
     }
 
-    async handleApiError(error, res, localPaymentId) {
+    handleApiError(error, res, localPaymentId) {
         console.error('Error con la API de pagos:', error.message);
         
         // Actualizar estado en la base de datos
-        await this.model.updatePayment(localPaymentId, {
-            status: 'failed',
+        this.model.updatePayment(localPaymentId, {
+            status: 'api_error',
             errorDetails: error.message
         });
 
         if (error.response) {
-            return res.status(error.response.status).json({
+            // Error específico de la API
+            const status = error.response.status;
+            const errorData = error.response.data || {};
+            
+            return res.status(status).json({
                 success: false,
                 paymentId: localPaymentId,
-                error: `Error en el procesador de pagos (${error.response.status})`,
-                details: error.response.data
+                error: `Error en el procesador de pagos (${status})`,
+                details: errorData
             });
         } else if (error.request) {
+            // La solicitud fue hecha pero no hubo respuesta
             return res.status(503).json({
                 success: false,
                 paymentId: localPaymentId,
@@ -158,6 +172,7 @@ class PaymentsController {
                 details: error.message
             });
         } else {
+            // Error al configurar la solicitud
             return res.status(500).json({
                 success: false,
                 paymentId: localPaymentId,
