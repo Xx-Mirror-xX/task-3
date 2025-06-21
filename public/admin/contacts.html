@@ -255,7 +255,9 @@
             
             async function loadContacts() {
                 try {
-                    const response = await fetch('/api/contacts');
+                    const response = await fetch('/api/contacts', {
+                        credentials: 'include'  // Añadido para enviar cookies
+                    });
                     if (!response.ok) {
                         throw new Error('Error al cargar contactos');
                     }
