@@ -683,6 +683,7 @@ app.get('/api/payments/:payment_id', requireAuth, (req, res) => {
     );
 });
 
+// Rutas principales
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -691,6 +692,15 @@ app.get('/index.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get('/contactos.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'contactos.html'));
+});
+
+app.get('/pagos.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'pagos.html'));
+});
+
+// Rutas de administración
 app.get('/admin/contacts.html', requireAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'contacts.html'));
 });
@@ -703,24 +713,22 @@ app.get('/admin/payments.html', requireAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'payments.html'));
 });
 
+// Rutas de vistas autenticadas
 app.get('/indice.html', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'vistas', 'indice.html'));
 });
 
 app.get('/indice', requireAuth, (req, res) => {
-    res.redirect('/vistas/indice.html'));
+    res.redirect('/vistas/indice.html');
 });
 
 app.get('/vistas/indice.html', requireAuth, (req, res) => {
     res.sendFile(path.join(__dirname, 'vistas', 'indice.html'));
 });
 
-app.get('/pagos.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'pagos.html'));
-});
-
-app.get('/payment-receipt.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'payment-receipt.html'));
+// Manejo de errores 404
+app.use((req, res, next) => {
+    res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
 const PORT = process.env.PORT || 3000;
