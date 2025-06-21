@@ -8,7 +8,7 @@ class PaymentsController {
             baseURL: 'https://fakepayment.onrender.com',
             timeout: 10000,
             headers: {
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmFrZSBwYXltZW50IiwiZGF0ZSI6IjIwMjUtMDYtMjFUMDA6NTk6MzEuNTIxWiIsImlhdCI6MTc1MDQ2NzU3MX0.7dmBc4cOLBIzGn46tof09GvBgaFPTXCXeUM6sP0slz4',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmFrZSBwYXltZW50IiwiZGF0ZSI6IjIwMjUtMDYtMjFUMDI6MTc6MjUuNTM3WiIsImlhdCI6MTc1MDQ3MjI0NX0.wptRMkWln3hrrQ0ozPEHfEDEocJeheJAgNFix_vo8Ig',
                 'Content-Type': 'application/json'
             }
         };
@@ -64,9 +64,9 @@ class PaymentsController {
             };
 
             try {
-                // Endpoint corregido (ahora usa /payments en plural)
+                // Endpoint corregido según documentación (plural)
                 const response = await axios.post(
-                    `${this.apiConfig.baseURL}/payments`,  // Cambiado a plural
+                    `${this.apiConfig.baseURL}/payments`,
                     paymentData,
                     this.apiConfig
                 );
