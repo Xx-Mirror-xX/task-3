@@ -248,6 +248,7 @@
                 <select id="serviceFilter" class="filter-select">
                     <option value="">Todos</option>
                     <option value="Servicio de Donación">Servicio de Donación</option>
+                    <!-- Agrega más opciones según tus servicios -->
                 </select>
             </div>
             
@@ -303,17 +304,6 @@
         <script>
             let allPayments = [];
             
-            function getStatusInfo(status) {
-                status = status || 'pending';
-                if (status === 'completed') {
-                    return { text: 'Completado', class: 'status-completed' };
-                } else if (status === 'pending') {
-                    return { text: 'Pendiente', class: 'status-pending' };
-                } else {
-                    return { text: 'Fallido', class: 'status-failed' };
-                }
-            }
-            
             async function loadPayments() {
                 try {
                     const response = await fetch('/api/payments');
@@ -333,8 +323,8 @@
                 tbody.innerHTML = '';
                 
                 payments.forEach(payment => {
-                    const statusInfo = getStatusInfo(payment.status);
                     const row = document.createElement('tr');
+                    const statusClass = `status-${payment.status || 'pending'}`;
                     
                     row.innerHTML = `
                         <td>${payment.id}</td>
@@ -342,12 +332,21 @@
                         <td>${payment.service}</td>
                         <td>${payment.amount}</td>
                         <td>${payment.currency}</td>
-                        <td class="${statusInfo.class}">${statusInfo.text}</td>
+                        <td class="${statusClass}">${getStatusText(payment.status)}</td>
                         <td>${new Date(payment.paymentDate).toLocaleString()}</td>
                         <td>${payment.transactionId || 'N/A'}</td>
                     `;
                     tbody.appendChild(row);
                 });
+            }
+            
+            function getStatusText(status) {
+                switch(status) {
+                    case 'completed': return 'Completado';
+                    case 'pending': return 'Pendiente';
+                    case 'failed': return 'Fallido';
+                    default: return 'Pendiente';
+                }
             }
             
             function filterPayments() {
@@ -373,7 +372,7 @@
                 
                 if (dateTo) {
                     const toDate = new Date(dateTo);
-                    toDate.setDate(toDate.getDate() + 1);
+                    toDate.setDate(toDate.getDate() + 1); // Incluir todo el día seleccionado
                     filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
                 }
                 
