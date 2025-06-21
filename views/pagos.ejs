@@ -1,26 +1,73 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Pagos</title>
-    <meta property="og:title" content="Panel de Pagos - Creating Social Network">
-    <meta property="og:description" content="Administra transacciones y pagos en tu panel de administración">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://creatingsocialnetwork.com/admin/pagos.ejs">
-    <meta property="og:image" content="https://creatingsocialnetwork.com/images/payments-og.jpg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Panel de Pagos - Creating Social Network">
-    <meta name="twitter:description" content="Gestión profesional de transacciones financieras">
-    <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/payments-twitter.jpg">
+    <title>Realizar Pago</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <link rel="stylesheet" href="/stylesheet/styles.css">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DCK5HDLZ0N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-DCK5HDLZ0N');
+    </script>
+    
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <style>
+        .test-instructions {
+            background: #f0f7ff;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .test-instructions h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-instructions ul {
+            margin-bottom: 0;
+        }
+        .test-instructions li {
+            margin-bottom: 5px;
+        }
+        .test-instructions code {
+            background: #e3f2fd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
 </head>
 <body>
     <div class="container" id="paymentForm">
         <h1 class="form-title">Realizar Pago</h1>
+        
+        <div class="test-instructions">
+            <h3><i class="fas fa-info-circle"></i> Instrucciones para pruebas</h3>
+            <p>Para simular diferentes resultados, usa estos datos:</p>
+            <ul>
+                <li><strong>Tarjetas válidas:</strong> 
+                    <ul>
+                        <li>Visa: <code>4111111111111111</code></li>
+                        <li>Mastercard: <code>5555555555554444</code></li>
+                    </ul>
+                </li>
+                <li><strong>Nombres especiales:</strong>
+                    <ul>
+                        <li><code>APPROVED</code> - Pago exitoso</li>
+                        <li><code>REJECTED</code> - Pago rechazado</li>
+                        <li><code>ERROR</code> - Error en procesamiento</li>
+                        <li><code>INSUFFICIENT</code> - Fondos insuficientes</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
         
         <form id="paymentFormData">
             <div class="input-group">
@@ -30,12 +77,12 @@
             </div>
             <div class="input-group">
                 <i class="fas fa-user"></i>
-                <input type="text" name="cardName" placeholder="Nombre del titular" required>
+                <input type="text" name="cardName" placeholder="Nombre del titular (ej: APPROVED)" required>
                 <label for="cardName">Nombre del titular</label>
             </div>
             <div class="input-group">
                 <i class="fas fa-credit-card"></i>
-                <input type="text" name="cardNumber" placeholder="Número de tarjeta" 
+                <input type="text" name="cardNumber" placeholder="Número de tarjeta (ej: 4111111111111111)" 
                        pattern="\d{13,19}" title="Debe tener 13-19 dígitos" required>
                 <label for="cardNumber">Número de tarjeta</label>
             </div>
