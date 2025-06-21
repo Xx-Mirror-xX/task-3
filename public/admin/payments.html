@@ -7,95 +7,240 @@
     <link rel="stylesheet" href="/stylesheet/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
-        table { 
-            width: 100%; 
-            border-collapse: collapse;
-            margin-top: 20px;
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+            --border: #dee2e6;
         }
-        th, td { 
-            padding: 12px 15px; 
-            border: 1px solid #ddd; 
-            text-align: left; 
-        }
-        th { 
-            background-color: #f2f2f2;
-            position: sticky;
-            top: 0;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        .logout-btn {
-            float: right;
-            padding: 8px 16px;
-            background-color: #f44336;
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, var(--secondary), #1a2533);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            margin-left: 10px;
         }
+        
+        .admin-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-header h1 i {
+            color: var(--primary);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn i {
+            font-size: 0.9rem;
+        }
+        
+        .contacts-btn {
+            background-color: var(--primary);
+        }
+        
+        .contacts-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .logout-btn {
+            background-color: var(--danger);
+        }
+        
+        .logout-btn:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+        }
+        
         .filters-container {
             margin: 20px 0;
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
             align-items: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
+        
         .filter-group {
             display: flex;
             flex-direction: column;
+            min-width: 180px;
         }
+        
         .filter-label {
-            margin-bottom: 5px;
-            font-weight: bold;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.9rem;
         }
+        
         .filter-input, .filter-select {
-            padding: 8px;
-            border: 1px solid #ddd;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
             border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
         }
+        
+        .filter-input:focus, .filter-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+        
         .apply-filters-btn, .reset-filters-btn {
             padding: 8px 16px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin-left: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
+        
         .apply-filters-btn {
-            background-color: #4CAF50;
+            background-color: var(--success);
             color: white;
         }
+        
         .apply-filters-btn:hover {
-            background-color: #45a049;
+            background-color: #27ae60;
+            transform: translateY(-2px);
         }
+        
         .reset-filters-btn {
-            background-color: #f44336;
+            background-color: var(--danger);
             color: white;
         }
+        
         .reset-filters-btn:hover {
-            background-color: #d32f2f;
+            background-color: #c0392b;
+            transform: translateY(-2px);
         }
+        
         .status-completed {
-            color: #4CAF50;
-            font-weight: bold;
+            color: var(--success);
+            font-weight: 600;
         }
+        
         .status-pending {
-            color: #FFC107;
-            font-weight: bold;
+            color: #f39c12;
+            font-weight: 600;
         }
+        
         .status-failed {
-            color: #f44336;
-            font-weight: bold;
+            color: var(--danger);
+            font-weight: 600;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f1f5f9;
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+            color: var(--dark);
+            border-bottom: 2px solid var(--border);
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.2s ease;
+        }
+        
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .container {
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .filters-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Pagos Recibidos</h1>
-        <a href="/logout" class="logout-btn">Cerrar sesión</a>
+        <div class="admin-header">
+            <h1><i class="fas fa-money-bill-wave"></i> Pagos Recibidos</h1>
+            <div class="nav-buttons">
+                <a href="/admin/contacts.html" class="nav-btn contacts-btn">
+                    <i class="fas fa-address-book"></i> Contactos
+                </a>
+                <a href="/logout" class="nav-btn logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                </a>
+            </div>
+        </div>
         
         <div class="filters-container">
             <div class="filter-group">
@@ -127,30 +272,34 @@
                 <input type="date" id="dateToFilter" class="filter-input">
             </div>
             
-            <button id="applyFiltersBtn" class="apply-filters-btn">
-                <i class="fas fa-filter"></i> Filtrar
-            </button>
-            
-            <button id="resetFiltersBtn" class="reset-filters-btn">
-                <i class="fas fa-times"></i> Limpiar
-            </button>
+            <div class="filters-actions">
+                <button id="applyFiltersBtn" class="apply-filters-btn">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+                
+                <button id="resetFiltersBtn" class="reset-filters-btn">
+                    <i class="fas fa-times"></i> Limpiar
+                </button>
+            </div>
         </div>
 
-        <table id="paymentsTable">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Email</th>
-                    <th>Servicio</th>
-                    <th>Monto</th>
-                    <th>Moneda</th>
-                    <th>Estado</th>
-                    <th>Fecha</th>
-                    <th>ID Transacción</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="table-container">
+            <table id="paymentsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Servicio</th>
+                        <th>Monto</th>
+                        <th>Moneda</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th>ID Transacción</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
 
         <script>
             let allPayments = [];
