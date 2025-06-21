@@ -279,13 +279,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.reset();
                     if (window.grecaptcha) grecaptcha.reset();
                     
+                    // Redirigir a la página principal después de 2 segundos
                     setTimeout(() => {
-                        const params = new URLSearchParams({
-                            paymentId: result.paymentId
-                        });
-                        if (result.transactionId) params.append('transactionId', result.transactionId);
-                        
-                        window.location.href = `/payment-receipt.html?${params.toString()}`;
+                        window.location.href = '/index.html';
                     }, 2000);
                 } else {
                     let errorMsg = result.error || 'Error al procesar el pago';
