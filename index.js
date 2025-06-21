@@ -330,7 +330,6 @@ app.post('/admin/login', async (req, res) => {
             try {
                 const isMatch = await bcrypt.compare(password.toString(), user.password.toString());
                 if (!isMatch) {
-                    // Permitir acceso con contraseña directa para el admin por defecto
                     if (email === 'xxsandovalluisxx@gmail.com' && password === '12345') {
                         req.login(user, (err) => {
                             if (err) {
@@ -509,7 +508,6 @@ app.post('/login', async (req, res) => {
             try {
                 const isMatch = await bcrypt.compare(password.toString(), user.password.toString());
                 if (!isMatch) {
-                    // Permitir acceso con contraseña directa para el admin por defecto
                     if (email === 'xxsandovalluisxx@gmail.com' && password === '12345') {
                         req.login(user, (err) => {
                             if (err) {
@@ -667,7 +665,23 @@ app.get('/api/payments', requireAuth, (req, res) => {
     );
 });
 
-app.get('/api/payments/:transaction_id', requireAuth, paymentsController.getTransactionDetails.bind(paymentsController));
+app.get('/api/payments/:payment_id', requireAuth, (req, res) => {
+    const paymentId = req.params.payment_id;
+    db.get(
+        "SELECT * FROM payments WHERE id = ?",
+        [paymentId],
+        (err, row) => {
+            if (err) {
+                console.error('Error al obtener pago:', err);
+                return res.status(500).json({ error: 'Error al obtener pago' });
+            }
+            if (!row) {
+                return res.status(404).json({ error: 'Pago no encontrado' });
+            }
+            res.json(row);
+        }
+    );
+});
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -683,6 +697,10 @@ app.get('/admin/contacts.html', requireAdmin, (req, res) => {
 
 app.get('/admin/register.html', requireAdmin, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin', 'register.html'));
+});
+
+app.get('/admin/payments.html', requireAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'payments.html'));
 });
 
 app.get('/indice.html', requireAuth, (req, res) => {
@@ -703,10 +721,6 @@ app.get('/pagos.html', (req, res) => {
 
 app.get('/payment-receipt.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'payment-receipt.html'));
-});
-
-app.get('/admin/payments.html', requireAdmin, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin', 'payments.html'));
 });
 
 const PORT = process.env.PORT || 3000;
