@@ -1,5 +1,3 @@
-const path = require('path');
-
 const toIndex = (req, res) => {
     if (req.isAuthenticated()) {
         res.render('vistas/indice');
