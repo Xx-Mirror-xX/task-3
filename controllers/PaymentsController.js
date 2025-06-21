@@ -8,7 +8,7 @@ class PaymentsController {
             baseURL: 'https://fakepayment.onrender.com',
             timeout: 10000,
             headers: {
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmFrZSBwYXltZW50IiwiZGF0ZSI6IjIwMjUtMDYtMjFUMDI6MTc6MjUuNTM3WiIsImlhdCI6MTc1MDQ3MjI0NX0.wptRMkWln3hrrQ0ozPEHfEDEocJeheJAgNFix_vo8Ig',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmFrZSBwYXltZW50IiwiZGF0ZSI6IjIwMjUtMDYtMjFUMDM6NTM6NTYuMzU5WiIsImlhdCI6MTc1MDQ3ODAzNn0.ZfPxNnfGQHcXANsG1r48yDYx2ElrWzpxTijillHQW9E',
                 'Content-Type': 'application/json'
             }
         };
@@ -65,7 +65,6 @@ class PaymentsController {
             };
 
             try {
-                // Endpoint corregido
                 const response = await axios.post(
                     `${this.apiConfig.baseURL}/payments`,
                     paymentData,
@@ -106,8 +105,6 @@ class PaymentsController {
             'REJECTED': 'Pago rechazado por el procesador',
             'ERROR': 'Error en el procesamiento del pago',
             'INSUFFICIENT': 'Fondos insuficientes',
-            'INVALID_CARD': 'Tarjeta inválida',
-            'EXPIRED_CARD': 'Tarjeta expirada',
             '001': 'Número de tarjeta inválido',
             '002': 'Pago rechazado',
             '003': 'Error en el procesamiento',
@@ -117,10 +114,7 @@ class PaymentsController {
         let status = 'failed';
         let errorCode = '';
 
-        if (apiResponse.status) {
-            status = apiResponse.status.toLowerCase();
-            errorCode = apiResponse.status;
-        } else if (apiResponse.error_code) {
+        if (apiResponse.error_code) {
             errorCode = apiResponse.error_code;
         }
 
