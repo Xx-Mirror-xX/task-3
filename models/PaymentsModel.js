@@ -21,7 +21,7 @@ class PaymentsModel {
                 service TEXT,
                 paymentDate DATETIME DEFAULT CURRENT_TIMESTAMP,
                 transactionId TEXT,
-                status TEXT DEFAULT 'pending',
+                status TEXT,
                 errorDetails TEXT
             )
         `);
