@@ -220,11 +220,12 @@ class PaymentsController {
     }
 
     async index(req, res) {
-        if (!req.session.userId) {
+        if (!req.isAuthenticated() || !req.user.isAdmin) {
             return res.status(403).send('Acceso denegado');
         }
-        res.sendFile(path.join(__dirname, '../public/admin/payments.html'));
+        res.render('admin/payments');
     }
+}
 
     async getPayments(req, res) {
         try {
