@@ -156,13 +156,18 @@ app.use('/img', express.static(path.join(__dirname, 'public', 'img')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/vistas', express.static(path.join(__dirname, 'vistas')));
 
+// MEJORAS DE SEGURIDAD: Configuración de sesiones seguras
+const isProduction = process.env.NODE_ENV === 'production';
 app.use(session({
     secret: 'secreto',
     resave: false,
     saveUninitialized: false,
+    rolling: true,  // Renovar cookie en cada solicitud
     cookie: { 
-        secure: false, 
-        maxAge: 24 * 60 * 60 * 1000 
+        httpOnly: true,    // Prevenir acceso desde JavaScript
+        sameSite: 'lax',   // Prevenir ataques CSRF
+        secure: isProduction, // Solo enviar sobre HTTPS en producción
+        maxAge: 15 * 60 * 1000 // 15 minutos de inactividad (900000 ms)
     }
 }));
 app.use(passport.initialize());
@@ -592,96 +597,96 @@ app.post('/api/contact', async (req, res) => {
             });
         }
 
-        const { country, city } = await getGeolocation(ipAddress);
+    const { country, city } = await getGeolocation(ipAddress);
 
-        db.run(
-            `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [firstName, lastName, email, message, ipAddress, country, city],
-            function(err) {
-                if (err) {
-                    console.error('Error al guardar contacto:', err);
-                    return res.status(500).json({ error: "Error al guardar contacto" });
-                }
-                res.json({ 
-                    success: true, 
-                    message: "Contacto guardado exitosamente",
-                    id: this.lastID
-                });
+    db.run(
+        `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [firstName, lastName, email, message, ipAddress, country, city],
+        function(err) {
+            if (err) {
+                console.error('Error al guardar contacto:', err);
+                return res.status(500).json({ error: "Error al guardar contacto" });
             }
-        );
-    } catch (error) {
-        console.error('Error en /api/contact:', error);
-        res.status(500).json({ error: "Error en el servidor" });
-    }
+            res.json({ 
+                success: true, 
+                message: "Contacto guardado exitosamente",
+                id: this.lastID
+            });
+        }
+    );
+} catch (error) {
+    console.error('Error en /api/contact:', error);
+    res.status(500).json({ error: "Error en el servidor" });
+}
 });
 
 app.get('/api/contacts', requireAuth, (req, res) => {
-    db.all(
-        "SELECT * FROM contacts ORDER BY createdAt DESC",
-        (err, rows) => {
-            if (err) {
-                console.error('Error al obtener contactos:', err);
-                return res.status(500).json({ error: 'Error al obtener contactos' });
-            }
-            res.json(rows);
+db.all(
+    "SELECT * FROM contacts ORDER BY createdAt DESC",
+    (err, rows) => {
+        if (err) {
+            console.error('Error al obtener contactos:', err);
+            return res.status(500).json({ error: 'Error al obtener contactos' });
         }
-    );
+        res.json(rows);
+    }
+);
 });
 
 app.post('/api/payment', async (req, res) => {
-    try {
-        const { 'g-recaptcha-response': recaptchaToken } = req.body;
-        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+try {
+    const { 'g-recaptcha-response': recaptchaToken } = req.body;
+    const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-        if (!recaptchaToken) {
-            return res.status(400).json({ error: "Verificación de reCAPTCHA requerida" });
-        }
-
-        const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'payment');
-        if (!recaptchaResult.success || recaptchaResult.score < 0.5) {
-            return res.status(400).json({ 
-                error: "Verificación de reCAPTCHA fallida",
-                score: recaptchaResult.score
-            });
-        }
-
-        return paymentsController.addPayment(req, res);
-    } catch (error) {
-        console.error('Error en /api/payment:', error);
-        res.status(500).json({ error: "Error en el servidor" });
+    if (!recaptchaToken) {
+        return res.status(400).json({ error: "Verificación de reCAPTCHA requerida" });
     }
+
+    const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'payment');
+    if (!recaptchaResult.success || recaptchaResult.score < 0.5) {
+        return res.status(400).json({ 
+            error: "Verificación de reCAPTCHA fallida",
+            score: recaptchaResult.score
+        });
+    }
+
+    return paymentsController.addPayment(req, res);
+} catch (error) {
+    console.error('Error en /api/payment:', error);
+    res.status(500).json({ error: "Error en el servidor" });
+}
 });
 
 app.get('/api/payments', requireAuth, (req, res) => {
-    db.all(
-        "SELECT * FROM payments ORDER BY paymentDate DESC",
-        (err, rows) => {
-            if (err) {
-                console.error('Error al obtener pagos:', err);
-                return res.status(500).json({ error: 'Error al obtener pagos' });
-            }
-            res.json(rows);
+db.all(
+    "SELECT * FROM payments ORDER BY paymentDate DESC",
+    (err, rows) => {
+        if (err) {
+            console.error('Error al obtener pagos:', err);
+            return res.status(500).json({ error: 'Error al obtener pagos' });
         }
-    );
+        res.json(rows);
+    }
+);
 });
 
 app.get('/api/payments/:payment_id', requireAuth, (req, res) => {
-    const paymentId = req.params.payment_id;
-    db.get(
-        "SELECT * FROM payments WHERE id = ?",
-        [paymentId],
-        (err, row) => {
-            if (err) {
-                console.error('Error al obtener pago:', err);
-                return res.status(500).json({ error: 'Error al obtener pago' });
-            }
-            if (!row) {
-                return res.status(404).json({ error: 'Pago no encontrado' });
-            }
-            res.json(row);
+const paymentId = req.params.payment_id;
+db.get(
+    "SELECT * FROM payments WHERE id = ?",
+    [paymentId],
+    (err, row) => {
+        if (err) {
+            console.error('Error al obtener pago:', err);
+            return res.status(500).json({ error: 'Error al obtener pago' });
         }
-    );
+        if (!row) {
+            return res.status(404).json({ error: 'Pago no encontrado' });
+        }
+        res.json(row);
+    }
+);
 });
 
 // Rutas principales
