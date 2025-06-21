@@ -293,9 +293,8 @@ if (paymentForm) {
                     errorMsg += `<br><small>ID local: ${result.paymentId}</small>`;
                 }
                 
-                // Mostrar detalles adicionales del error si están disponibles
+                // Mostrar detalles adicionales del error
                 if (result.details) {
-                    // Manejar códigos de error específicos
                     const errorCodes = {
                         '001': 'Número de tarjeta inválido',
                         '002': 'Pago rechazado por el procesador',
