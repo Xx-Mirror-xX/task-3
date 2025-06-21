@@ -18,6 +18,9 @@ const GOOGLE_CALLBACK_URL = 'https://creating-social-network-2.onrender.com/auth
 const GEOLOCATION_TIMEOUT = 3000;
 const GEOLOCATION_CACHE = new Map();
 
+// Configuración de proxy para Render.com
+app.set('trust proxy', 1);
+
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
         console.error('Error al conectar con la base de datos:', err.message);
@@ -166,29 +169,29 @@ app.use(session({
     secret: 'secreto',
     resave: false,
     saveUninitialized: false,
-    rolling: true,  // Renovar cookie en cada solicitud
+    rolling: true,
     cookie: { 
-        httpOnly: true,    // Prevenir acceso desde JavaScript
-        sameSite: 'lax',   // Prevenir ataques CSRF
-        secure: isProduction, // Solo enviar sobre HTTPS en producción
-        maxAge: 15 * 60 * 1000 // 15 minutos de inactividad (900000 ms)
-    }
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isProduction,
+        maxAge: 15 * 60 * 1000,
+        proxy: true // Necesario para Render.com
+    },
+    proxy: true // Necesario para Render.com
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Middleware para verificar autenticación
 const requireAuth = (req, res, next) => {
     if (req.isAuthenticated()) return next();
     res.status(403).send('Acceso denegado');
 };
 
+// Middleware para verificar admin
 const requireAdmin = (req, res, next) => {
-    if (!req.isAuthenticated()) {
-        return res.status(403).send('Acceso denegado');
-    }
-    if (!req.user.isAdmin) {
-        return res.status(403).send('Acceso denegado - Solo para administradores');
-    }
+    if (!req.isAuthenticated()) return res.status(403).send('Acceso denegado');
+    if (!req.user.isAdmin) return res.status(403).send('Acceso denegado - Solo para administradores');
     next();
 };
 
@@ -294,7 +297,11 @@ app.get('/auth/google/callback',
     }),
     (req, res) => {
         req.session.save(() => {
-            res.redirect(req.user.isAdmin ? '/admin/contacts' : '/indice');
+            if (req.user.isAdmin) {
+                res.redirect('/admin/contacts');
+            } else {
+                res.redirect('/indice');
+            }
         });
     }
 );
