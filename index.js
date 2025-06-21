@@ -705,6 +705,10 @@ app.get('/payment-receipt.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'payment-receipt.html'));
 });
 
+app.get('/admin/payments.html', requireAdmin, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'admin', 'payments.html'));
+});
+
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 
