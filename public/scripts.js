@@ -470,7 +470,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    window.location.href = result.redirect || '/admin/contacts';
+                    window.location.href = result.redirect || '/admin/contacts.html';
                 } else {
                     showError(result.message || 'Credenciales incorrectas o no tiene permisos de admin');
                 }
