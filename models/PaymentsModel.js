@@ -24,25 +24,36 @@ class PaymentsModel {
                 status TEXT,
                 errorDetails TEXT
             )
-        `, () => {
-            // Verificar si la columna errorDetails existe y crearla si no
-            this.db.get("PRAGMA table_info(payments)", (err, rows) => {
-                if (err) {
-                    console.error('Error al verificar esquema:', err);
-                    return;
+        `, (err) => {
+            if (err) {
+                console.error('Error creating table payments:', err);
+                return;
+            }
+
+            // Verificar si la columna errorDetails existe
+            this.db.get(
+                "SELECT name FROM pragma_table_info('payments') WHERE name = 'errorDetails'",
+                (err, row) => {
+                    if (err) {
+                        console.error('Error checking column:', err);
+                        return;
+                    }
+
+                    // Si no existe la columna, crearla
+                    if (!row) {
+                        this.db.run(
+                            'ALTER TABLE payments ADD COLUMN errorDetails TEXT',
+                            (alterErr) => {
+                                if (alterErr) {
+                                    console.error('Error adding column:', alterErr);
+                                } else {
+                                    console.log('Added errorDetails column');
+                                }
+                            }
+                        );
+                    }
                 }
-                
-                const hasErrorDetails = rows.some(row => row.name === 'errorDetails');
-                if (!hasErrorDetails) {
-                    this.db.run('ALTER TABLE payments ADD COLUMN errorDetails TEXT', (alterErr) => {
-                        if (alterErr) {
-                            console.error('Error al agregar columna errorDetails:', alterErr);
-                        } else {
-                            console.log('Columna errorDetails agregada a la tabla payments');
-                        }
-                    });
-                }
-            });
+            );
         });
     }
 
