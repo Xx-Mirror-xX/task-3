@@ -30,6 +30,7 @@ class PaymentsController {
             const { email, cardName, cardNumber, expiryMonth, expiryYear, cvv, 
                    amount, currency, service } = req.body;
 
+            // Validaciones mejoradas
             if (!/^\d{13,19}$/.test(cardNumber.replace(/\s/g, ''))) {
                 return res.status(400).json({ error: "Número de tarjeta inválido" });
             }
@@ -43,17 +44,19 @@ class PaymentsController {
                 return res.status(400).json({ error: "Monto inválido" });
             }
 
+            // Guardar en base de datos local primero
             const localPaymentId = await this.model.addPayment({
                 email, cardName, cardNumber, expiryMonth, expiryYear, cvv, 
                 amount: amountValue, currency, service
             });
 
+            // Preparar datos según la nueva especificación
             const paymentData = {
                 amount: amountValue,
                 "card-number": cardNumber.replace(/\s/g, ''),
                 cvv: cvv,
-                "expiration-month": expiryMonth,
-                "expiration-year": expiryYear.toString().slice(-2),
+                "expiration-month": expiryMonth.toString().padStart(2, '0'),
+                "expiration-year": expiryYear.toString(),
                 "full-name": cardName,
                 currency: currency,
                 description: service,
@@ -61,17 +64,19 @@ class PaymentsController {
             };
 
             try {
+                // Endpoint corregido (singular)
                 const response = await axios.post(
                     `${this.apiConfig.baseURL}/payment`,
                     paymentData,
                     this.apiConfig
                 );
 
-                if (response.data.status === 'success') {
+                // Manejar diferentes respuestas de la API
+                if (response.data.status === 'APPROVED') {
                     return res.status(201).json({ 
                         success: true,
                         paymentId: localPaymentId,
-                        transactionId: response.data.transactionId,
+                        transactionId: response.data.transaction_id,
                         message: 'Pago procesado exitosamente'
                     });
                 } else {
@@ -91,20 +96,20 @@ class PaymentsController {
 
     handlePaymentError(apiResponse, res, localPaymentId) {
         const errorMessages = {
-            'failed': 'Pago rechazado por el procesador',
-            'declined': 'Transacción declinada',
-            'invalid_card': 'Tarjeta inválida',
-            'expired_card': 'Tarjeta expirada',
-            'insufficient_funds': 'Fondos insuficientes'
+            'REJECTED': 'Pago rechazado por el procesador',
+            'ERROR': 'Error en el procesamiento del pago',
+            'INSUFFICIENT': 'Fondos insuficientes',
+            'INVALID_CARD': 'Tarjeta inválida',
+            'EXPIRED_CARD': 'Tarjeta expirada'
         };
 
         const status = apiResponse.status || 'error';
-        const errorCode = apiResponse.errorCode || 'unknown';
-        
+        const errorMessage = errorMessages[status] || 'Error al procesar el pago';
+
         return res.status(400).json({
             success: false,
             paymentId: localPaymentId,
-            error: errorMessages[errorCode] || `Error en el pago (${status})`,
+            error: errorMessage,
             details: apiResponse
         });
     }
@@ -113,6 +118,7 @@ class PaymentsController {
         console.error('Error con la API de pagos:', error.message);
 
         if (error.response) {
+            // Error específico de la API
             const status = error.response.status;
             const errorData = error.response.data || {};
             
@@ -123,6 +129,7 @@ class PaymentsController {
                 details: errorData
             });
         } else if (error.request) {
+            // La solicitud fue hecha pero no hubo respuesta
             return res.status(503).json({
                 success: false,
                 paymentId: localPaymentId,
@@ -130,6 +137,7 @@ class PaymentsController {
                 details: error.message
             });
         } else {
+            // Error al configurar la solicitud
             return res.status(500).json({
                 success: false,
                 paymentId: localPaymentId,
@@ -147,6 +155,7 @@ class PaymentsController {
                 return res.status(400).json({ error: "Se requiere el ID de transacción" });
             }
 
+            // Endpoint corregido (plural)
             const response = await axios.get(
                 `${this.apiConfig.baseURL}/payments/${transaction_id}`,
                 this.apiConfig
