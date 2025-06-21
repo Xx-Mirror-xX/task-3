@@ -6,8 +6,6 @@ const path = require('path');
 const axios = require('axios');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const pgSession = require('connect-pg-simple')(session);
-const { Pool } = require('pg');
 const app = express();
 
 const PaymentsController = require('./controllers/PaymentsController');
@@ -164,94 +162,36 @@ app.use('/vistas', express.static(path.join(__dirname, 'vistas')));
 
 // MEJORAS DE SEGURIDAD: Configuración de sesiones seguras
 const isProduction = process.env.NODE_ENV === 'production';
-
-// Configuración de almacenamiento de sesiones en PostgreSQL para producción
-let sessionStore = null;
-if (isProduction) {
-    try {
-        const pgPool = new Pool({
-            connectionString: process.env.DATABASE_URL,
-            ssl: isProduction ? { rejectUnauthorized: false } : false
-        });
-        
-        // Probar la conexión
-        pgPool.query('SELECT NOW()', (err, res) => {
-            if (err) {
-                console.error('Error al conectar a PostgreSQL:', err.stack);
-            } else {
-                console.log('Conexión exitosa a PostgreSQL para sesiones:', res.rows[0]);
-            }
-        });
-
-        sessionStore = new pgSession({
-            pool: pgPool,
-            tableName: 'sessions',
-            createTableIfMissing: true
-        });
-    } catch (error) {
-        console.error('Error al configurar PostgreSQL para sesiones:', error);
-        // Fallback a SQLite si PostgreSQL falla
-        console.log('Usando SQLite para almacenamiento de sesiones');
-        const SqliteStore = require('better-sqlite3-session-store')(session);
-        sessionStore = new SqliteStore({
-            client: db,
-            expired: {
-                clear: true,
-                intervalMs: 15 * 60 * 1000 // 15 minutos
-            }
-        });
-    }
-}
-
 app.use(session({
-    store: sessionStore,
     secret: 'secreto',
     resave: false,
     saveUninitialized: false,
-    rolling: true,
+    rolling: true,  // Renovar cookie en cada solicitud
     cookie: { 
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: isProduction,
-        maxAge: 15 * 60 * 1000
+        httpOnly: true,    // Prevenir acceso desde JavaScript
+        sameSite: 'lax',   // Prevenir ataques CSRF
+        secure: isProduction, // Solo enviar sobre HTTPS en producción
+        maxAge: 15 * 60 * 1000 // 15 minutos de inactividad (900000 ms)
     }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Middleware de seguridad
-app.use((req, res, next) => {
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('X-Frame-Options', 'DENY');
-    next();
-});
-
 const requireAuth = (req, res, next) => {
-    if (req.isAuthenticated()) {
-        return next();
+    if (!req.isAuthenticated()) {
+        return res.status(403).send('Acceso denegado');
     }
-    
-    if (req.accepts('html')) {
-        return res.redirect('/');
-    } else if (req.accepts('json')) {
-        return res.status(403).json({ error: 'Acceso denegado' });
-    }
-    
-    res.status(403).send('Acceso denegado');
+    next();
 };
 
 const requireAdmin = (req, res, next) => {
-    if (req.isAuthenticated() && req.user.isAdmin) {
-        return next();
+    if (!req.isAuthenticated()) {
+        return res.status(403).send('Acceso denegado');
     }
-    
-    if (req.accepts('html')) {
-        return res.redirect('/');
-    } else if (req.accepts('json')) {
-        return res.status(403).json({ error: 'Acceso denegado - Solo administradores' });
+    if (!req.user.isAdmin) {
+        return res.status(403).send('Acceso denegado - Solo para administradores');
     }
-    
-    res.status(403).send('Acceso denegado - Solo administradores');
+    next();
 };
 
 const verifyRecaptcha = async (token, ipAddress, action = '') => {
