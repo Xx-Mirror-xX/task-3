@@ -108,22 +108,34 @@ passport.use(new GoogleStrategy({
         const nameParts = profile.displayName.split(' ');
         const firstName = nameParts[0];
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+        
+        // Determinar si es un login de admin
         const isAdminLogin = req.query.state === 'admin';
 
         db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
             if (err) return done(err);
             
             if (user) {
-                if (isAdminLogin && email === 'xxsandovalluisxx@gmail.com' && !user.isAdmin) {
-                    db.run('UPDATE users SET isAdmin = TRUE WHERE id = ?', [user.id], (err) => {
-                        if (err) return done(err);
-                        return done(null, {...user, isAdmin: true});
-                    });
+                // Si es login de admin y el usuario no es admin, verificar si debe ser promovido
+                if (isAdminLogin && !user.isAdmin) {
+                    // Verificar si el usuario actual tiene permisos para crear admins
+                    const currentUser = req.user;
+                    if (currentUser && currentUser.isAdmin) {
+                        // Promover a admin
+                        db.run('UPDATE users SET isAdmin = TRUE WHERE id = ?', [user.id], (err) => {
+                            if (err) return done(err);
+                            return done(null, {...user, isAdmin: true});
+                        });
+                    } else {
+                        return done(null, false, { message: 'No tienes permisos para crear administradores' });
+                    }
                 } else {
                     return done(null, user);
                 }
             } else {
-                const isAdmin = isAdminLogin && email === 'xxsandovalluisxx@gmail.com';
+                // Crear nuevo usuario
+                const isAdmin = isAdminLogin && req.user && req.user.isAdmin;
+                
                 db.run(
                     'INSERT INTO users (firstName, lastName, email, googleId, isAdmin) VALUES (?, ?, ?, ?, ?)',
                     [firstName, lastName, email, profile.id, isAdmin],
