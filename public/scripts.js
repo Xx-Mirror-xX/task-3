@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Botón de Google Login (para login normal)
     const googleLoginBtns = document.querySelectorAll('#googleLoginBtn');
     googleLoginBtns.forEach(btn => {
         btn.addEventListener('click', function(e) {
@@ -38,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const errorMessage = document.getElementById('errorMessage');
         
         if (errorContainer && errorMessage) {
-            errorMessage.textContent = message;
+            errorMessage.innerHTML = message;
             errorContainer.style.display = 'block';
             errorContainer.className = type === 'error' ? 'error-container' : 'error-container success';
             
@@ -229,8 +228,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             const amount = parseFloat(this.amount.value.trim());
-            if (amount <= 0) {
-                showError('El monto debe ser mayor que 0');
+            if (isNaN(amount) || amount <= 0) {
+                showError('El monto debe ser un número mayor que 0');
                 this.amount.style.borderBottom = '2px solid red';
                 return;
             }
@@ -261,9 +260,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    let successMsg = result.message || 'Pago procesado con éxito';
+                    let successMsg = 'Pago procesado con éxito';
+                    if (result.transactionId) {
+                        successMsg += `<br><small>ID de transacción: ${result.transactionId}</small>`;
+                    }
                     if (result.paymentId) {
-                        successMsg += `<br><small>ID de transacción: ${result.paymentId}</small>`;
+                        successMsg += `<br><small>ID local: ${result.paymentId}</small>`;
                     }
                     showError(successMsg, 'success');
                     
@@ -271,13 +273,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (window.grecaptcha) grecaptcha.reset();
                     
                     setTimeout(() => {
-                        window.location.href = `/payment-receipt.html?paymentId=${result.paymentId}`;
+                        const params = new URLSearchParams({
+                            paymentId: result.paymentId
+                        });
+                        if (result.transactionId) params.append('transactionId', result.transactionId);
+                        
+                        window.location.href = `/payment-receipt.html?${params.toString()}`;
                     }, 2000);
                 } else {
-                    showError(result.error || 'Error al procesar el pago');
+                    let errorMsg = result.error || 'Error al procesar el pago';
                     if (result.paymentId) {
-                        console.log('Pago registrado localmente con ID:', result.paymentId);
+                        errorMsg += `<br><small>ID local: ${result.paymentId}</small>`;
                     }
+                    showError(errorMsg);
+                    
                     if (window.grecaptcha) grecaptcha.reset();
                 }
             } catch (error) {
@@ -316,12 +325,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 const result = await response.json();
 
-if (response.ok) {
-    showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
-    setTimeout(() => {
-        window.location.href = result.redirect || '/vistas/indice.html';
-    }, 1000);
-} else {
+                if (response.ok) {
+                    showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
+                    setTimeout(() => {
+                        window.location.href = result.redirect || '/vistas/indice.html';
+                    }, 1000);
+                } else {
                     showError(result.message || 'Credenciales incorrectas');
                 }
             } catch (error) {
@@ -399,7 +408,6 @@ if (response.ok) {
         });
     }
 
-    // ADMIN SECTION
     const adminBtn = document.querySelector('.admin-btn');
     const adminModal = document.getElementById('adminLoginModal');
     const closeBtn = document.querySelector('.admin-close-btn');
@@ -470,7 +478,6 @@ if (response.ok) {
         });
     }
 
-    // Cargar contactos si estamos en la página de contactos
     if (document.getElementById('contactsTable')) {
         async function loadContacts() {
             try {
@@ -507,7 +514,6 @@ if (response.ok) {
         loadContacts();
     }
 
-    // Cargar datos del usuario actual
     async function loadCurrentUser() {
         try {
             const response = await fetch('/api/current-user');
