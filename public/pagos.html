@@ -19,6 +19,23 @@
 <body>
     <div class="container" id="paymentForm">
         <h1 class="form-title">Realizar Pago</h1>
+        
+        <div id="testInstructions" style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 20px; border-left: 4px solid #3498db;">
+            <h3 style="margin-top: 0; color: #2c3e50;"><i class="fas fa-info-circle"></i> Instrucciones para pruebas:</h3>
+            <p>Usa estos datos de prueba para simular diferentes resultados:</p>
+            <ul>
+                <li><strong>Tarjetas válidas:</strong> 4111111111111111 (Visa), 5555555555554444 (Mastercard)</li>
+                <li><strong>Nombres especiales:</strong>
+                    <ul>
+                        <li><code>APPROVED</code> - Pago exitoso</li>
+                        <li><code>REJECTED</code> - Pago rechazado</li>
+                        <li><code>ERROR</code> - Error en procesamiento</li>
+                        <li><code>INSUFFICIENT</code> - Fondos insuficientes</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        
         <form id="paymentFormData">
             <div class="input-group">
                 <i class="fas fa-envelope"></i>
@@ -27,12 +44,12 @@
             </div>
             <div class="input-group">
                 <i class="fas fa-user"></i>
-                <input type="text" name="cardName" placeholder="Nombre del titular" required>
+                <input type="text" name="cardName" placeholder="Nombre del titular (Usa palabras clave para pruebas)" required>
                 <label for="cardName">Nombre del titular</label>
             </div>
             <div class="input-group">
                 <i class="fas fa-credit-card"></i>
-                <input type="text" name="cardNumber" placeholder="Número de tarjeta" required>
+                <input type="text" name="cardNumber" placeholder="Número de tarjeta (Usa números de prueba)" required>
                 <label for="cardNumber">Número de tarjeta</label>
             </div>
             <div class="input-group">
@@ -73,7 +90,7 @@
             </div>
             <div class="input-group">
                 <i class="fas fa-dollar-sign"></i>
-                <input type="number" name="amount" placeholder="Monto" required>
+                <input type="number" name="amount" placeholder="Monto" value="10" required>
                 <label for="amount">Monto</label>
             </div>
             <div class="input-group">
