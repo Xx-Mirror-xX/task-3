@@ -143,8 +143,6 @@
                 <input type="password" id="adminConfirmPassword" class="admin-form-control" required>
             </div>
 
-            <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAJdP_2u6jEgJxR1dQd5BdXpBp1hQ"></div>
-
             <button type="submit" class="admin-btn" id="adminRegisterBtn">
                 <i class="fas fa-user-plus"></i> Registrar Administrador
             </button>
@@ -164,7 +162,6 @@
         </div>
     </div>
 
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
         function showError(message, type = 'error') {
             const errorContainer = document.getElementById('errorContainer');
@@ -208,15 +205,6 @@
                 adminRegisterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
                 adminRegisterBtn.disabled = true;
 
-                // Validar reCAPTCHA
-                const recaptchaResponse = window.grecaptcha ? grecaptcha.getResponse() : '';
-                if (!recaptchaResponse) {
-                    showError('Por favor completa el reCAPTCHA');
-                    adminRegisterBtn.innerHTML = originalBtnText;
-                    adminRegisterBtn.disabled = false;
-                    return;
-                }
-
                 // Validar contraseñas
                 const password = document.getElementById('adminPassword').value;
                 const confirmPassword = document.getElementById('adminConfirmPassword').value;
@@ -232,8 +220,7 @@
                     fName: document.getElementById('adminFirstName').value.trim(),
                     lName: document.getElementById('adminLastName').value.trim(),
                     email: document.getElementById('adminEmail').value.trim(),
-                    password: password,
-                    'g-recaptcha-response': recaptchaResponse
+                    password: password
                 };
 
                 try {
@@ -290,9 +277,6 @@
                 } finally {
                     adminRegisterBtn.innerHTML = originalBtnText;
                     adminRegisterBtn.disabled = false;
-                    if (window.grecaptcha && grecaptcha.reset) {
-                        grecaptcha.reset();
-                    }
                 }
             });
         });
