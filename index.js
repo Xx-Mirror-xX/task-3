@@ -168,18 +168,39 @@ const isProduction = process.env.NODE_ENV === 'production';
 // Configuración de almacenamiento de sesiones en PostgreSQL para producción
 let sessionStore = null;
 if (isProduction) {
-    const pgPool = new Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: {
-            rejectUnauthorized: false
-        }
-    });
-    
-    sessionStore = new pgSession({
-        pool: pgPool,
-        tableName: 'sessions',
-        createTableIfMissing: true
-    });
+    try {
+        const pgPool = new Pool({
+            connectionString: process.env.DATABASE_URL,
+            ssl: isProduction ? { rejectUnauthorized: false } : false
+        });
+        
+        // Probar la conexión
+        pgPool.query('SELECT NOW()', (err, res) => {
+            if (err) {
+                console.error('Error al conectar a PostgreSQL:', err.stack);
+            } else {
+                console.log('Conexión exitosa a PostgreSQL para sesiones:', res.rows[0]);
+            }
+        });
+
+        sessionStore = new pgSession({
+            pool: pgPool,
+            tableName: 'sessions',
+            createTableIfMissing: true
+        });
+    } catch (error) {
+        console.error('Error al configurar PostgreSQL para sesiones:', error);
+        // Fallback a SQLite si PostgreSQL falla
+        console.log('Usando SQLite para almacenamiento de sesiones');
+        const SqliteStore = require('better-sqlite3-session-store')(session);
+        sessionStore = new SqliteStore({
+            client: db,
+            expired: {
+                clear: true,
+                intervalMs: 15 * 60 * 1000 // 15 minutos
+            }
+        });
+    }
 }
 
 app.use(session({
