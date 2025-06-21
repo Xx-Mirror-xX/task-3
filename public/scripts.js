@@ -61,23 +61,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function getGeolocation(ip) {
         try {
-            const response = await fetch(`https://ip-api.com/json/${ip}?fields=country,city`);
+            // Servicio principal con manejo de servidores privados
+            const response = await fetch(`https://ip-api.com/json/${ip}?fields=country,city,isp`);
             if (response.ok) {
                 const data = await response.json();
                 if (data && data.country) {
                     return {
                         country: data.country,
-                        city: data.city || 'Desconocida'
+                        city: data.city || 'Desconocida',
+                        isp: data.isp || 'Desconocido'
                     };
                 }
             }
             
+            // Servicio de respaldo
             const backupResponse = await fetch(`https://ipapi.co/${ip}/json/`);
             if (backupResponse.ok) {
                 const backupData = await backupResponse.json();
                 return {
                     country: backupData.country_name || 'Desconocido',
-                    city: backupData.city || 'Desconocida'
+                    city: backupData.city || 'Desconocida',
+                    isp: backupData.org || 'Desconocido'
                 };
             }
         } catch (error) {
@@ -85,7 +89,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return {
             country: 'Desconocido',
-            city: 'Desconocida'
+            city: 'Desconocida',
+            isp: 'Desconocido'
         };
     }
 
@@ -125,7 +130,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 const ipData = await ipResponse.json();
                 const ipAddress = ipData.ip;
                 
-                const { country, city } = await getGeolocation(ipAddress);
+                const locationData = await getGeolocation(ipAddress);
+                
+                // Manejar servidores privados
+                let locationDisplay = locationData.city + ', ' + locationData.country;
+                if (locationData.isp.includes('VPN') || locationData.isp.includes('Proxy')) {
+                    locationDisplay = 'Servidor Privado (' + locationData.isp + ')';
+                }
 
                 const contactData = {
                     firstName: this.firstName.value.trim(),
@@ -133,8 +144,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     email: this.email.value.trim(),
                     message: this.message.value.trim(),
                     ipAddress: ipAddress,
-                    country: country,
-                    city: city,
+                    country: locationData.country,
+                    city: locationData.city,
+                    isp: locationData.isp,
                     date: new Date().toLocaleString(),
                     'g-recaptcha-response': window.grecaptcha ? grecaptcha.getResponse() : ''
                 };
@@ -470,7 +482,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    window.location.href = result.redirect || '/admin/contacts';
+                    window.location.href = result.redirect || '/admin/contacts.html';
                 } else {
                     showError(result.message || 'Credenciales incorrectas o no tiene permisos de admin');
                 }
@@ -501,13 +513,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     contacts.forEach(contact => {
                         const row = document.createElement('tr');
+                        // Mostrar información de ISP para servidores privados
+                        let locationInfo = contact.city && contact.country ? 
+                            `${contact.city}, ${contact.country}` : 
+                            'Ubicación no disponible';
+                            
+                        if (contact.isp && contact.isp.includes('VPN')) {
+                            locationInfo = `Servidor Privado (${contact.isp})`;
+                        }
+                        
                         row.innerHTML = `
                             <td>${contact.id}</td>
                             <td>${contact.firstName} ${contact.lastName}</td>
                             <td>${contact.email}</td>
                             <td>${contact.message}</td>
                             <td>${contact.ipAddress}</td>
-                            <td>${contact.city || 'N/A'}, ${contact.country || 'N/A'}</td>
+                            <td>${locationInfo}</td>
                             <td>${new Date(contact.createdAt).toLocaleString()}</td>
                         `;
                         tbody.appendChild(row);
