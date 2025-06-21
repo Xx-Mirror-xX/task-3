@@ -19,7 +19,7 @@ const GEOLOCATION_TIMEOUT = 3000;
 const GEOLOCATION_CACHE = new Map();
 
 // Configuración de proxy para Render.com
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
@@ -46,6 +46,7 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 ipAddress TEXT NOT NULL,
                 country TEXT,
                 city TEXT,
+                isp TEXT,
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
             )`);
             db.run(`CREATE TABLE IF NOT EXISTS payments (
@@ -118,23 +119,18 @@ passport.use(new GoogleStrategy({
             if (user) {
                 // Si es login de admin y el usuario no es admin, verificar si debe ser promovido
                 if (isAdminLogin && !user.isAdmin) {
-                    // Verificar si el usuario actual tiene permisos para crear admins
-                    const currentUser = req.user;
-                    if (currentUser && currentUser.isAdmin) {
-                        // Promover a admin
-                        db.run('UPDATE users SET isAdmin = TRUE WHERE id = ?', [user.id], (err) => {
-                            if (err) return done(err);
-                            return done(null, {...user, isAdmin: true});
-                        });
-                    } else {
-                        return done(null, false, { message: 'No tienes permisos para crear administradores' });
-                    }
-                } else {
-                    return done(null, user);
+                    // En este punto, req.user no está disponible porque es la primera autenticación.
+                    // Por lo tanto, no podemos verificar si el usuario actual es admin.
+                    // Cambiamos la lógica: solo permitimos que un administrador cree otros administradores durante el flujo normal, no en el login.
+                    // En este caso, denegamos el acceso.
+                    return done(null, false, { message: 'No tienes permisos para crear administradores. Contacta al administrador.' });
                 }
+                return done(null, user);
             } else {
                 // Crear nuevo usuario
-                const isAdmin = isAdminLogin && req.user && req.user.isAdmin;
+                // Solo si es un flujo de administrador Y hay un usuario administrador autenticado (lo cual no es el caso en este flujo de autenticación inicial)
+                // Por lo tanto, no crearemos administradores en el primer login con Google.
+                const isAdmin = false; // Por defecto no es admin
                 
                 db.run(
                     'INSERT INTO users (firstName, lastName, email, googleId, isAdmin) VALUES (?, ?, ?, ?, ?)',
@@ -230,12 +226,27 @@ const verifyRecaptcha = async (token, ipAddress, action = '') => {
 };
 
 const getGeolocation = async (ipAddress) => {
-    // Manejar IPs locales
-    if (ipAddress === '::1' || ipAddress === '127.0.0.1') {
-        return {
-            country: 'Local',
-            city: 'Desarrollo'
-        };
+    const privateIPRanges = [
+        '10.', '192.168.', '172.16.', '172.17.', '172.18.', '172.19.',
+        '172.20.', '172.21.', '172.22.', '172.23.', '172.24.', '172.25.',
+        '172.26.', '172.27.', '172.28.', '172.29.', '172.30.', '172.31.'
+    ];
+    const isPrivateIP = privateIPRanges.some(range => ipAddress.startsWith(range)) || 
+                       ipAddress === '::1' || 
+                       ipAddress === '127.0.0.1';
+
+    if (isPrivateIP) {
+        try {
+            const publicIpResponse = await axios.get('https://api.ipify.org?format=json', { timeout: GEOLOCATION_TIMEOUT });
+            ipAddress = publicIpResponse.data.ip;
+        } catch (error) {
+            console.error('Error al obtener IP pública:', error.message);
+            return {
+                country: 'Servidor Privado',
+                city: 'Ubicación Oculta',
+                isp: 'Red Privada'
+            };
+        }
     }
 
     if (GEOLOCATION_CACHE.has(ipAddress)) {
@@ -243,13 +254,14 @@ const getGeolocation = async (ipAddress) => {
     }
 
     try {
-        const response = await axios.get(`http://ip-api.com/json/${ipAddress}?fields=country,city,status`, {
+        const response = await axios.get(`http://ip-api.com/json/${ipAddress}?fields=country,city,status,isp`, {
             timeout: GEOLOCATION_TIMEOUT
         });
         if (response.data && response.data.status === 'success') {
             const result = {
                 country: response.data.country || 'Desconocido',
-                city: response.data.city || 'Desconocido'
+                city: response.data.city || 'Desconocido',
+                isp: response.data.isp || 'Desconocido'
             };
             GEOLOCATION_CACHE.set(ipAddress, result);
             setTimeout(() => GEOLOCATION_CACHE.delete(ipAddress), 60 * 60 * 1000);
@@ -266,7 +278,8 @@ const getGeolocation = async (ipAddress) => {
         if (response.data) {
             const result = {
                 country: response.data.country_name || 'Desconocido',
-                city: response.data.city || 'Desconocido'
+                city: response.data.city || 'Desconocido',
+                isp: response.data.org || 'Desconocido'
             };
             GEOLOCATION_CACHE.set(ipAddress, result);
             setTimeout(() => GEOLOCATION_CACHE.delete(ipAddress), 60 * 60 * 1000);
@@ -278,7 +291,8 @@ const getGeolocation = async (ipAddress) => {
 
     return {
         country: 'Desconocido',
-        city: 'Desconocido'
+        city: 'Desconocido',
+        isp: 'Desconocido'
     };
 };
 
@@ -416,7 +430,7 @@ app.post('/admin/login', async (req, res) => {
 app.post('/register', async (req, res) => {
     try {
         const { fName, lName, email, password, 'g-recaptcha-response': recaptchaToken } = req.body;
-        const ipAddress = req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress;
+        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         
         if (!fName || !lName || !email || !password || !recaptchaToken) {
             return res.status(400).json({ error: 'Todos los campos son requeridos' });
@@ -605,7 +619,7 @@ app.get('/logout', (req, res) => {
 app.post('/api/contact', async (req, res) => {
     try {
         const { firstName, lastName, email, message, 'g-recaptcha-response': recaptchaToken } = req.body;
-        const ipAddress = req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress;
+        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
         if (!firstName || !lastName || !email || !message || !recaptchaToken) {
             return res.status(400).json({ error: "Todos los campos son requeridos" });
@@ -619,12 +633,12 @@ app.post('/api/contact', async (req, res) => {
             });
         }
 
-        const { country, city } = await getGeolocation(ipAddress);
+        const { country, city, isp } = await getGeolocation(ipAddress);
 
         db.run(
-            `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [firstName, lastName, email, message, ipAddress, country, city],
+            `INSERT INTO contacts (firstName, lastName, email, message, ipAddress, country, city, isp) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [firstName, lastName, email, message, ipAddress, country, city, isp],
             function(err) {
                 if (err) {
                     console.error('Error al guardar contacto:', err);
@@ -659,7 +673,7 @@ app.get('/api/contacts', requireAuth, (req, res) => {
 app.post('/api/payment', async (req, res) => {
     try {
         const { 'g-recaptcha-response': recaptchaToken } = req.body;
-        const ipAddress = req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress;
+        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
         if (!recaptchaToken) {
             return res.status(400).json({ error: "Verificación de reCAPTCHA requerida" });
