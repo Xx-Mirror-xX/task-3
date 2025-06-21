@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         grecaptcha.reset();
                     }
                     setTimeout(() => {
-                        window.location.href = '/index.html';
+                        window.location.href = '/';
                     }, 1000);
                 } else {
                     showError(serverResult.error || 'Error al enviar el mensaje');
@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
- const paymentForm = document.getElementById('paymentFormData');
+    const paymentForm = document.getElementById('paymentFormData');
     if (paymentForm) {
         paymentForm.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -267,10 +267,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    // Redirigir a la página de pagos de administración
-                    window.location.href = '/admin/payments.html';
+                    window.location.href = '/admin/payments';
                 } else {
-                    // Mostrar error y permitir reintentar
                     let errorMsg = result.error || 'Error al procesar el pago';
                     if (result.paymentId) {
                         errorMsg += `<br><small>ID local: ${result.paymentId}</small>`;
@@ -308,7 +306,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async function(e) {
@@ -337,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
                     setTimeout(() => {
-                        window.location.href = result.redirect || '/vistas/indice.html';
+                        window.location.href = result.redirect || '/indice';
                     }, 1000);
                 } else {
                     showError(result.message || 'Credenciales incorrectas');
@@ -417,81 +414,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    const adminBtn = document.querySelector('.admin-btn');
-    const adminModal = document.getElementById('adminLoginModal');
-    const closeBtn = document.querySelector('.admin-close-btn');
-    const adminLoginForm = document.getElementById('adminLoginForm');
-    const adminGoogleBtn = document.getElementById('adminGoogleBtn');
-
-    if (adminBtn && adminModal) {
-        adminBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            adminModal.style.display = 'block';
-        });
-    }
-
-    if (closeBtn && adminModal) {
-        closeBtn.addEventListener('click', function() {
-            adminModal.style.display = 'none';
-        });
-    }
-
-    if (adminModal) {
-        window.addEventListener('click', function(e) {
-            if (e.target === adminModal) {
-                adminModal.style.display = 'none';
-            }
-        });
-    }
-
-    if (adminGoogleBtn) {
-        adminGoogleBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            window.location.href = '/auth/google/admin';
-        });
-    }
-
-    if (adminLoginForm) {
-        adminLoginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('adminEmail')?.value;
-            const password = document.getElementById('adminPassword')?.value;
-
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
-            submitBtn.disabled = true;
-
-            try {
-                const response = await fetch('/admin/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    window.location.href = result.redirect || '/admin/contacts.html';
-                } else {
-                    showError(result.message || 'Credenciales incorrectas o no tiene permisos de admin');
-                }
-            } catch (error) {
-                console.error('Error en login admin:', error);
-                showError('Error de conexión con el servidor');
-            } finally {
-                submitBtn.innerHTML = originalBtnText;
-                submitBtn.disabled = false;
-            }
-        });
-    }
-
     if (document.getElementById('contactsTable')) {
         async function loadContacts() {
             try {
                 const response = await fetch('/api/contacts', {
-                    credentials: 'include'  // Añadido para enviar cookies
+                    credentials: 'include'
                 });
                 if (!response.ok) {
                     throw new Error('Error al cargar contactos');
@@ -531,7 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
         async function loadPayments() {
             try {
                 const response = await fetch('/api/payments', {
-                    credentials: 'include'  // Añadido para enviar cookies
+                    credentials: 'include'
                 });
                 if (!response.ok) {
                     throw new Error('Error al cargar pagos');
@@ -600,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (dateTo) {
                 const toDate = new Date(dateTo);
-                toDate.setDate(toDate.getDate() + 1); // Incluir todo el día seleccionado
+                toDate.setDate(toDate.getDate() + 1);
                 filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
             }
             
@@ -627,18 +554,4 @@ document.addEventListener('DOMContentLoaded', function() {
         
         loadPayments();
     }
-
-    async function loadCurrentUser() {
-        try {
-            const response = await fetch('/api/current-user');
-            if (response.ok) {
-                const user = await response.json();
-                console.log('Usuario actual:', user);
-            }
-        } catch (error) {
-            console.error('Error al cargar usuario:', error);
-        }
-    }
-    
-    loadCurrentUser();
 });
