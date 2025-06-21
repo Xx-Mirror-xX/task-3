@@ -57,7 +57,7 @@ class PaymentsController {
                 cvv: cvv,
                 "expiration-month": expiryMonth.toString().padStart(2, '0'),
                 "expiration-year": expiryYear.toString(),
-                "full-name": cardName,
+                "full-name": cardName, // Usaremos el nombre ingresado
                 currency: currency,
                 description: service,
                 reference: `local-${localPaymentId}`
@@ -100,10 +100,15 @@ class PaymentsController {
             'ERROR': 'Error en el procesamiento del pago',
             'INSUFFICIENT': 'Fondos insuficientes',
             'INVALID_CARD': 'Tarjeta inválida',
-            'EXPIRED_CARD': 'Tarjeta expirada'
+            'EXPIRED_CARD': 'Tarjeta expirada',
+            '001': 'Número de tarjeta inválido',
+            '002': 'Pago rechazado',
+            '003': 'Error en el procesamiento',
+            '004': 'Fondos insuficientes'
         };
 
-        const status = apiResponse.status || 'error';
+        // Manejar tanto códigos de error como estados
+        const status = apiResponse.status || apiResponse.error_code || 'error';
         const errorMessage = errorMessages[status] || 'Error al procesar el pago';
 
         return res.status(400).json({
