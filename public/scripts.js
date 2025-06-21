@@ -197,134 +197,135 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-const paymentForm = document.getElementById('paymentFormData');
-if (paymentForm) {
-    paymentForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
+    const paymentForm = document.getElementById('paymentFormData');
+    if (paymentForm) {
+        paymentForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-        const recaptchaResponse = window.grecaptcha ? grecaptcha.getResponse() : '';
-        if (!recaptchaResponse) {
-            showError('Por favor completa el reCAPTCHA');
-            return;
-        }
-
-        const requiredFields = ['email', 'cardName', 'cardNumber', 'expiryMonth', 
-                              'expiryYear', 'cvv', 'amount', 'currency'];
-        let isValid = true;
-        
-        requiredFields.forEach(field => {
-            const input = this.elements[field];
-            if (!input || !input.value.trim()) {
-                isValid = false;
-                if (input) input.style.borderBottom = '2px solid red';
-            } else if (input) {
-                input.style.borderBottom = '';
+            const recaptchaResponse = window.grecaptcha ? grecaptcha.getResponse() : '';
+            if (!recaptchaResponse) {
+                showError('Por favor completa el reCAPTCHA');
+                return;
             }
-        });
-        
-        if (!isValid) {
-            showError('Por favor complete todos los campos requeridos');
-            return;
-        }
 
-        const cardNumber = this.cardNumber.value.trim().replace(/\s/g, '');
-        if (cardNumber.length < 13 || cardNumber.length > 19 || !/^\d+$/.test(cardNumber)) {
-            showError('Número de tarjeta inválido (debe tener 13-19 dígitos)');
-            this.cardNumber.style.borderBottom = '2px solid red';
-            return;
-        }
-
-        const amount = parseFloat(this.amount.value.trim());
-        if (isNaN(amount) || amount <= 0) {
-            showError('El monto debe ser un número mayor que 0');
-            this.amount.style.borderBottom = '2px solid red';
-            return;
-        }
-
-        const submitBtn = this.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-        submitBtn.disabled = true;
-
-        try {
-            const response = await fetch('/api/payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: this.email.value.trim(),
-                    cardName: this.cardName.value.trim(),
-                    cardNumber: cardNumber,
-                    expiryMonth: this.expiryMonth.value,
-                    expiryYear: this.expiryYear.value,
-                    cvv: this.cvv.value.trim(),
-                    amount: amount,
-                    currency: this.currency.value,
-                    service: "Servicio de Donación",
-                    'g-recaptcha-response': recaptchaResponse
-                })
+            const requiredFields = ['email', 'cardName', 'cardNumber', 'expiryMonth', 
+                                  'expiryYear', 'cvv', 'amount', 'currency'];
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                const input = this.elements[field];
+                if (!input || !input.value.trim()) {
+                    isValid = false;
+                    if (input) input.style.borderBottom = '2px solid red';
+                } else if (input) {
+                    input.style.borderBottom = '';
+                }
             });
             
-            const result = await response.json();
-
-            if (response.ok) {
-                let successMsg = 'Pago procesado con éxito';
-                if (result.transactionId) {
-                    successMsg += `<br><small>ID de transacción: ${result.transactionId}</small>`;
-                }
-                if (result.paymentId) {
-                    successMsg += `<br><small>ID local: ${result.paymentId}</small>`;
-                }
-                showError(successMsg, 'success');
-                
-                this.reset();
-                if (window.grecaptcha) grecaptcha.reset();
-                
-                setTimeout(() => {
-                    const params = new URLSearchParams({
-                        paymentId: result.paymentId
-                    });
-                    if (result.transactionId) params.append('transactionId', result.transactionId);
-                    
-                    window.location.href = `/payment-receipt.html?${params.toString()}`;
-                }, 2000);
-            } else {
-                let errorMsg = result.error || 'Error al procesar el pago';
-                if (result.paymentId) {
-                    errorMsg += `<br><small>ID local: ${result.paymentId}</small>`;
-                }
-                
-                // Mostrar detalles adicionales del error
-                if (result.details) {
-                    const errorCodes = {
-                        '001': 'Número de tarjeta inválido',
-                        '002': 'Pago rechazado por el procesador',
-                        '003': 'Error en el procesamiento del pago',
-                        '004': 'Fondos insuficientes'
-                    };
-                    
-                    if (result.details.error_code && errorCodes[result.details.error_code]) {
-                        errorMsg = errorCodes[result.details.error_code];
-                    }
-                    
-                    if (result.details.message) {
-                        errorMsg += `<br><small>${result.details.message}</small>`;
-                    }
-                }
-                
-                showError(errorMsg);
-                
-                if (window.grecaptcha) grecaptcha.reset();
+            if (!isValid) {
+                showError('Por favor complete todos los campos requeridos');
+                return;
             }
-        } catch (error) {
-            console.error('Error:', error);
-            showError('Error de conexión con el servidor. Por favor intente nuevamente.');
-            if (window.grecaptcha) grecaptcha.reset();
-        } finally {
-            submitBtn.innerHTML = originalBtnText;
-            submitBtn.disabled = false;
-        }
-    });
-}
+
+            const cardNumber = this.cardNumber.value.trim().replace(/\s/g, '');
+            if (cardNumber.length < 13 || cardNumber.length > 19 || !/^\d+$/.test(cardNumber)) {
+                showError('Número de tarjeta inválido (debe tener 13-19 dígitos)');
+                this.cardNumber.style.borderBottom = '2px solid red';
+                return;
+            }
+
+            const amount = parseFloat(this.amount.value.trim());
+            if (isNaN(amount) || amount <= 0) {
+                showError('El monto debe ser un número mayor que 0');
+                this.amount.style.borderBottom = '2px solid red';
+                return;
+            }
+
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: this.email.value.trim(),
+                        cardName: this.cardName.value.trim(),
+                        cardNumber: cardNumber,
+                        expiryMonth: this.expiryMonth.value,
+                        expiryYear: this.expiryYear.value,
+                        cvv: this.cvv.value.trim(),
+                        amount: amount,
+                        currency: this.currency.value,
+                        service: "Servicio de Donación",
+                        'g-recaptcha-response': recaptchaResponse
+                    })
+                });
+                
+                const result = await response.json();
+
+                if (response.ok) {
+                    let successMsg = 'Pago procesado con éxito';
+                    if (result.transactionId) {
+                        successMsg += `<br><small>ID de transacción: ${result.transactionId}</small>`;
+                    }
+                    if (result.paymentId) {
+                        successMsg += `<br><small>ID local: ${result.paymentId}</small>`;
+                    }
+                    showError(successMsg, 'success');
+                    
+                    this.reset();
+                    if (window.grecaptcha) grecaptcha.reset();
+                    
+                    setTimeout(() => {
+                        const params = new URLSearchParams({
+                            paymentId: result.paymentId
+                        });
+                        if (result.transactionId) params.append('transactionId', result.transactionId);
+                        
+                        window.location.href = `/payment-receipt.html?${params.toString()}`;
+                    }, 2000);
+                } else {
+                    let errorMsg = result.error || 'Error al procesar el pago';
+                    if (result.paymentId) {
+                        errorMsg += `<br><small>ID local: ${result.paymentId}</small>`;
+                    }
+                    
+                    // Mostrar detalles adicionales del error si están disponibles
+                    if (result.details) {
+                        // Manejar códigos de error específicos
+                        const errorCodes = {
+                            '001': 'Número de tarjeta inválido',
+                            '002': 'Pago rechazado por el procesador',
+                            '003': 'Error en el procesamiento del pago',
+                            '004': 'Fondos insuficientes'
+                        };
+                        
+                        if (result.details.error_code && errorCodes[result.details.error_code]) {
+                            errorMsg = errorCodes[result.details.error_code];
+                        }
+                        
+                        if (result.details.message) {
+                            errorMsg += `<br><small>${result.details.message}</small>`;
+                        }
+                    }
+                    
+                    showError(errorMsg);
+                    
+                    if (window.grecaptcha) grecaptcha.reset();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error de conexión con el servidor. Por favor intente nuevamente.');
+                if (window.grecaptcha) grecaptcha.reset();
+            } finally {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+            }
+        });
+    }
 
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
@@ -538,6 +539,107 @@ if (paymentForm) {
         }
         
         loadContacts();
+    }
+
+    if (document.getElementById('paymentsTable')) {
+        let allPayments = [];
+        
+        async function loadPayments() {
+            try {
+                const response = await fetch('/api/payments');
+                if (!response.ok) {
+                    throw new Error('Error al cargar pagos');
+                }
+                allPayments = await response.json();
+                renderPayments(allPayments);
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message);
+            }
+        }
+        
+        function renderPayments(payments) {
+            const tbody = document.querySelector('#paymentsTable tbody');
+            tbody.innerHTML = '';
+            
+            payments.forEach(payment => {
+                const row = document.createElement('tr');
+                const statusClass = `status-${payment.status || 'pending'}`;
+                
+                row.innerHTML = `
+                    <td>${payment.id}</td>
+                    <td>${payment.email}</td>
+                    <td>${payment.service}</td>
+                    <td>${payment.amount}</td>
+                    <td>${payment.currency}</td>
+                    <td class="${statusClass}">${getStatusText(payment.status)}</td>
+                    <td>${new Date(payment.paymentDate).toLocaleString()}</td>
+                    <td>${payment.transactionId || 'N/A'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function getStatusText(status) {
+            switch(status) {
+                case 'completed': return 'Completado';
+                case 'pending': return 'Pendiente';
+                case 'failed': return 'Fallido';
+                case 'rejected': return 'Rechazado';
+                case 'api_error': return 'Error API';
+                default: return status;
+            }
+        }
+        
+        function filterPayments() {
+            const service = document.getElementById('serviceFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const dateFrom = document.getElementById('dateFromFilter').value;
+            const dateTo = document.getElementById('dateToFilter').value;
+            
+            let filtered = [...allPayments];
+            
+            if (service) {
+                filtered = filtered.filter(p => p.service === service);
+            }
+            
+            if (status) {
+                filtered = filtered.filter(p => p.status === status);
+            }
+            
+            if (dateFrom) {
+                const fromDate = new Date(dateFrom);
+                filtered = filtered.filter(p => new Date(p.paymentDate) >= fromDate);
+            }
+            
+            if (dateTo) {
+                const toDate = new Date(dateTo);
+                toDate.setDate(toDate.getDate() + 1); // Incluir todo el día seleccionado
+                filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
+            }
+            
+            renderPayments(filtered);
+        }
+        
+        function resetFilters() {
+            document.getElementById('serviceFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('dateFromFilter').value = '';
+            document.getElementById('dateToFilter').value = '';
+            renderPayments(allPayments);
+        }
+        
+        document.getElementById('applyFiltersBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            filterPayments();
+        });
+        
+        document.getElementById('resetFiltersBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            resetFilters();
+        });
+        
+        loadPayments();
     }
 
     async function loadCurrentUser() {
