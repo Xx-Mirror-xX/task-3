@@ -1,146 +1,502 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Realizar Pago</title>
-    <meta property="og:title" content="Pagos Seguros - Creating Social Network">
-    <meta property="og:description" content="Realiza pagos seguros en nuestra plataforma">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Pagos</title>
+    <meta property="og:title" content="Panel de Pagos - Creating Social Network">
+    <meta property="og:description" content="Administra transacciones y pagos en tu panel de administración">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://creatingsocialnetwork.com/pagos">
-    <meta property="og:image" content="https://creatingsocialnetwork.com/images/payment-og.jpg">
+    <meta property="og:url" content="https://creatingsocialnetwork.com/admin/payments.ejs">
+    <meta property="og:image" content="https://creatingsocialnetwork.com/images/payments-og.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Sistema de Pagos - Creating Social Network">
-    <meta name="twitter:description" content="Transacciones seguras y rápidas">
-    <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/payment-twitter.jpg">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <meta name="twitter:title" content="Panel de Pagos - Creating Social Network">
+    <meta name="twitter:description" content="Gestión profesional de transacciones financieras">
+    <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/payments-twitter.jpg">
     <link rel="stylesheet" href="/stylesheet/styles.css">
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
-        .test-instructions {
-            background: #f0f7ff;
-            border-left: 4px solid #3498db;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+            --border: #dee2e6;
+            --accent: #e63946;
         }
-        .test-instructions h3 {
-            margin-top: 0;
-            color: #2c3e50;
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, var(--secondary), #1a2533);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            color: white;
+        }
+        
+        .admin-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        .test-instructions ul {
-            margin-bottom: 0;
-        }
-        .test-instructions li {
-            margin-bottom: 5px;
-        }
-        .test-instructions code {
-            background: #e3f2fd;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
+        
+        .admin-header h1 i {
+            color: var(--accent);
         }
         
-        /* Estilos para el reCAPTCHA */
-        .g-recaptcha {
-            margin: 15px 0;
+        .nav-buttons {
             display: flex;
-            justify-content: center;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn i {
+            font-size: 0.9rem;
+        }
+        
+        .contacts-btn {
+            background-color: var(--primary);
+        }
+        
+        .contacts-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .register-admin-btn {
+            background-color: var(--success);
+        }
+        
+        .register-admin-btn:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .logout-btn {
+            background-color: var(--danger);
+        }
+        
+        .logout-btn:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .filters-container {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--accent);
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+        }
+        
+        .filter-label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+        
+        .filter-input, .filter-select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-input:focus, .filter-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.2);
+            outline: none;
+        }
+        
+        .apply-filters-btn, .reset-filters-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .apply-filters-btn {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .apply-filters-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .reset-filters-btn {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .reset-filters-btn:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .status-completed {
+            color: var(--success);
+            font-weight: 600;
+            background-color: rgba(46, 204, 113, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .status-pending {
+            color: #f39c12;
+            font-weight: 600;
+            background-color: rgba(243, 156, 18, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .status-failed {
+            color: var(--danger);
+            font-weight: 600;
+            background-color: rgba(231, 76, 60, 0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th {
+            background-color: #f1f5f9;
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+            color: var(--dark);
+            border-bottom: 2px solid var(--border);
+        }
+        
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+        
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .container {
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .filters-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+        
+        .amount-cell {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .currency-cell {
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        
+        .transaction-cell {
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        
+        .refresh-btn {
+            padding: 8px 16px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
     </style>
 </head>
 <body>
-    <div class="container" id="paymentForm">
-        <h1 class="form-title">Realizar Pago</h1>
-        
-        <form id="paymentFormData">
-            <input type="hidden" name="service" value="Servicio de Donación">
-            <div class="input-group">
-                <i class="fas fa-envelope"></i>
-                <input type="email" name="email" placeholder="Correo electrónico" required>
-                <label for="email">Correo electrónico</label>
-            </div>
-            <div class="input-group">
-                <i class="fas fa-user"></i>
-                <input type="text" name="cardName" placeholder="Nombre del titular (ej: APPROVED)" required>
-                <label for="cardName">Nombre del titular</label>
-            </div>
-            <div class="input-group">
-                <i class="fas fa-credit-card"></i>
-                <input type="text" name="cardNumber" placeholder="Número de tarjeta (ej: 4111111111111111)" 
-                       pattern="\d{13,19}" title="Debe tener 13-19 dígitos" required>
-                <label for="cardNumber">Número de tarjeta</label>
-            </div>
-            <div class="input-group">
-                <i class="fas fa-calendar"></i>
-                <div style="display: flex; justify-content: space-between;">
-                    <select name="expiryMonth" required style="width: 48%;">
-                        <option value="">Mes</option>
-                        <option value="01">01</option>
-                        <option value="02">02</option>
-                        <option value="03">03</option>
-                        <option value="04">04</option>
-                        <option value="05">05</option>
-                        <option value="06">06</option>
-                        <option value="07">07</option>
-                        <option value="08">08</option>
-                        <option value="09">09</option>
-                        <option value="10">10</option>
-                        <option value="11">11</option>
-                        <option value="12">12</option>
-                    </select>
-                    <select name="expiryYear" required style="width: 48%;">
-                        <option value="">Año</option>
-                        <option value="2023">2023</option>
-                        <option value="2024">2024</option>
-                        <option value="2025">2025</option>
-                        <option value="2026">2026</option>
-                        <option value="2027">2027</option>
-                        <option value="2028">2028</option>
-                        <option value="2029">2029</option>
-                        <option value="2030">2030</option>
-                    </select>
-                </div>
-            </div>
-            <div class="input-group">
-                <i class="fas fa-lock"></i>
-                <input type="text" name="cvv" placeholder="CVV" pattern="\d{3,4}" title="3-4 dígitos" required>
-                <label for="cvv">CVV</label>
-            </div>
-            <div class="input-group">
-                <i class="fas fa-dollar-sign"></i>
-                <input type="number" name="amount" placeholder="Monto" min="1" step="0.01" value="10" required>
-                <label for="amount">Monto</label>
-            </div>
-            <div class="input-group">
-                <i class="fas fa-money-bill-wave"></i>
-                <select name="currency" required>
-                    <option value="">Seleccione moneda</option>
-                    <option value="USD">USD</option>
-                    <option value="EUR">EUR</option>
-                    <option value="VES">VES</option>
-                </select>
-                <label for="currency" style="top: -0.01em;">Moneda</label>
-            </div>
-            
-            <!-- reCAPTCHA añadido aquí -->
-            <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></div>
-            
-            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
-                <a href="/" class="btn" style="width: 48%; text-align: center;">
-                    <i class="fas fa-arrow-left"></i> Volver
+    <div class="container">
+        <div class="admin-header">
+            <h1><i class="fas fa-money-bill-wave"></i> Pagos Recibidos</h1>
+            <div class="nav-buttons">
+                <a href="/admin/contacts" class="nav-btn contacts-btn">
+                    <i class="fas fa-address-book"></i> Contactos
                 </a>
-                <button class="btn" type="submit" style="width: 48%;">
-                    Pagar <i class="fas fa-credit-card"></i>
+                <a href="/admin/register" class="nav-btn register-admin-btn">
+                    <i class="fas fa-user-plus"></i> Registrar Admin
+                </a>
+                <a href="/logout" class="nav-btn logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                </a>
+            </div>
+        </div>
+        
+        <div class="filters-container">
+            <div class="filter-group">
+                <label class="filter-label">Servicio:</label>
+                <select id="serviceFilter" class="filter-select">
+                    <option value="">Todos</option>
+                    <option value="Servicio de Donación">Servicio de Donación</option>
+                    <option value="Suscripción Premium">Suscripción Premium</option>
+                    <option value="Publicidad">Publicidad</option>
+                    <option value="Servicio Personalizado">Servicio Personalizado</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Estado:</label>
+                <select id="statusFilter" class="filter-select">
+                    <option value="">Todos</option>
+                    <option value="completed">Completado</option>
+                    <option value="pending">Pendiente</option>
+                    <option value="failed">Fallido</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Fecha desde:</label>
+                <input type="date" id="dateFromFilter" class="filter-input">
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Fecha hasta:</label>
+                <input type="date" id="dateToFilter" class="filter-input">
+            </div>
+            
+            <div class="filters-actions">
+                <button id="applyFiltersBtn" class="apply-filters-btn">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+                
+                <button id="resetFiltersBtn" class="reset-filters-btn">
+                    <i class="fas fa-times"></i> Limpiar
+                </button>
+                
+                <button id="refreshBtn" class="refresh-btn">
+                    <i class="fas fa-sync-alt"></i> Actualizar
                 </button>
             </div>
-        </form>
-    </div>
+        </div>
 
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <script src="/scripts.js"></script>
+        <div class="table-container">
+            <table id="paymentsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Servicio</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th>ID Transacción</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <script>
+            let allPayments = [];
+            
+            async function loadPayments() {
+                try {
+                    const response = await fetch('/api/payments', {
+                        credentials: 'include'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Error al cargar pagos');
+                    }
+                    
+                    allPayments = await response.json();
+                    renderPayments(allPayments);
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert(error.message);
+                }
+            }
+            
+            function renderPayments(payments) {
+                const tbody = document.querySelector('#paymentsTable tbody');
+                tbody.innerHTML = '';
+                
+                payments.forEach(payment => {
+                    const row = document.createElement('tr');
+                    const statusClass = `status-${payment.status || 'pending'}`;
+                    const formattedAmount = new Intl.NumberFormat('es-ES', {
+                        style: 'currency',
+                        currency: payment.currency || 'USD',
+                        minimumFractionDigits: 2
+                    }).format(payment.amount || 0);
+                    
+                    row.innerHTML = `
+                        <td>${payment.id}</td>
+                        <td>${payment.email || 'N/A'}</td>
+                        <td>${payment.service || 'N/A'}</td>
+                        <td class="amount-cell">${formattedAmount}</td>
+                        <td class="${statusClass}">${getStatusText(payment.status)}</td>
+                        <td>${new Date(payment.paymentDate).toLocaleString()}</td>
+                        <td class="transaction-cell">${payment.transactionId || 'N/A'}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+            
+            function getStatusText(status) {
+                switch(status) {
+                    case 'completed': return 'Completado';
+                    case 'pending': return 'Pendiente';
+                    case 'failed': return 'Fallido';
+                    default: return 'Pendiente';
+                }
+            }
+            
+            function filterPayments() {
+                const service = document.getElementById('serviceFilter').value;
+                const status = document.getElementById('statusFilter').value;
+                const dateFrom = document.getElementById('dateFromFilter').value;
+                const dateTo = document.getElementById('dateToFilter').value;
+                
+                let filtered = [...allPayments];
+                
+                if (service) {
+                    filtered = filtered.filter(p => p.service === service);
+                }
+                
+                if (status) {
+                    filtered = filtered.filter(p => p.status === status);
+                }
+                
+                if (dateFrom) {
+                    const fromDate = new Date(dateFrom);
+                    filtered = filtered.filter(p => new Date(p.paymentDate) >= fromDate);
+                }
+                
+                if (dateTo) {
+                    const toDate = new Date(dateTo);
+                    toDate.setDate(toDate.getDate() + 1); // Incluir todo el día seleccionado
+                    filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
+                }
+                
+                renderPayments(filtered);
+            }
+            
+            function resetFilters() {
+                document.getElementById('serviceFilter').value = '';
+                document.getElementById('statusFilter').value = '';
+                document.getElementById('dateFromFilter').value = '';
+                document.getElementById('dateToFilter').value = '';
+                renderPayments(allPayments);
+            }
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                loadPayments();
+                
+                document.getElementById('applyFiltersBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    filterPayments();
+                });
+                
+                document.getElementById('resetFiltersBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    resetFilters();
+                });
+                
+                document.getElementById('refreshBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    loadPayments();
+                    resetFilters();
+                });
+            });
+        </script>
+    </div>
 </body>
 </html>
