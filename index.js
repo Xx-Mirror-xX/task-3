@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
@@ -11,10 +12,10 @@ const app = express();
 const PaymentsController = require('./controllers/PaymentsController');
 const paymentsController = new PaymentsController();
 
-const RECAPTCHA_SECRET_KEY = '6LcojE4rAAAAAEcJGKd1KJh2-Uepd0HPQLL1Rkvh';
-const GOOGLE_CLIENT_ID = '237117412868-qu524rceddvoeko90ev60b626gl540qt.apps.googleusercontent.com';
-const GOOGLE_CLIENT_SECRET = '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';
-const GOOGLE_CALLBACK_URL = 'https://creating-social-network-2.onrender.com/auth/google/callback';
+const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const GOOGLE_CALLBACK_URL = process.env.GOOGLE_CALLBACK_URL;
 const GEOLOCATION_TIMEOUT = 3000;
 const GEOLOCATION_CACHE = new Map();
 
@@ -65,8 +66,8 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 errorDetails TEXT
             )`);
 
-            const adminEmail = 'xxsandovalluisxx@gmail.com';
-            const adminPassword = '12345';
+            const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+            const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
             db.get('SELECT * FROM users WHERE email = ?', [adminEmail], (err, row) => {
                 if (err) {
                     console.error('Error al verificar usuario admin:', err);
