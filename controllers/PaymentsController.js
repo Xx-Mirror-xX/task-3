@@ -8,7 +8,7 @@ class PaymentsController {
             baseURL: 'https://fakepayment.onrender.com',
             timeout: 30000,
             headers: {
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmFrZSBwYXltZW50IiwiZGF0ZSI6IjIwMjUtMDYtMjFUMDM6NTM6NTYuMzU5WiIsImlhdCI6MTc1MDQ3ODAzNn0.ZfPxNnfGQHcXANsG1r48yDYx2ElrWzpxTijillHQW9E',
+                'Authorization': 'Bearer ${process.env.FAKE_PAYMENT_API_TOKEN}',
                 'Content-Type': 'application/json'
             }
         };
