@@ -482,9 +482,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    window.location.href = result.redirect || '/admin/contacts.html';
+                    window.location.href = result.redirect || '/admin/contacts';
                 } else {
-                    // Manejar específicamente el caso de usuario sin contraseña
+
                     if (result.message.includes('no tiene contraseña configurada')) {
                         showError('Este usuario fue registrado con Google. Por favor use el botón de Google.');
                     } else {
