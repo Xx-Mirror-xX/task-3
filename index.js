@@ -71,12 +71,12 @@ const db = new sqlite3.Database('./database.db', (err) => {
             const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
             const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
             db.get('SELECT * FROM users WHERE email = ?', [adminEmail], (err, row) => {
-                if (err) {
-                    console.error('Error al verificar usuario admin:', err);
-                    return;
-                }
-                if (!row) {
-                    bcrypt.hash(adminPassword, 10, (err, hash) => {
+            if (err) {
+            console.error('Error al verificar usuario admin:', err);
+            return;
+            }
+    if (!row) {
+      bcrypt.hash(adminPassword, 10, (err, hash) => {
                         if (err) {
                             console.error('Error al hashear contraseña admin:', err);
                             return;
