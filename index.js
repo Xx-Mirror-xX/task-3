@@ -18,7 +18,6 @@ const GOOGLE_CALLBACK_URL = 'https://creating-social-network-2.onrender.com/auth
 const GEOLOCATION_TIMEOUT = 3000;
 const GEOLOCATION_CACHE = new Map();
 
-// Configuración de proxy para Render.com
 app.set('trust proxy', 1);
 
 const db = new sqlite3.Database('./database.db', (err) => {
@@ -66,7 +65,6 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 errorDetails TEXT
             )`);
 
-            // Crear usuario admin por defecto si no existe
             const adminEmail = 'xxsandovalluisxx@gmail.com';
             const adminPassword = '12345';
             db.get('SELECT * FROM users WHERE email = ?', [adminEmail], (err, row) => {
@@ -110,19 +108,15 @@ passport.use(new GoogleStrategy({
         const firstName = nameParts[0];
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
         
-        // Determinar si es un login de admin
         const isAdminLogin = req.query.state === 'admin';
 
         db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
             if (err) return done(err);
             
             if (user) {
-                // Si es login de admin y el usuario no es admin, verificar si debe ser promovido
                 if (isAdminLogin && !user.isAdmin) {
-                    // Verificar si el usuario actual tiene permisos para crear admins
                     const currentUser = req.user;
                     if (currentUser && currentUser.isAdmin) {
-                        // Promover a admin
                         db.run('UPDATE users SET isAdmin = TRUE WHERE id = ?', [user.id], (err) => {
                             if (err) return done(err);
                             return done(null, {...user, isAdmin: true});
@@ -134,7 +128,7 @@ passport.use(new GoogleStrategy({
                     return done(null, user);
                 }
             } else {
-                // Crear nuevo usuario
+
                 const isAdmin = isAdminLogin && req.user && req.user.isAdmin;
                 
                 db.run(
@@ -165,10 +159,9 @@ passport.deserializeUser((id, done) => {
     });
 });
 
-// Configurar EJS
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use('/stylesheet', express.static(path.join(__dirname, 'public', 'stylesheet')));
@@ -176,7 +169,6 @@ app.use('/img', express.static(path.join(__dirname, 'public', 'img')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/vistas', express.static(path.join(__dirname, 'vistas')));
 
-// MEJORAS DE SEGURIDAD: Configuración de sesiones seguras
 const isProduction = process.env.NODE_ENV === 'production';
 app.use(session({
     secret: 'secreto',
@@ -188,20 +180,20 @@ app.use(session({
         sameSite: 'lax',
         secure: isProduction,
         maxAge: 15 * 60 * 1000,
-        proxy: true // Necesario para Render.com
+        proxy: true 
     },
-    proxy: true // Necesario para Render.com
+    proxy: true 
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Middleware para verificar autenticación
+
 const requireAuth = (req, res, next) => {
     if (req.isAuthenticated()) return next();
     res.status(403).send('Acceso denegado');
 };
 
-// Middleware para verificar admin
+
 const requireAdmin = (req, res, next) => {
     if (!req.isAuthenticated()) return res.status(403).send('Acceso denegado');
     if (!req.user.isAdmin) return res.status(403).send('Acceso denegado - Solo para administradores');
@@ -474,7 +466,7 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// Ruta para crear nuevos administradores
+
 app.post('/admin/register', requireAdmin, async (req, res) => {
     try {
         const { fName, lName, email, password } = req.body;
@@ -731,7 +723,6 @@ app.get('/api/payments/:payment_id', requireAuth, (req, res) => {
     );
 });
 
-// Rutas principales
 app.get('/', (req, res) => {
     res.render('index');
 });
@@ -744,7 +735,6 @@ app.get('/pagos', (req, res) => {
     res.render('pagos');
 });
 
-// Rutas de administración
 app.get('/admin/contacts', requireAdmin, (req, res) => {
     res.render('admin/contacts');
 });
@@ -757,12 +747,12 @@ app.get('/admin/payments', requireAdmin, (req, res) => {
     res.render('admin/payments');
 });
 
-// Rutas de vistas autenticadas
+
 app.get('/indice', requireAuth, (req, res) => {
     res.render('vistas/indice');
 });
 
-// Manejo de errores 404
+
 app.use((req, res) => {
     res.status(404).send('Página no encontrada');
 });
