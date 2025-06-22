@@ -16,6 +16,7 @@
     "better-sqlite3-session-store": "^0.1.0",
     "body-parser": "^2.2.0",
     "connect-pg-simple": "^10.0.0",
+    "connect-sqlite3": "^0.9.15",
     "csurf": "^1.2.2",
     "dotenv": "^16.5.0",
     "ejs": "^3.1.10",
