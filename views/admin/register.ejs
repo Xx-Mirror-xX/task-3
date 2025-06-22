@@ -102,6 +102,48 @@
             text-decoration: none;
             font-weight: 600;
         }
+        
+        /* Nuevos estilos para el botón de Google */
+        .admin-oauth {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .admin-oauth p {
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #555;
+        }
+        #adminGoogleBtn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        #adminGoogleBtn:hover {
+            background-color: #357ae8;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        #adminGoogleBtn i {
+            font-size: 18px;
+            margin-right: 12px;
+            background: white;
+            color: #4285F4;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
  </style>
 </head>
 <body>
@@ -150,7 +192,7 @@
 
         <div class="admin-oauth">
             <p>O registra usando:</p>
-            <button id="adminGoogleBtn" class="google-btn">
+            <button id="adminGoogleBtn">
                 <i class="fab fa-google"></i> Google
             </button>
         </div>
@@ -203,6 +245,7 @@
                 const originalBtnText = adminRegisterBtn.innerHTML;
                 adminRegisterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
                 adminRegisterBtn.disabled = true;
+
 
                 const password = document.getElementById('adminPassword').value;
                 const confirmPassword = document.getElementById('adminConfirmPassword').value;
