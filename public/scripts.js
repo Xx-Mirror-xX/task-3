@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function getGeolocation(ip) {
         try {
-            // Servicio principal con manejo de servidores privados
+
             const response = await fetch(`https://ip-api.com/json/${ip}?fields=country,city,isp`);
             if (response.ok) {
                 const data = await response.json();
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // Servicio de respaldo
+
             const backupResponse = await fetch(`https://ipapi.co/${ip}/json/`);
             if (backupResponse.ok) {
                 const backupData = await backupResponse.json();
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const locationData = await getGeolocation(ipAddress);
                 
-                // Manejar servidores privados
+
                 let locationDisplay = locationData.city + ', ' + locationData.country;
                 if (locationData.isp.includes('VPN') || locationData.isp.includes('Proxy')) {
                     locationDisplay = 'Servidor Privado (' + locationData.isp + ')';
@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         grecaptcha.reset();
                     }
                     setTimeout(() => {
-                        window.location.href = '/'; // Redirigir a la página principal
+                        window.location.href = '/'; 
                     }, 1000);
                 } else {
                     showError(serverResult.error || 'Error al enviar el mensaje');
@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    window.location.href = '/admin/payments'; // Redirigir a la página de pagos
+                    window.location.href = '/admin/payments';
                 } else {
                     let errorMsg = result.error || 'Error al procesar el pago';
                     if (result.paymentId) {
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     showError('Inicio de sesión exitoso. Redirigiendo...', 'success');
                     setTimeout(() => {
-                        window.location.href = result.redirect || '/indice'; // Redirigir a la vista de índice
+                        window.location.href = result.redirect || '/indice'; 
                     }, 1000);
                 } else {
                     showError(result.message || 'Credenciales incorrectas');
@@ -505,7 +505,7 @@ document.addEventListener('DOMContentLoaded', function() {
         async function loadContacts() {
             try {
                 const response = await fetch('/api/contacts', {
-                    credentials: 'include'  // Incluir credenciales para enviar la cookie de sesión
+                    credentials: 'include'  
                 });
                 if (!response.ok) {
                     throw new Error('Error al cargar contactos');
@@ -518,7 +518,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     contacts.forEach(contact => {
                         const row = document.createElement('tr');
-                        // Mostrar información de ISP para servidores privados
+                      
                         let locationInfo = contact.city && contact.country ? 
                             `${contact.city}, ${contact.country}` : 
                             'Ubicación no disponible';
@@ -554,7 +554,7 @@ document.addEventListener('DOMContentLoaded', function() {
         async function loadPayments() {
             try {
                 const response = await fetch('/api/payments', {
-                    credentials: 'include'  // Incluir credenciales para enviar la cookie de sesión
+                    credentials: 'include' 
                 });
                 if (!response.ok) {
                     throw new Error('Error al cargar pagos');
@@ -623,7 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (dateTo) {
                 const toDate = new Date(dateTo);
-                toDate.setDate(toDate.getDate() + 1); // Incluir todo el día seleccionado
+                toDate.setDate(toDate.getDate() + 1); 
                 filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
             }
             
