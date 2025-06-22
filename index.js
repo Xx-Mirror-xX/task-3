@@ -13,6 +13,8 @@ const app = express();
 const PaymentsController = require('./controllers/PaymentsController');
 const paymentsController = new PaymentsController();
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
@@ -67,8 +69,8 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 errorDetails TEXT
             )`);
 
-            const adminEmail = 'xxsandovalluisxx@gmail.com';
-            const adminPassword = '12345';
+    const adminEmail = ADMIN_EMAIL;
+    const adminPassword = ADMIN_PASSWORD;
             db.get('SELECT * FROM users WHERE email = ?', [adminEmail], (err, row) => {
                 if (err) {
                     console.error('Error al verificar usuario admin:', err);
@@ -363,7 +365,7 @@ app.post('/admin/login', async (req, res) => {
             try {
                 const isMatch = await bcrypt.compare(password.toString(), user.password.toString());
                 if (!isMatch) {
-                    if (email === 'xxsandovalluisxx@gmail.com' && password === '12345') {
+                    if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
                         req.login(user, (err) => {
                             if (err) {
                                 console.error('Error en req.login:', err);
@@ -546,7 +548,7 @@ app.post('/login', async (req, res) => {
             try {
                 const isMatch = await bcrypt.compare(password.toString(), user.password.toString());
                 if (!isMatch) {
-                    if (email === 'xxsandovalluisxx@gmail.com' && password === '12345') {
+                if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
                         req.login(user, (err) => {
                             if (err) {
                                 console.error('Error en req.login:', err);
