@@ -30,7 +30,7 @@ class PaymentsModel {
                 return;
             }
 
-            // Verificar si la columna errorDetails existe
+
             this.db.get(
                 "SELECT name FROM pragma_table_info('payments') WHERE name = 'errorDetails'",
                 (err, row) => {
@@ -39,7 +39,6 @@ class PaymentsModel {
                         return;
                     }
 
-                    // Si no existe la columna, crearla
                     if (!row) {
                         this.db.run(
                             'ALTER TABLE payments ADD COLUMN errorDetails TEXT',
