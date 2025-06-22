@@ -190,7 +190,6 @@
             const adminRegisterBtn = document.getElementById('adminRegisterBtn');
             const adminGoogleBtn = document.getElementById('adminGoogleBtn');
 
-            // Botón de Google para registro
             if (adminGoogleBtn) {
                 adminGoogleBtn.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -205,7 +204,6 @@
                 adminRegisterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
                 adminRegisterBtn.disabled = true;
 
-                // Validar contraseñas
                 const password = document.getElementById('adminPassword').value;
                 const confirmPassword = document.getElementById('adminConfirmPassword').value;
                 
@@ -238,7 +236,6 @@
                     if (response.ok) {
                         showError('Administrador registrado con éxito', 'success');
                         
-                        // Iniciar sesión automáticamente después del registro
                         try {
                             const loginResponse = await fetch('/login', {
                                 method: 'POST',
@@ -253,7 +250,7 @@
                             
                             if (loginResponse.ok) {
                                 setTimeout(() => {
-                                    window.location.href = '/admin/contacts.html';
+                                    window.location.href = '/admin/contacts';
                                 }, 1500);
                             } else {
                                 showError('Registro exitoso. Por favor inicia sesión manualmente');
