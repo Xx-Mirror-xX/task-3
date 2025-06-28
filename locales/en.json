@@ -130,6 +130,26 @@
   "Pagar": "Pay",
   "Mes": "Month",
   "Año": "Year",
-  "Seleccione moneda": "Select currency"
-
+  "Seleccione moneda": "Select currency",
+  "Número de tarjeta inválido": "Invalid card number",
+  "CVV inválido": "Invalid CVV",
+  "Monto inválido": "Invalid amount",
+  "Nombre del titular": "Cardholder Name",
+  "Correo electrónico": "Email",
+  "Error al agregar contacto": "Error adding contact",
+  "Error interno del servidor": "Internal server error",
+  "Acceso no autorizado": "Unauthorized access",
+  "Acceso denegado": "Access denied",
+  "Error al procesar pago": "Error processing payment",
+  "Error al actualizar pago": "Error updating payment",
+  "Error al obtener pagos": "Error retrieving payments",
+  "Error al obtener contactos": "Error retrieving contacts",
+  "Error de geolocalización": "Geolocation error",
+  "Error al obtener IP pública": "Error retrieving public IP",
+  "Error de base de datos": "Database error",
+  "Error de validación": "Validation error",
+  "Error de autenticación": "Authentication error",
+  "Error de autorización": "Authorization error",
+  "Error de red": "Network error",
+  "Error de tiempo de espera": "Timeout error"
 }
