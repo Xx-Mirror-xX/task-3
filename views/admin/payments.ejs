@@ -3,373 +3,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= __('Registro de Administrador') %></title>
-    <meta property="og:title" content="<%= __('Registro de Administrador - Creating Social Network') %>">
-    <meta property="og:description" content="<%= __('Crea nuevas cuentas de administrador para tu plataforma') %>">
+    <title><%= __('Panel de Pagos') %></title>
+    <meta property="og:title" content="<%= __('Panel de Pagos - Creating Social Network') %>">
+    <meta property="og:description" content="<%= __('Administra transacciones y pagos en tu panel de administración') %>">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://creatingsocialnetwork.com/admin/register.ejs">
-    <meta property="og:image" content="https://creatingsocialnetwork.com/images/register-og.jpg">
+    <meta property="og:url" content="https://creatingsocialnetwork.com/admin/payments.ejs">
+    <meta property="og:image" content="https://creatingsocialnetwork.com/images/payments-og.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="<%= __('Registro de Administrador - Creating Social Network') %>">
-    <meta name="twitter:description" content="<%= __('Gestión de cuentas administrativas') %>">
-    <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/register-twitter.jpg">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <meta name="twitter:title" content="<%= __('Panel de Pagos - Creating Social Network') %>">
+    <meta name="twitter:description" content="<%= __('Gestión profesional de transacciones financieras') %>">
+    <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/payments-twitter.jpg">
     <link rel="stylesheet" href="/stylesheet/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
-        .admin-container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 30px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e63946;
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+            --border: #dee2e6;
         }
+        
         .admin-header {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #e63946;
-        }
-        .admin-header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-        .admin-header p {
-            color: #666;
-        }
-        .admin-form-group {
-            margin-bottom: 20px;
-        }
-        .admin-form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-        .admin-form-control {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            transition: border 0.3s;
-        }
-        .admin-form-control:focus {
-            border-color: #e63946;
-            outline: none;
-        }
-        .admin-btn {
-            background-color: #e63946;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            width: 100%;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .admin-btn:hover {
-            background-color: #c1121f;
-        }
-        .admin-alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            display: none;
-        }
-        .admin-alert.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .admin-alert.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .admin-footer {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-        }
-        .admin-back-btn {
-            display: inline-block;
-            margin-top: 20px;
-            color: #e63946;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        
-        /* Nuevos estilos para el botón de Google */
-        .admin-oauth {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .admin-oauth p {
-            margin-bottom: 10px;
-            font-weight: 500;
-            color: #555;
-        }
-        #adminGoogleBtn {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            background-color: #4285F4;
-            color: white;
-            border: none;
-            padding: 12px 15px;
-            width: 100%;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s, box-shadow 0.3s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        #adminGoogleBtn:hover {
-            background-color: #357ae8;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        #adminGoogleBtn i {
-            font-size: 18px;
-            margin-right: 12px;
-            background: white;
-            color: #4285F4;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Selector de idioma mejorado */
-        .lang-selector-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 100;
-            background: white;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, var(--secondary), #1a2533);
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            padding: 5px;
+            color: white;
+        }
+        
+        .admin-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-header h1 i {
+            color: var(--primary);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .nav-btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn i {
+            font-size: 0.9rem;
+        }
+        
+        .contacts-btn {
+            background-color: var(--primary);
+        }
+        
+        .contacts-btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .logout-btn {
+            background-color: var(--danger);
+        }
+        
+        .logout-btn:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        .filters-container {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 180px;
+        }
+        
+        .filter-label {
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 0.9rem;
+        }
+        
+        .filter-input, .filter-select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-input:focus, .filter-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+            outline: none;
+        }
+        
+        .apply-filters-btn, .reset-filters-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .apply-filters-btn {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .apply-filters-btn:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+        }
+        
+        .reset-filters-btn {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .reset-filters-btn:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        .status-completed {
+            color: var(--success);
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            color: #f39c12;
+            font-weight: 600;
+        }
+        
+        .status-failed {
+            color: var(--danger);
+            font-weight: 600;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f1f5f9;
+            position: sticky;
+            top: 0;
+            font-weight: 600;
+            color: var(--dark);
+            border-bottom: 2px solid var(--border);
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background-color 0.2s ease;
+        }
+        
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+        
+        .container {
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .table-container {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .filters-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+        
+        .lang-selector-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
         }
         
         .lang-selector {
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-radius: 4px;
-            border: 1px solid #e2e8f0;
-            background-color: #f8fafc;
-            font-size: 14px;
-            cursor: pointer;
-            outline: none;
-            transition: all 0.3s ease;
-            appearance: none;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 10px center;
-            background-size: 16px;
-            padding-right: 35px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
         }
-        
-        .lang-selector:hover {
-            border-color: #94a3b8;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-        
-        .lang-selector:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-        }
- </style>
+    </style>
 </head>
 <body>
-    <div class="admin-container">
-        <div class="admin-header">
-            <h1><i class="fas fa-user-shield"></i> <%= __('Registrar Nuevo Administrador') %></h1>
-            <p><%= __('Complete todos los campos para crear una nueva cuenta de administrador') %></p>
-        </div>
-
-        <div id="adminAlert" class="admin-alert"></div>
-        <div id="errorContainer" class="error-container" style="display: none;">
-            <p id="errorMessage"></p>
-        </div>
-
-        <form id="adminRegisterForm">
-            <div class="admin-form-group">
-                <label for="adminFirstName"><i class="fas fa-user"></i> <%= __('Nombre') %></label>
-                <input type="text" id="adminFirstName" class="admin-form-control" required>
-            </div>
-
-            <div class="admin-form-group">
-                <label for="adminLastName"><i class="fas fa-user"></i> <%= __('Apellido') %></label>
-                <input type="text" id="adminLastName" class="admin-form-control" required>
-            </div>
-
-            <div class="admin-form-group">
-                <label for="adminEmail"><i class="fas fa-envelope"></i> <%= __('Email') %></label>
-                <input type="email" id="adminEmail" class="admin-form-control" required>
-            </div>
-
-            <div class="admin-form-group">
-                <label for="adminPassword"><i class="fas fa-lock"></i> <%= __('Contraseña') %></label>
-                <input type="password" id="adminPassword" class="admin-form-control" minlength="8" required>
-                <small style="color: #666;"><%= __('Mínimo 8 caracteres') %></small>
-            </div>
-
-            <div class="admin-form-group">
-                <label for="adminConfirmPassword"><i class="fas fa-lock"></i> <%= __('Confirmar Contraseña') %></label>
-                <input type="password" id="adminConfirmPassword" class="admin-form-control" required>
-            </div>
-
-            <button type="submit" class="admin-btn" id="adminRegisterBtn">
-                <i class="fas fa-user-plus"></i> <%= __('Registrar Administrador') %>
-            </button>
-        </form>
-
-        <div class="admin-oauth">
-            <p><%= __('O registra usando:') %></p>
-            <button id="adminGoogleBtn">
-                <i class="fab fa-google"></i> Google
-            </button>
-        </div>
-
-        <div class="admin-footer">
-            <a href="/admin/contacts" class="admin-back-btn">
-                <i class="fas fa-arrow-left"></i> <%= __('Volver al Panel') %>
-            </a>
-        </div>
-    </div>
-
     <div class="lang-selector-container">
-        <select class="lang-selector" id="langSelector">
-            <option value="es" <%= locals.lang === 'es' ? 'selected' : '' %>>Español</option>
-            <option value="en" <%= locals.lang === 'en' ? 'selected' : '' %>>English</option>
-        </select>
+<select class="lang-selector" id="langSelector">
+    <option value="es" <%= locals.lang === 'es' ? 'selected' : '' %>>Español</option>
+    <option value="en" <%= locals.lang === 'en' ? 'selected' : '' %>>English</option>
+</select>
+
     </div>
-
-<script src="/scripts.js"></script>
-<script>
-
-        function showError(message, type = 'error') {
-            const errorContainer = document.getElementById('errorContainer');
-            const errorMessage = document.getElementById('errorMessage');
+        
+        <div class="admin-header">
+            <h1><i class="fas fa-money-bill-wave"></i> <%= __('Pagos Recibidos') %></h1>
+            <div class="nav-buttons">
+                <a href="/admin/contacts" class="nav-btn contacts-btn">
+                    <i class="fas fa-address-book"></i> <%= __('Contactos') %>
+                </a>
+                <a href="/logout" class="nav-btn logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> <%= __('Cerrar sesión') %>
+                </a>
+            </div>
+        </div>
+        
+        <div class="filters-container">
+            <div class="filter-group">
+                <label class="filter-label"><%= __('Servicio') %>:</label>
+                <select id="serviceFilter" class="filter-select">
+                    <option value=""><%= __('Todos') %></option>
+                    <option value="Servicio de Donación"><%= __('Servicio de Donación') %></option>
+                    <!-- Agrega más opciones según tus servicios -->
+                </select>
+            </div>
             
-            if (errorContainer && errorMessage) {
-                errorMessage.innerHTML = message;
-                errorContainer.style.display = 'block';
-                errorContainer.className = type === 'error' ? 'error-container' : 'error-container success';
-                
-                errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                setTimeout(() => {
-                    if (errorContainer) {
-                        errorContainer.style.display = 'none';
-                    }
-                }, 5000);
-            } else {
-                alert(message);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Establecer idioma actual
-            document.getElementById('langSelector').value = '<%= lang %>';
+            <div class="filter-group">
+                <label class="filter-label"><%= __('Estado') %>:</label>
+                <select id="statusFilter" class="filter-select">
+                    <option value=""><%= __('Todos') %></option>
+                    <option value="completed"><%= __('Completado') %></option>
+                    <option value="pending"><%= __('Pendiente') %></option>
+                    <option value="failed"><%= __('Fallido') %></option>
+                </select>
+            </div>
             
-            const adminRegisterForm = document.getElementById('adminRegisterForm');
-            const adminAlert = document.getElementById('adminAlert');
-            const adminRegisterBtn = document.getElementById('adminRegisterBtn');
-            const adminGoogleBtn = document.getElementById('adminGoogleBtn');
-
-            if (adminGoogleBtn) {
-                adminGoogleBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    window.location.href = '/auth/google/admin';
-                });
-            }
-
-            adminRegisterForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
+            <div class="filter-group">
+                <label class="filter-label"><%= __('Fecha desde') %>:</label>
+                <input type="date" id="dateFromFilter" class="filter-input">
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label"><%= __('Fecha hasta') %>:</label>
+                <input type="date" id="dateToFilter" class="filter-input">
+            </div>
+            
+            <div class="filters-actions">
+                <button id="applyFiltersBtn" class="apply-filters-btn">
+                    <i class="fas fa-filter"></i> <%= __('Filtrar') %>
+                </button>
                 
-                const originalBtnText = adminRegisterBtn.innerHTML;
-                adminRegisterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <%= __("Registrando...") %>';
-                adminRegisterBtn.disabled = true;
+                <button id="resetFiltersBtn" class="reset-filters-btn">
+                    <i class="fas fa-times"></i> <%= __('Limpiar') %>
+                </button>
+            </div>
+        </div>
 
+        <div class="table-container">
+            <table id="paymentsTable">
+                <thead>
+                    <tr>
+                        <th><%= __('ID') %></th>
+                        <th><%= __('Email') %></th>
+                        <th><%= __('Servicio') %></th>
+                        <th><%= __('Monto') %></th>
+                        <th><%= __('Moneda') %></th>
+                        <th><%= __('Estado') %></th>
+                        <th><%= __('Fecha') %></th>
+                        <th><%= __('ID Transacción') %></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
 
-                const password = document.getElementById('adminPassword').value;
-                const confirmPassword = document.getElementById('adminConfirmPassword').value;
-                
-                if (password !== confirmPassword) {
-                    showError('<%= __("Las contraseñas no coinciden") %>');
-                    adminRegisterBtn.innerHTML = originalBtnText;
-                    adminRegisterBtn.disabled = false;
-                    return;
-                }
-
-                const adminData = {
-                    fName: document.getElementById('adminFirstName').value.trim(),
-                    lName: document.getElementById('adminLastName').value.trim(),
-                    email: document.getElementById('adminEmail').value.trim(),
-                    password: password
-                };
-
+        <script src="/scripts.js">
+            let allPayments = [];
+            
+            async function loadPayments() {
                 try {
-                    const response = await fetch('/admin/register', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(adminData),
-                        credentials: 'include'
+                    const response = await fetch('/api/payments', {
+                        credentials: 'include' 
                     });
-
-                    const result = await response.json();
-
-                    if (response.ok) {
-                        showError('<%= __("Administrador registrado con éxito") %>', 'success');
-                        
-                        try {
-                            const loginResponse = await fetch('/login', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ 
-                                    email: adminData.email, 
-                                    password: adminData.password
-                                })
-                            });
-                            
-                            const loginResult = await loginResponse.json();
-                            
-                            if (loginResponse.ok) {
-                                setTimeout(() => {
-                                    window.location.href = '/admin/contacts';
-                                }, 1500);
-                            } else {
-                                showError('<%= __("Registro exitoso. Por favor inicia sesión manualmente") %>');
-                                setTimeout(() => {
-                                    window.location.href = '/';
-                                }, 2000);
-                            }
-                        } catch (loginError) {
-                            console.error('Error en auto-login:', loginError);
-                            showError('<%= __("Registro exitoso. Por favor inicia sesión") %>');
-                            setTimeout(() => {
-                                window.location.href = '/';
-                            }, 2000);
-                        }
-                    } else {
-                        showError(result.error || '<%= __("Error al registrar administrador") %>');
+                    if (!response.ok) {
+                        throw new Error('<%= __("Error al cargar pagos") %>');
                     }
+                    allPayments = await response.json();
+                    renderPayments(allPayments);
                 } catch (error) {
                     console.error('Error:', error);
-                    showError('<%= __("Error de conexión con el servidor") %>');
-                } finally {
-                    adminRegisterBtn.innerHTML = originalBtnText;
-                    adminRegisterBtn.disabled = false;
+                    alert(error.message);
                 }
-            });
+            }
             
+            function renderPayments(payments) {
+                const tbody = document.querySelector('#paymentsTable tbody');
+                tbody.innerHTML = '';
+                
+                payments.forEach(payment => {
+                    const row = document.createElement('tr');
+                    const statusClass = `status-${payment.status || 'pending'}`;
+                    
+                    row.innerHTML = `
+                        <td>${payment.id}</td>
+                        <td>${payment.email}</td>
+                        <td>${payment.service}</td>
+                        <td>${payment.amount}</td>
+                        <td>${payment.currency}</td>
+                        <td class="${statusClass}">${getStatusText(payment.status)}</td>
+                        <td>${new Date(payment.paymentDate).toLocaleString()}</td>
+                        <td>${payment.transactionId || 'N/A'}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+            
+            function getStatusText(status) {
+                switch(status) {
+                    case 'completed': return '<%= __("Completado") %>';
+                    case 'pending': return '<%= __("Pendiente") %>';
+                    case 'failed': return '<%= __("Fallido") %>';
+                    default: return '<%= __("Pendiente") %>';
+                }
+            }
+            
+            function filterPayments() {
+                const service = document.getElementById('serviceFilter').value;
+                const status = document.getElementById('statusFilter').value;
+                const dateFrom = document.getElementById('dateFromFilter').value;
+                const dateTo = document.getElementById('dateToFilter').value;
+                
+                let filtered = [...allPayments];
+                
+                if (service) {
+                    filtered = filtered.filter(p => p.service === service);
+                }
+                
+                if (status) {
+                    filtered = filtered.filter(p => p.status === status);
+                }
+                
+                if (dateFrom) {
+                    const fromDate = new Date(dateFrom);
+                    filtered = filtered.filter(p => new Date(p.paymentDate) >= fromDate);
+                }
+                
+                if (dateTo) {
+                    const toDate = new Date(dateTo);
+                    toDate.setDate(toDate.getDate() + 1);
+                    filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
+                }
+                
+                renderPayments(filtered);
+            }
+            
+            function resetFilters() {
+                document.getElementById('serviceFilter').value = '';
+                document.getElementById('statusFilter').value = '';
+                document.getElementById('dateFromFilter').value = '';
+                document.getElementById('dateToFilter').value = '';
+                renderPayments(allPayments);
+            }
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                // Establecer idioma actual
+                document.getElementById('langSelector').value = '<%= lang %>';
+                
+                loadPayments();
+                
+                document.getElementById('applyFiltersBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    filterPayments();
+                });
+                
+                document.getElementById('resetFiltersBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    resetFilters();
+                });
+                
+            });
+        </script>
+    </div>
 </body>
 </html>
