@@ -8,7 +8,7 @@ class PaymentsController {
             baseURL: 'https://fakepayment.onrender.com',
             timeout: 30000,
             headers: {
-                'Authorization': 'Bearer ${process.env.FAKE_PAYMENT_API_TOKEN}',
+                'Authorization': `Bearer ${process.env.FAKE_PAYMENT_API_TOKEN}`,
                 'Content-Type': 'application/json'
             }
         };
