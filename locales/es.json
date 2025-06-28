@@ -130,6 +130,26 @@
   "Pagar": "Pagar",
   "Mes": "Mes",
   "Año": "Año",
-  "Seleccione moneda": "Seleccione moneda"
-
+  "Seleccione moneda": "Seleccione moneda",
+  "Número de tarjeta inválido": "Número de tarjeta inválido",
+  "CVV inválido": "CVV inválido",
+  "Monto inválido": "Monto inválido",
+  "Nombre del titular": "Nombre del titular",
+  "Correo electrónico": "Correo electrónico",
+  "Error al agregar contacto": "Error al agregar contacto",
+  "Error interno del servidor": "Error interno del servidor",
+  "Acceso no autorizado": "Acceso no autorizado",
+  "Acceso denegado": "Acceso denegado",
+  "Error al procesar pago": "Error al procesar pago",
+  "Error al actualizar pago": "Error al actualizar pago",
+  "Error al obtener pagos": "Error al obtener pagos",
+  "Error al obtener contactos": "Error al obtener contactos",
+  "Error de geolocalización": "Error de geolocalización",
+  "Error al obtener IP pública": "Error al obtener IP pública",
+  "Error de base de datos": "Error de base de datos",
+  "Error de validación": "Error de validación",
+  "Error de autenticación": "Error de autenticación",
+  "Error de autorización": "Error de autorización",
+  "Error de red": "Error de red",
+  "Error de tiempo de espera": "Error de tiempo de espera"
 }
