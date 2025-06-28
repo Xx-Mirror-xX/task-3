@@ -199,5 +199,13 @@
   "Error con la API de pagos": "Error con la API de pagos",
   "El procesador de pagos no respondió": "El procesador de pagos no respondió",
   "Tiempo de espera agotado": "Tiempo de espera agotado",
-  "ID local": "ID local"
+  "ID local": "ID local",
+    "Procesando...": "Procesando...",
+  "Fallido": "Fallido",
+  "Por favor completa el reCAPTCHA": "Por favor completa el reCAPTCHA",
+  "Mensaje enviado con éxito": "Mensaje enviado con éxito",
+  "Registro exitoso. Redirigiendo al login...": "Registro exitoso. Redirigiendo al login...",
+  "Inicio de sesión exitoso. Redirigiendo...": "Inicio de sesión exitoso. Redirigiendo...",
+  "Verificando...": "Verificando...",
+  "Servicio de Donación": "Servicio de Donación"
 }
