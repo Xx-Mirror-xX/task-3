@@ -187,5 +187,15 @@
   "Tiempo de espera agotado": "Tiempo de espera agotado",
   "Error con la API de pagos: %s": "Error con la API de pagos: %s",
   "Error en el procesador (%s)": "Error en el procesador (%s)",
-  "El procesador de pagos no respondió": "El procesador de pagos no respondió"
+  "El procesador de pagos no respondió": "El procesador de pagos no respondió",
+  "Pago aprobado": "Pago aprobado",
+  "Payment successful": "Pago exitoso",
+  "Pago rechazado": "Pago rechazado",
+  "Código: 002": "Código: 002",
+  "Error en el pago": "Error en el pago",
+  "Código: 003": "Código: 003",
+  "Fondos insuficientes": "Fondos insuficientes",
+  "Código: 004": "Código: 004",
+  "Solicitud incorrecta a la API de pagos": "Solicitud incorrecta a la API de pagos",
+  "Error con la API de pagos": "Error con la API de pagos"
 }
