@@ -257,11 +257,9 @@
                 <a href="/admin/payments" class="nav-btn payments-btn">
                     <i class="fas fa-money-bill-wave"></i> <%= __('Pagos') %>
                 </a>
-                
                 <a href="/admin/register" class="nav-btn register-admin-btn">
                     <i class="fas fa-user-plus"></i> <%= __('Registrar Admin') %>
                 </a>
-                
                 <a href="/logout" class="nav-btn logout-btn">
                     <i class="fas fa-sign-out-alt"></i> <%= __('Cerrar sesión') %>
                 </a>
@@ -269,7 +267,8 @@
         </div>
         
         <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="<%= __('Buscar por nombre o email...') %>">
+            <input type="text" id="searchInput" class="search-input" 
+                   placeholder="<%= __('Search by name or email...') %>">
             <button id="refreshBtn" class="refresh-btn">
                 <i class="fas fa-sync-alt"></i> <%= __('Actualizar') %>
             </button>
