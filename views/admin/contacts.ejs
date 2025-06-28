@@ -300,8 +300,51 @@
     </div>
 
     <script src="/scripts.js"></script>
-    <script>
+  <script>
         let allContacts = [];
+        const currentLang = '<%= locals.lang %>';
+        
+        function formatDate(dateString, lang) {
+            const date = new Date(dateString);
+            if (lang === 'es') {
+                return date.toLocaleString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+            } else { // en
+                return date.toLocaleString('en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            }
+        }
+
+        function renderContacts(contacts) {
+            const tbody = document.querySelector('#contactsTable tbody');
+            tbody.innerHTML = '';
+            
+            contacts.forEach(contact => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${contact.id}</td>
+                    <td>${contact.firstName} ${contact.lastName}</td>
+                    <td>${contact.email}</td>
+                    <td>${contact.message}</td>
+                    <td>${contact.ipAddress}</td>
+                    <td>${contact.city || 'N/A'}, ${contact.country || 'N/A'}</td>
+                    <td>${formatDate(contact.createdAt, currentLang)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
         
         async function loadContacts() {
             try {
@@ -317,25 +360,6 @@
                 console.error('Error:', error);
                 alert(error.message);
             }
-        }
-        
-        function renderContacts(contacts) {
-            const tbody = document.querySelector('#contactsTable tbody');
-            tbody.innerHTML = '';
-            
-            contacts.forEach(contact => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${contact.id}</td>
-                    <td>${contact.firstName} ${contact.lastName}</td>
-                    <td>${contact.email}</td>
-                    <td>${contact.message}</td>
-                    <td>${contact.ipAddress}</td>
-                    <td>${contact.city || 'N/A'}, ${contact.country || 'N/A'}</td>
-                    <td>${new Date(contact.createdAt).toLocaleString()}</td>
-                `;
-                tbody.appendChild(row);
-            });
         }
         
         function filterContacts(searchTerm) {
@@ -355,9 +379,6 @@
         }
         
         document.addEventListener('DOMContentLoaded', () => {
-            // Establecer idioma actual
-            document.getElementById('langSelector').value = '<%= locals.lang %>';
-            
             loadContacts();
             
             document.getElementById('searchInput').addEventListener('input', (e) => {
