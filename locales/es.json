@@ -179,5 +179,13 @@
   "Debe tener 13-19 dígitos": "Debe tener 13-19 dígitos",
   "3-4 dígitos": "3-4 dígitos",
   "Register New Administrator": "Registrar Nuevo Administrador",
-  "Inicio Y Registro": "Inicio y Registro"
+  "Inicio Y Registro": "Inicio y Registro",
+  "Timeout procesando pago [ID: %s]": "Timeout procesando pago [ID: %s]",
+  "La API excedió el tiempo de espera": "La API excedió el tiempo de espera",
+  "El procesador de pagos no respondió a tiempo": "El procesador de pagos no respondió a tiempo",
+  "Por favor intente nuevamente más tarde": "Por favor intente nuevamente más tarde",
+  "Tiempo de espera agotado": "Tiempo de espera agotado",
+  "Error con la API de pagos: %s": "Error con la API de pagos: %s",
+  "Error en el procesador (%s)": "Error en el procesador (%s)",
+  "El procesador de pagos no respondió": "El procesador de pagos no respondió"
 }
