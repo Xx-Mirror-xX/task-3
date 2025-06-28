@@ -284,28 +284,51 @@ document.addEventListener('DOMContentLoaded', function() {
                         setTimeout(() => {
                             window.location.href = '/admin/payments';
                         }, 3000);
-            } else {
-
-                let errorMsg = result.error || '<%= __("Error al procesar el pago") %>';
-
-                if (result.details) {
-
-                    if (typeof result.details === 'object') {
-                        try {
-                            errorMsg += `<br><small>${JSON.stringify(result.details)}</small>`;
-                        } catch {
-                            errorMsg += `<br><small>${result.details.toString()}</small>`;
-                        }
                     } else {
-                        errorMsg += `<br><small>${result.details}</small>`;
+
+                        let errorMsg = result.message;
+                        
+
+                        if (result.details) {
+                            if (typeof result.details === 'object') {
+                                try {
+                                    errorMsg += `<br><small>${JSON.stringify(result.details)}</small>`;
+                                } catch {
+                                    errorMsg += `<br><small>${result.details.toString()}</small>`;
+                                }
+                            } else {
+                                errorMsg += `<br><small>${result.details}</small>`;
+                            }
+                        }
+                        
+
+                        if (result.paymentId) {
+                            errorMsg += `<br><small><%= __("ID local") %>: ${result.paymentId}</small>`;
+                        }
+                        
+                        showError(errorMsg);
                     }
+                } else {
+                    let errorMsg = result.error || '<%= __("Error al procesar el pago") %>';
+                    
+                    if (result.details) {
+                        if (typeof result.details === 'object') {
+                            try {
+                                errorMsg += `<br><small>${JSON.stringify(result.details)}</small>`;
+                            } catch {
+                                errorMsg += `<br><small>${result.details.toString()}</small>`;
+                            }
+                        } else {
+                            errorMsg += `<br><small>${result.details}</small>`;
+                        }
+                    }
+                    
+                    if (result.paymentId) {
+                        errorMsg += `<br><small><%= __("ID local") %>: ${result.paymentId}</small>`;
+                    }
+                    
+                    showError(errorMsg);
                 }
-                if (result.paymentId) {
-                    errorMsg += `<br><small><%= __("ID local") %>: ${result.paymentId}</small>`;
-                }
-                
-                showError(errorMsg);
-            }
             } catch (error) {
                 console.error('Error:', error);
                 showError('<%= __("Error de conexión con el servidor. Por favor intente nuevamente.") %>');
@@ -649,10 +672,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         loadPayments();
     }
+    
 
     const langSelectors = document.querySelectorAll('.lang-selector');
     langSelectors.forEach(selector => {
-
         const langCookie = document.cookie.replace(/(?:(?:^|.*;\s*)lang\s*=\s*([^;]*).*$)|^.*$/, "$1");
         if (langCookie) {
             selector.value = langCookie;
