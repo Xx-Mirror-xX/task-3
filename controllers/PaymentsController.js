@@ -68,7 +68,6 @@ class PaymentsController {
                     this.apiConfig
                 );
 
-
                 const responseStatus = response.data.status || response.data.full_name;
                 
                 if (responseStatus === 'APPROVED') {
@@ -146,44 +145,28 @@ class PaymentsController {
         let status = 'api_error';
         let userMessage = req.__('Error con la API de pagos');
         let statusCode = 500;
-        let errorDetails = error.message;
-
-        if (error.response) {
-
-            if (error.response.status === 400) {
-                userMessage = req.__('Solicitud incorrecta a la API de pagos');
-                statusCode = 400;
-                errorDetails = error.response.data || error.message;
-
-                if (e    handleApiError(error, res, localPaymentId, req) {
-        let status = 'api_error';
-        let userMessage = req.__('Error con la API de pagos');
-        let statusCode = 500;
         let errorDetails = '';
-
 
         if (error.response) {
             statusCode = error.response.status;
             
-
             if (statusCode === 400) {
                 userMessage = req.__('Solicitud incorrecta a la API de pagos');
                 
-
-                if (error.response.data && typeof error.response.data === 'object') {
-                    if (error.response.data.error) {
+                if (error.response.data) {
+                    if (typeof error.response.data === 'string') {
+                        errorDetails = error.response.data;
+                    } else if (error.response.data.error) {
                         errorDetails = error.response.data.error;
                     } else if (error.response.data.message) {
                         errorDetails = error.response.data.message;
                     } else {
                         try {
                             errorDetails = JSON.stringify(error.response.data);
-                        } catch {
+                        } catch (e) {
                             errorDetails = error.response.data.toString();
                         }
                     }
-                } else if (typeof error.response.data === 'string') {
-                    errorDetails = error.response.data;
                 }
             } else {
                 userMessage = req.__('Error en el procesador (%s)', statusCode);
@@ -202,15 +185,12 @@ class PaymentsController {
             errorDetails = error.message;
         }
 
-
-        console.error(`[${statusCode}] ${userMessage}:`, errorDetails);
+        console.error(`${userMessage}: ${errorDetails}`);
         
-
         this.model.updatePayment(localPaymentId, {
             status: status,
             errorDetails: errorDetails
         });
-
 
         return res.status(statusCode).json({
             success: false,
@@ -220,24 +200,23 @@ class PaymentsController {
         });
     }
 
-
     async index(req, res) {
         if (!req.isAuthenticated() || !req.user.isAdmin) {
-            return res.status(403).send('Acceso denegado');
+            return res.status(403).send(req.__('Acceso denegado'));
         }
-        res.render('admin/payments');
+        res.render('admin/payments', { lang: req.getLocale() });
     }
 
     async getPayments(req, res) {
         try {
             if (!req.isAuthenticated() || !req.user.isAdmin) {
-                return res.status(403).json({ error: 'No autorizado' });
+                return res.status(403).json({ error: req.__('No autorizado') });
             }
             
             const payments = await this.model.getAllPayments();
             res.json(payments);
         } catch (error) {
-            res.status(500).json({ error: 'Error del servidor' });
+            res.status(500).json({ error: req.__('Error del servidor') });
         }
     }
 }
