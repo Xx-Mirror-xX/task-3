@@ -802,19 +802,6 @@ app.get('/api/payments', requireAuth, (req, res) => {
                 console.error('Error al obtener pagos:', err);
                 return res.status(500).json({ error: req.__('Error al obtener pagos') });
             }
-            res.json(rows);
-        }
-    );
-});
-
-app.get('/api/payments', requireAuth, (req, res) => {
-    db.all(
-        "SELECT * FROM payments ORDER BY paymentDate DESC",
-        (err, rows) => {
-            if (err) {
-                console.error('Error al obtener pagos:', err);
-                return res.status(500).json({ error: req.__('Error al obtener pagos') });
-            }
             const formattedRows = rows.map(payment => ({
                 ...payment,
                 formattedAmount: formatCurrency(payment.amount, payment.currency, req.getLocale()),
