@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Contactos</title>
-    <meta property="og:title" content="Panel de Contactos - Creating Social Network">
-    <meta property="og:description" content="Administra los mensajes de contacto recibidos en tu panel de administración">
+    <title><%= __('Panel de Contactos') %></title>
+    <meta property="og:title" content="<%= __('Panel de Contactos - Creating Social Network') %>">
+    <meta property="og:description" content="<%= __('Administra los mensajes de contacto recibidos en tu panel de administración') %>">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://creatingsocialnetwork.com/admin/contacts.ejs">
     <meta property="og:image" content="https://creatingsocialnetwork.com/images/admin-og.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Panel de Contactos - Creating Social Network">
-    <meta name="twitter:description" content="Gestión avanzada de mensajes de contacto">
+    <meta name="twitter:title" content="<%= __('Panel de Contactos - Creating Social Network') %>">
+    <meta name="twitter:description" content="<%= __('Gestión avanzada de mensajes de contacto') %>">
     <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/admin-twitter.jpg">
     <link rel="stylesheet" href="/stylesheet/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -190,6 +190,7 @@
             padding: 20px;
             max-width: 1600px;
             margin: 0 auto;
+            position: relative;
         }
         
         .table-container {
@@ -197,6 +198,20 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .lang-selector-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
+        .lang-selector {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
         }
     </style>
 
@@ -211,25 +226,32 @@
 </head>
 <body>
     <div class="container">
+        <div class="lang-selector-container">
+            <select class="lang-selector" id="langSelector">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+        
         <div class="admin-header">
-            <h1><i class="fas fa-address-book"></i> Contactos Recibidos</h1>
+            <h1><i class="fas fa-address-book"></i> <%= __('Contactos Recibidos') %></h1>
             <div class="nav-buttons">
                 <a href="/admin/payments" class="nav-btn payments-btn">
-                    <i class="fas fa-money-bill-wave"></i> Pagos
+                    <i class="fas fa-money-bill-wave"></i> <%= __('Pagos') %>
                 </a>
                 <a href="/admin/register" class="nav-btn register-admin-btn">
-                    <i class="fas fa-user-plus"></i> Registrar Admin
+                    <i class="fas fa-user-plus"></i> <%= __('Registrar Admin') %>
                 </a>
                 <a href="/logout" class="nav-btn logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                    <i class="fas fa-sign-out-alt"></i> <%= __('Cerrar sesión') %>
                 </a>
             </div>
         </div>
         
         <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="Buscar por nombre o email...">
+            <input type="text" id="searchInput" class="search-input" placeholder="<%= __('Buscar por nombre o email...') %>">
             <button id="refreshBtn" class="refresh-btn">
-                <i class="fas fa-sync-alt"></i> Actualizar
+                <i class="fas fa-sync-alt"></i> <%= __('Actualizar') %>
             </button>
         </div>
 
@@ -237,13 +259,13 @@
             <table id="contactsTable">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Email</th>
-                        <th>Mensaje</th>
-                        <th>IP</th>
-                        <th>Ubicación</th>
-                        <th>Fecha</th>
+                        <th><%= __('ID') %></th>
+                        <th><%= __('Nombre') %></th>
+                        <th><%= __('Email') %></th>
+                        <th><%= __('Mensaje') %></th>
+                        <th><%= __('IP') %></th>
+                        <th><%= __('Ubicación') %></th>
+                        <th><%= __('Fecha') %></th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -259,7 +281,7 @@
                         credentials: 'include'  
                     });
                     if (!response.ok) {
-                        throw new Error('Error al cargar contactos');
+                        throw new Error('<%= __("Error al cargar contactos") %>');
                     }
                     allContacts = await response.json();
                     renderContacts(allContacts);
@@ -305,6 +327,9 @@
             }
             
             document.addEventListener('DOMContentLoaded', () => {
+                // Establecer idioma actual
+                document.getElementById('langSelector').value = '<%= lang %>';
+                
                 loadContacts();
                 
                 document.getElementById('searchInput').addEventListener('input', (e) => {
@@ -315,6 +340,11 @@
                     e.preventDefault();
                     loadContacts();
                     document.getElementById('searchInput').value = '';
+                });
+                
+                // Cambiar idioma
+                document.getElementById('langSelector').addEventListener('change', function() {
+                    window.location.href = '/change-lang/' + this.value;
                 });
             });
         </script>
