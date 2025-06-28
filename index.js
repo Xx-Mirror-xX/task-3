@@ -183,14 +183,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/vistas', express.static(path.join(__dirname, 'vistas')));
 app.use(i18n.init);
 
-// Middleware personalizado para cookies
+// Middleware personalizado para cookies (CORREGIDO)
 app.use((req, res, next) => {
     req.cookies = {};
     if (req.headers.cookie) {
         req.headers.cookie.split(';').forEach(cookie => {
-            const parts = cookie.split('=');
-            if (parts.length === 2) {
-                req.cookies[parts[0].trim()] = decodeURIComponent(parts[1]);
+            const parts = cookie.split('=').map(part => part.trim());
+            if (parts.length >= 2) {
+                req.cookies[parts[0]] = decodeURIComponent(parts.slice(1).join('='));
             }
         });
     }
@@ -223,25 +223,31 @@ app.use((req, res, next) => {
   next();
 });
 
-// Ruta para cambiar idioma - MODIFICADA
+// Ruta para cambiar idioma - MODIFICADA (CORRECCIÓN)
 app.get('/change-lang/:lang', (req, res) => {
-  const lang = req.params.lang;
-  const validLangs = ['es', 'en'];
-  const returnUrl = req.query.returnUrl || '/';
-  
-  if (!validLangs.includes(lang)) {
-    return res.redirect(returnUrl);
-  }
+    const lang = req.params.lang;
+    const validLangs = ['es', 'en'];
+    const returnUrl = req.query.returnUrl || '/';
+    
+    if (!validLangs.includes(lang)) {
+        return res.redirect(returnUrl);
+    }
 
-  res.cookie('lang', lang, {
-    maxAge: 31536000000, // 1 año
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: isProduction,
-    path: '/'
-  });
-  
-  res.redirect(returnUrl);
+    const cookieOptions = {
+        maxAge: 31536000000, // 1 año
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isProduction,
+        path: '/'
+    };
+
+    // Agregar dominio si está en producción
+    if (isProduction) {
+        cookieOptions.domain = 'tu-dominio.com'; // Reemplaza con tu dominio real
+    }
+
+    res.cookie('lang', lang, cookieOptions);
+    res.redirect(returnUrl);
 });
 
 const requireAuth = (req, res, next) => {
