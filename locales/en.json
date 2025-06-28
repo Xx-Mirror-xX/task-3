@@ -170,4 +170,9 @@
   "Iniciar Sesión": "Login",
   "Enviar": "Send",
   "Registrarse": "Register"
+  "Por favor complete el reCAPTCHA": "Please complete the reCAPTCHA",
+  "Mensaje": "Message",
+  "Error al enviar el mensaje. Por favor intente nuevamente": "Error sending the message. Please try again",
+  "Procesando...": "Processing...",
+  "Servicio de Donación": "Donation Service"
 }
