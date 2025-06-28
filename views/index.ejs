@@ -126,20 +126,22 @@
     </div>
 
     <div class="container" id="SignIn">
-        <h1 class="form-title"><%= __('Inicio de Sesión') %></h1>
+        <h1 class="form-title"><%= __('Login') %></h1>
         <form id="loginForm">
             <div class="input-group">
                 <i class="fas fa-envelope"></i>
-                <input type="email" name="email" id="loginEmail" placeholder="Email" required>
-                <label for="email">Email</label>
+                <input type="email" name="email" id="loginEmail" 
+                       placeholder="<%= __('Email') %>" required>
+                <label for="email"><%= __('Email') %></label>
             </div>
             <div class="input-group">
                 <i class="fas fa-lock"></i>
-                <input type="password" name="password" id="loginPassword" placeholder="<%= __('Contraseña') %>" required>
-                <label for="password"><%= __('Contraseña') %></label>
+                <input type="password" name="password" id="loginPassword" 
+                       placeholder="<%= __('Password') %>" required>
+                <label for="password"><%= __('Password') %></label>
             </div>
             <p class="recover">
-                <a href="#"><%= __('¿Olvidaste tu contraseña?') %></a>
+                <a href="#"><%= __('Forgot your password?') %></a>
             </p>
 
             <button class="btn" id="loginBtn" type="submit">
