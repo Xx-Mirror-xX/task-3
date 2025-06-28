@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Formulario de Contacto</title>
-    <meta property="og:title" content="Contacto - Creating Social Network">
-    <meta property="og:description" content="Contáctanos para resolver tus dudas o solicitar información">
+    <title><%= __('Formulario de Contacto') %></title>
+    <meta property="og:title" content="<%= __('Contacto - Creating Social Network') %>">
+    <meta property="og:description" content="<%= __('Contáctanos para resolver tus dudas o solicitar información') %>">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://creatingsocialnetwork.com/contactos">
     <meta property="og:image" content="https://creatingsocialnetwork.com/images/contact-og.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Formulario de Contacto - Creating Social Network">
-    <meta name="twitter:description" content="Estamos aquí para ayudarte">
+    <meta name="twitter:title" content="<%= __('Formulario de Contacto - Creating Social Network') %>">
+    <meta name="twitter:description" content="<%= __('Estamos aquí para ayudarte') %>">
     <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/contact-twitter.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -35,22 +35,45 @@
             });
         })();
     </script>
+    
+    <style>
+        .lang-selector-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
+        .lang-selector {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+        }
+    </style>
 </head>
 <body>
+    <div class="lang-selector-container">
+        <select class="lang-selector" id="langSelector">
+            <option value="es">Español</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+    
     <div class="container" id="contactForm">
-        <h1 class="form-title">Contacto</h1>
+        <h1 class="form-title"><%= __('Contacto') %></h1>
         <form id="contactFormData">
             <input type="hidden" name="date" id="currentDate">
             
             <div class="input-group">
                 <i class="fas fa-user"></i>
-                <input type="text" name="firstName" id="firstName" placeholder="Nombre" required>
-                <label for="firstName">Nombre</label>
+                <input type="text" name="firstName" id="firstName" placeholder="<%= __('Nombre') %>" required>
+                <label for="firstName"><%= __('Nombre') %></label>
             </div>
             <div class="input-group">
                 <i class="fas fa-user"></i>
-                <input type="text" name="lastName" id="lastName" placeholder="Apellido" required>
-                <label for="lastName">Apellido</label>
+                <input type="text" name="lastName" id="lastName" placeholder="<%= __('Apellido') %>" required>
+                <label for="lastName"><%= __('Apellido') %></label>
             </div>
             <div class="input-group">
                 <i class="fas fa-envelope"></i>
@@ -60,21 +83,32 @@
             <div class="input-group">
                 <i class="fas fa-comment"></i>
                 <textarea name="message" id="message" placeholder=" " required></textarea>
-                <label for="message">Mensaje</label>
+                <label for="message"><%= __('Mensaje') %></label>
             </div>
             
             <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></div>
             
             <div style="display: flex; justify-content: space-between; margin-top: 20px;">
                 <a href="/" class="btn" style="width: 48%; text-align: center;">
-                    <i class="fas fa-arrow-left"></i> Volver
+                    <i class="fas fa-arrow-left"></i> <%= __('Volver') %>
                 </a>
                 <button class="btn" type="submit" style="width: 48%;">
-                    Enviar <i class="fas fa-paper-plane"></i>
+                    <%= __('Enviar') %> <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
         </form>
 
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // Establecer idioma actual
+                document.getElementById('langSelector').value = '<%= lang %>';
+                
+                // Cambiar idioma
+                document.getElementById('langSelector').addEventListener('change', function() {
+                    window.location.href = '/change-lang/' + this.value;
+                });
+            });
+        </script>
         <script src="scripts.js"></script>
     </div>
 </body>
