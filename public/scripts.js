@@ -649,7 +649,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ======================================================================
-    // CENTRALIZED LANGUAGE CHANGE HANDLING
+    // CENTRALIZED LANGUAGE CHANGE HANDLING - CORRECCIÓN
     // ======================================================================
     const langSelectors = document.querySelectorAll('.lang-selector');
     langSelectors.forEach(selector => {
