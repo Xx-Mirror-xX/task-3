@@ -481,7 +481,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (response.ok) {
                     window.location.href = result.redirect || '/admin/contacts';
                 } else {
-
                     if (result.message.includes('no tiene contraseña configurada')) {
                         showError('<%= __("Este usuario fue registrado con Google. Por favor use el botón de Google.") %>');
                     } else {
@@ -649,7 +648,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ======================================================================
-    // CENTRALIZED LANGUAGE CHANGE HANDLING - CORRECCIÓN
+    // CENTRALIZED LANGUAGE CHANGE HANDLING
     // ======================================================================
     const langSelectors = document.querySelectorAll('.lang-selector');
     langSelectors.forEach(selector => {
