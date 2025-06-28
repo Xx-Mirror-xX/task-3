@@ -230,9 +230,9 @@
     <option value="es" <%= locals.lang === 'es' ? 'selected' : '' %>>Español</option>
     <option value="en" <%= locals.lang === 'en' ? 'selected' : '' %>>English</option>
 </select>
-
     </div>
-        
+    
+    <div class="container">
         <div class="admin-header">
             <h1><i class="fas fa-address-book"></i> <%= __('Contactos Recibidos') %></h1>
             <div class="nav-buttons">
@@ -271,79 +271,79 @@
                 <tbody></tbody>
             </table>
         </div>
-        
-<script src="/scripts.js"></script>
-<script>
-            let allContacts = [];
-            
-            async function loadContacts() {
-                try {
-                    const response = await fetch('/api/contacts', {
-                        credentials: 'include'  
-                    });
-                    if (!response.ok) {
-                        throw new Error('<%= __("Error al cargar contactos") %>');
-                    }
-                    allContacts = await response.json();
-                    renderContacts(allContacts);
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert(error.message);
-                }
-            }
-            
-            function renderContacts(contacts) {
-                const tbody = document.querySelector('#contactsTable tbody');
-                tbody.innerHTML = '';
-                
-                contacts.forEach(contact => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${contact.id}</td>
-                        <td>${contact.firstName} ${contact.lastName}</td>
-                        <td>${contact.email}</td>
-                        <td>${contact.message}</td>
-                        <td>${contact.ipAddress}</td>
-                        <td>${contact.city || 'N/A'}, ${contact.country || 'N/A'}</td>
-                        <td>${new Date(contact.createdAt).toLocaleString()}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            }
-            
-            function filterContacts(searchTerm) {
-                if (!searchTerm) {
-                    renderContacts(allContacts);
-                    return;
-                }
-                
-                const filtered = allContacts.filter(contact => {
-                    const fullName = `${contact.firstName} ${contact.lastName}`.toLowerCase();
-                    const email = contact.email.toLowerCase();
-                    return fullName.includes(searchTerm.toLowerCase()) || 
-                           email.includes(searchTerm.toLowerCase());
-                });
-                
-                renderContacts(filtered);
-            }
-            
-            document.addEventListener('DOMContentLoaded', () => {
-                // Establecer idioma actual
-                document.getElementById('langSelector').value = '<%= lang %>';
-                
-                loadContacts();
-                
-                document.getElementById('searchInput').addEventListener('input', (e) => {
-                    filterContacts(e.target.value);
-                });
-                
-                document.getElementById('refreshBtn').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    loadContacts();
-                    document.getElementById('searchInput').value = '';
-                });
-            });
-        </script>
     </div>
+        
+    <script src="/scripts.js"></script>
+    <script>
+        let allContacts = [];
+        
+        async function loadContacts() {
+            try {
+                const response = await fetch('/api/contacts', {
+                    credentials: 'include'  
+                });
+                if (!response.ok) {
+                    throw new Error('<%= __("Error al cargar contactos") %>');
+                }
+                allContacts = await response.json();
+                renderContacts(allContacts);
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message);
+            }
+        }
+        
+        function renderContacts(contacts) {
+            const tbody = document.querySelector('#contactsTable tbody');
+            tbody.innerHTML = '';
+            
+            contacts.forEach(contact => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${contact.id}</td>
+                    <td>${contact.firstName} ${contact.lastName}</td>
+                    <td>${contact.email}</td>
+                    <td>${contact.message}</td>
+                    <td>${contact.ipAddress}</td>
+                    <td>${contact.city || 'N/A'}, ${contact.country || 'N/A'}</td>
+                    <td>${new Date(contact.createdAt).toLocaleString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function filterContacts(searchTerm) {
+            if (!searchTerm) {
+                renderContacts(allContacts);
+                return;
+            }
+            
+            const filtered = allContacts.filter(contact => {
+                const fullName = `${contact.firstName} ${contact.lastName}`.toLowerCase();
+                const email = contact.email.toLowerCase();
+                return fullName.includes(searchTerm.toLowerCase()) || 
+                       email.includes(searchTerm.toLowerCase());
+            });
+            
+            renderContacts(filtered);
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Establecer idioma actual
+            document.getElementById('langSelector').value = '<%= locals.lang %>';
+            
+            loadContacts();
+            
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                filterContacts(e.target.value);
+            });
+            
+            document.getElementById('refreshBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                loadContacts();
+                document.getElementById('searchInput').value = '';
+            });
+        });
+    </script>
 </body>
 </html>
