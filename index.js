@@ -8,6 +8,7 @@ const axios = require('axios');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const i18n = require('i18n');
+const cookieParser = require('cookie-parser');
 const app = express();
 
 // Configuración de i18n
@@ -16,7 +17,8 @@ i18n.configure({
   directory: path.join(__dirname, 'locales'),
   defaultLocale: 'es',
   cookie: 'lang',
-  register: global
+  register: global,
+  updateFiles: false
 });
 
 const PaymentsController = require('./controllers/PaymentsController');
@@ -32,6 +34,122 @@ const GEOLOCATION_TIMEOUT = 3000;
 const GEOLOCATION_CACHE = new Map();
 
 app.set('trust proxy', 1);
+
+// Middleware
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use('/stylesheet', express.static(path.join(__dirname, 'public', 'stylesheet')));
+app.use('/img', express.static(path.join(__dirname, 'public', 'img')));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/vistas', express.static(path.join(__dirname, 'vistas')));
+app.use(i18n.init);
+
+// Middleware para establecer el idioma
+app.use((req, res, next) => {
+  const validLangs = ['es', 'en'];
+  let lang = req.cookies.lang;
+  
+  // Si no hay cookie o el idioma no es válido, usar 'es'
+  if (!validLangs.includes(lang)) {
+    lang = 'es';
+    res.cookie('lang', lang, {
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 año
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/'
+    });
+  }
+  
+  req.setLocale(lang);
+  res.locals.lang = lang;
+  res.locals.__ = res.__ = function() {
+    return i18n.__.apply(req, arguments);
+  };
+  next();
+});
+
+const isProduction = process.env.NODE_ENV === 'production';
+app.use(session({
+    secret: 'secreto',
+    resave: false,
+    saveUninitialized: false,
+    rolling: true,
+    cookie: { 
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isProduction,
+        maxAge: 15 * 60 * 1000,
+        proxy: true 
+    },
+    proxy: true 
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.use(new GoogleStrategy({
+    clientID: GOOGLE_CLIENT_ID,
+    clientSecret: GOOGLE_CLIENT_SECRET,
+    callbackURL: GOOGLE_CALLBACK_URL,
+    passReqToCallback: true
+}, async (req, accessToken, refreshToken, profile, done) => {
+    try {
+        const email = profile.emails[0].value;
+        const nameParts = profile.displayName.split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+        
+        const isAdminLogin = req.query.state === 'admin';
+
+        db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
+            if (err) return done(err);
+            
+            if (user) {
+                if (isAdminLogin && !user.isAdmin) {
+                    const currentUser = req.user;
+                    if (currentUser && currentUser.isAdmin) {
+                        db.run('UPDATE users SET isAdmin = TRUE WHERE id = ?', [user.id], (err) => {
+                            if (err) return done(err);
+                            return done(null, {...user, isAdmin: true});
+                        });
+                    } else {
+                        return done(null, false, { message: 'No tienes permisos para crear administradores' });
+                    }
+                } else {
+                    return done(null, user);
+                }
+            } else {
+                const isAdmin = isAdminLogin && req.user && req.user.isAdmin;
+                
+                db.run(
+                    'INSERT INTO users (firstName, lastName, email, googleId, isAdmin) VALUES (?, ?, ?, ?, ?)',
+                    [firstName, lastName, email, profile.id, isAdmin],
+                    function(err) {
+                        if (err) return done(err);
+                        db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, newUser) => {
+                            if (err) return done(err);
+                            return done(null, newUser);
+                        });
+                    }
+                );
+            }
+        });
+    } catch (error) {
+        return done(error);
+    }
+}));
+
+passport.serializeUser((user, done) => {
+    done(null, user.id);
+});
+
+passport.deserializeUser((id, done) => {
+    db.get('SELECT * FROM users WHERE id = ?', [id], (err, user) => {
+        done(err, user);
+    });
+});
+
 
 const db = new sqlite3.Database('./database.db', (err) => {
     if (err) {
@@ -78,8 +196,8 @@ const db = new sqlite3.Database('./database.db', (err) => {
                 errorDetails TEXT
             )`);
 
-    const adminEmail = ADMIN_EMAIL;
-    const adminPassword = ADMIN_PASSWORD;
+            const adminEmail = ADMIN_EMAIL;
+            const adminPassword = ADMIN_PASSWORD;
             db.get('SELECT * FROM users WHERE email = ?', [adminEmail], (err, row) => {
                 if (err) {
                     console.error('Error al verificar usuario admin:', err);
@@ -109,121 +227,10 @@ const db = new sqlite3.Database('./database.db', (err) => {
     }
 });
 
-passport.use(new GoogleStrategy({
-    clientID: GOOGLE_CLIENT_ID,
-    clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: GOOGLE_CALLBACK_URL,
-    passReqToCallback: true
-}, async (req, accessToken, refreshToken, profile, done) => {
-    try {
-        const email = profile.emails[0].value;
-        const nameParts = profile.displayName.split(' ');
-        const firstName = nameParts[0];
-        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-        
-        const isAdminLogin = req.query.state === 'admin';
-
-        db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-            if (err) return done(err);
-            
-            if (user) {
-                if (isAdminLogin && !user.isAdmin) {
-                    const currentUser = req.user;
-                    if (currentUser && currentUser.isAdmin) {
-                        db.run('UPDATE users SET isAdmin = TRUE WHERE id = ?', [user.id], (err) => {
-                            if (err) return done(err);
-                            return done(null, {...user, isAdmin: true});
-                        });
-                    } else {
-                        return done(null, false, { message: 'No tienes permisos para crear administradores' });
-                    }
-                } else {
-                    return done(null, user);
-                }
-            } else {
-
-                const isAdmin = isAdminLogin && req.user && req.user.isAdmin;
-                
-                db.run(
-                    'INSERT INTO users (firstName, lastName, email, googleId, isAdmin) VALUES (?, ?, ?, ?, ?)',
-                    [firstName, lastName, email, profile.id, isAdmin],
-                    function(err) {
-                        if (err) return done(err);
-                        db.get('SELECT * FROM users WHERE id = ?', [this.lastID], (err, newUser) => {
-                            if (err) return done(err);
-                            return done(null, newUser);
-                        });
-                    }
-                );
-            }
-        });
-    } catch (error) {
-        return done(error);
-    }
-}));
-
-passport.serializeUser((user, done) => {
-    done(null, user.id);
-});
-
-passport.deserializeUser((id, done) => {
-    db.get('SELECT * FROM users WHERE id = ?', [id], (err, user) => {
-        done(err, user);
-    });
-});
-
-
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use('/stylesheet', express.static(path.join(__dirname, 'public', 'stylesheet')));
-app.use('/img', express.static(path.join(__dirname, 'public', 'img')));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/vistas', express.static(path.join(__dirname, 'vistas')));
-app.use(i18n.init);
 
-// Middleware personalizado para cookies (CORREGIDO)
-app.use((req, res, next) => {
-    req.cookies = {};
-    if (req.headers.cookie) {
-        req.headers.cookie.split(';').forEach(cookie => {
-            const parts = cookie.split('=').map(part => part.trim());
-            if (parts.length >= 2) {
-                req.cookies[parts[0]] = decodeURIComponent(parts.slice(1).join('='));
-            }
-        });
-    }
-    next();
-});
-
-const isProduction = process.env.NODE_ENV === 'production';
-app.use(session({
-    secret: 'secreto',
-    resave: false,
-    saveUninitialized: false,
-    rolling: true,
-    cookie: { 
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: isProduction,
-        maxAge: 15 * 60 * 1000,
-        proxy: true 
-    },
-    proxy: true 
-}));
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Middleware para establecer locale en respuestas
-app.use((req, res, next) => {
-  res.locals.__ = res.__ = function() {
-    return i18n.__.apply(req, arguments);
-  };
-  next();
-});
-
-// Ruta para cambiar idioma - MODIFICADA (CORRECCIÓN)
+// Ruta para cambiar idioma
 app.get('/change-lang/:lang', (req, res) => {
     const lang = req.params.lang;
     const validLangs = ['es', 'en'];
@@ -233,20 +240,14 @@ app.get('/change-lang/:lang', (req, res) => {
         return res.redirect(returnUrl);
     }
 
-    const cookieOptions = {
-        maxAge: 31536000000, // 1 año
+    res.cookie('lang', lang, {
+        maxAge: 365 * 24 * 60 * 60 * 1000, // 1 año
         httpOnly: true,
         sameSite: 'lax',
         secure: isProduction,
         path: '/'
-    };
-
-    // Agregar dominio si está en producción
-    if (isProduction) {
-        cookieOptions.domain = 'tu-dominio.com'; // Reemplaza con tu dominio real
-    }
-
-    res.cookie('lang', lang, cookieOptions);
+    });
+    
     res.redirect(returnUrl);
 });
 
@@ -254,7 +255,6 @@ const requireAuth = (req, res, next) => {
     if (req.isAuthenticated()) return next();
     res.status(403).send('Acceso denegado');
 };
-
 
 const requireAdmin = (req, res, next) => {
     if (!req.isAuthenticated()) return res.status(403).send('Acceso denegado');
@@ -528,7 +528,6 @@ app.post('/register', async (req, res) => {
     }
 });
 
-
 app.post('/admin/register', requireAdmin, async (req, res) => {
     try {
         const { fName, lName, email, password } = req.body;
@@ -786,34 +785,32 @@ app.get('/api/payments/:payment_id', requireAuth, (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.render('index', { lang: req.cookies.lang || 'es' });
+    res.render('index', { lang: res.locals.lang });
 });
 
 app.get('/contactos', (req, res) => {
-    res.render('contactos', { lang: req.cookies.lang || 'es' });
+    res.render('contactos', { lang: res.locals.lang });
 });
 
 app.get('/pagos', (req, res) => {
-    res.render('pagos', { lang: req.cookies.lang || 'es' });
+    res.render('pagos', { lang: res.locals.lang });
 });
 
 app.get('/admin/contacts', requireAdmin, (req, res) => {
-    res.render('admin/contacts', { lang: req.cookies.lang || 'es' });
+    res.render('admin/contacts', { lang: res.locals.lang });
 });
 
 app.get('/admin/register', requireAdmin, (req, res) => {
-    res.render('admin/register', { lang: req.cookies.lang || 'es' });
+    res.render('admin/register', { lang: res.locals.lang });
 });
 
 app.get('/admin/payments', requireAdmin, (req, res) => {
-    res.render('admin/payments', { lang: req.cookies.lang || 'es' });
+    res.render('admin/payments', { lang: res.locals.lang });
 });
-
 
 app.get('/indice', requireAuth, (req, res) => {
-    res.render('vistas/indice', { lang: req.cookies.lang || 'es' });
+    res.render('vistas/indice', { lang: res.locals.lang });
 });
-
 
 app.use((req, res) => {
     res.status(404).send(req.__('Página no encontrada'));
