@@ -3,240 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= __('Panel de Pagos') %></title>
-    <meta property="og:title" content="<%= __('Panel de Pagos - Creating Social Network') %>">
-    <meta property="og:description" content="<%= __('Administra transacciones y pagos en tu panel de administración') %>">
+    <title><%= __('Registro de Administrador') %></title>
+    <meta property="og:title" content="<%= __('Registro de Administrador - Creating Social Network') %>">
+    <meta property="og:description" content="<%= __('Crea nuevas cuentas de administrador para tu plataforma') %>">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://creatingsocialnetwork.com/admin/payments.ejs">
-    <meta property="og:image" content="https://creatingsocialnetwork.com/images/payments-og.jpg">
+    <meta property="og:url" content="https://creatingsocialnetwork.com/admin/register.ejs">
+    <meta property="og:image" content="https://creatingsocialnetwork.com/images/register-og.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="<%= __('Panel de Pagos - Creating Social Network') %>">
-    <meta name="twitter:description" content="<%= __('Gestión profesional de transacciones financieras') %>">
-    <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/payments-twitter.jpg">
-    <link rel="stylesheet" href="/stylesheet/styles.css">
+    <meta name="twitter:title" content="<%= __('Registro de Administrador - Creating Social Network') %>">
+    <meta name="twitter:description" content="<%= __('Gestión de cuentas administrativas') %>">
+    <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/register-twitter.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link rel="stylesheet" href="/stylesheet/styles.css">
     <style>
-        :root {
-            --primary: #3498db;
-            --secondary: #2c3e50;
-            --success: #2ecc71;
-            --danger: #e74c3c;
-            --light: #f8f9fa;
-            --dark: #343a40;
-            --gray: #6c757d;
-            --border: #dee2e6;
+        .admin-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e63946;
         }
-        
         .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 15px 20px;
-            background: linear-gradient(135deg, var(--secondary), #1a2533);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #e63946;
         }
-        
         .admin-header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-size: 28px;
+            margin-bottom: 10px;
         }
-        
-        .admin-header h1 i {
-            color: var(--primary);
+        .admin-header p {
+            color: #666;
         }
-        
-        .nav-buttons {
-            display: flex;
-            gap: 10px;
+        .admin-form-group {
+            margin-bottom: 20px;
         }
-        
-        .nav-btn {
-            padding: 8px 16px;
-            border-radius: 4px;
-            text-decoration: none;
-            color: white;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-btn i {
-            font-size: 0.9rem;
-        }
-        
-        .contacts-btn {
-            background-color: var(--primary);
-        }
-        
-        .contacts-btn:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-        }
-        
-        .logout-btn {
-            background-color: var(--danger);
-        }
-        
-        .logout-btn:hover {
-            background-color: #c0392b;
-            transform: translateY(-2px);
-        }
-        
-        .filters-container {
-            margin: 20px 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-items: center;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            min-width: 180px;
-        }
-        
-        .filter-label {
+        .admin-form-group label {
+            display: block;
             margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--dark);
-            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
         }
-        
-        .filter-input, .filter-select {
-            padding: 10px 12px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
+        .admin-form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border 0.3s;
         }
-        
-        .filter-input:focus, .filter-select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        .admin-form-control:focus {
+            border-color: #e63946;
             outline: none;
         }
-        
-        .apply-filters-btn, .reset-filters-btn {
-            padding: 8px 16px;
+        .admin-btn {
+            background-color: #e63946;
+            color: white;
             border: none;
-            border-radius: 4px;
+            padding: 12px 20px;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 16px;
             cursor: pointer;
+            transition: background 0.3s;
+        }
+        .admin-btn:hover {
+            background-color: #c1121f;
+        }
+        .admin-alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+        .admin-alert.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .admin-alert.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .admin-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        .admin-back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            color: #e63946;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        /* Nuevos estilos para el botón de Google */
+        .admin-oauth {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .admin-oauth p {
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: #555;
+        }
+        #adminGoogleBtn {
             display: flex;
             align-items: center;
-            gap: 5px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .apply-filters-btn {
-            background-color: var(--success);
+            justify-content: center;
+            background-color: #4285F4;
             color: white;
-        }
-        
-        .apply-filters-btn:hover {
-            background-color: #27ae60;
-            transform: translateY(-2px);
-        }
-        
-        .reset-filters-btn {
-            background-color: var(--danger);
-            color: white;
-        }
-        
-        .reset-filters-btn:hover {
-            background-color: #c0392b;
-            transform: translateY(-2px);
-        }
-        
-        .status-completed {
-            color: var(--success);
-            font-weight: 600;
-        }
-        
-        .status-pending {
-            color: #f39c12;
-            font-weight: 600;
-        }
-        
-        .status-failed {
-            color: var(--danger);
-            font-weight: 600;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-top: 20px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        
-        th, td {
+            border: none;
             padding: 12px 15px;
-            text-align: left;
+            width: 100%;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-        
-        th {
-            background-color: #f1f5f9;
-            position: sticky;
-            top: 0;
-            font-weight: 600;
-            color: var(--dark);
-            border-bottom: 2px solid var(--border);
+        #adminGoogleBtn:hover {
+            background-color: #357ae8;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        
-        tbody tr {
-            border-bottom: 1px solid var(--border);
-            transition: background-color 0.2s ease;
-        }
-        
-        tbody tr:last-child {
-            border-bottom: none;
-        }
-        
-        tbody tr:nth-child(even) {
-            background-color: #f8fafc;
-        }
-        
-        tbody tr:hover {
-            background-color: #f1f5f9;
-        }
-        
-        .container {
-            padding: 20px;
-            max-width: 1600px;
-            margin: 0 auto;
-            position: relative;
-        }
-        
-        .table-container {
-            background-color: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-        
-        .filters-actions {
+        #adminGoogleBtn i {
+            font-size: 18px;
+            margin-right: 12px;
+            background: white;
+            color: #4285F4;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
             display: flex;
-            gap: 10px;
-            margin-left: auto;
+            align-items: center;
+            justify-content: center;
         }
         
         .lang-selector-container {
@@ -252,7 +158,7 @@
             border: 1px solid #ddd;
             background-color: #f8f9fa;
         }
-    </style>
+ </style>
 </head>
 <body>
     <div class="lang-selector-container">
@@ -262,184 +168,183 @@
 </select>
 
     </div>
-        
+    
+    <div class="admin-container">
         <div class="admin-header">
-            <h1><i class="fas fa-money-bill-wave"></i> <%= __('Pagos Recibidos') %></h1>
-            <div class="nav-buttons">
-                <a href="/admin/contacts" class="nav-btn contacts-btn">
-                    <i class="fas fa-address-book"></i> <%= __('Contactos') %>
-                </a>
-                <a href="/logout" class="nav-btn logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> <%= __('Cerrar sesión') %>
-                </a>
-            </div>
+            <h1><i class="fas fa-user-shield"></i> <%= __('Registrar Nuevo Administrador') %></h1>
+            <p><%= __('Complete todos los campos para crear una nueva cuenta de administrador') %></p>
         </div>
-        
-        <div class="filters-container">
-            <div class="filter-group">
-                <label class="filter-label"><%= __('Servicio') %>:</label>
-                <select id="serviceFilter" class="filter-select">
-                    <option value=""><%= __('Todos') %></option>
-                    <option value="Servicio de Donación"><%= __('Servicio de Donación') %></option>
-                    <!-- Agrega más opciones según tus servicios -->
-                </select>
+
+        <div id="adminAlert" class="admin-alert"></div>
+        <div id="errorContainer" class="error-container" style="display: none;">
+            <p id="errorMessage"></p>
+        </div>
+
+        <form id="adminRegisterForm">
+            <div class="admin-form-group">
+                <label for="adminFirstName"><i class="fas fa-user"></i> <%= __('Nombre') %></label>
+                <input type="text" id="adminFirstName" class="admin-form-control" required>
             </div>
-            
-            <div class="filter-group">
-                <label class="filter-label"><%= __('Estado') %>:</label>
-                <select id="statusFilter" class="filter-select">
-                    <option value=""><%= __('Todos') %></option>
-                    <option value="completed"><%= __('Completado') %></option>
-                    <option value="pending"><%= __('Pendiente') %></option>
-                    <option value="failed"><%= __('Fallido') %></option>
-                </select>
+
+            <div class="admin-form-group">
+                <label for="adminLastName"><i class="fas fa-user"></i> <%= __('Apellido') %></label>
+                <input type="text" id="adminLastName" class="admin-form-control" required>
             </div>
-            
-            <div class="filter-group">
-                <label class="filter-label"><%= __('Fecha desde') %>:</label>
-                <input type="date" id="dateFromFilter" class="filter-input">
+
+            <div class="admin-form-group">
+                <label for="adminEmail"><i class="fas fa-envelope"></i> <%= __('Email') %></label>
+                <input type="email" id="adminEmail" class="admin-form-control" required>
             </div>
-            
-            <div class="filter-group">
-                <label class="filter-label"><%= __('Fecha hasta') %>:</label>
-                <input type="date" id="dateToFilter" class="filter-input">
+
+            <div class="admin-form-group">
+                <label for="adminPassword"><i class="fas fa-lock"></i> <%= __('Contraseña') %></label>
+                <input type="password" id="adminPassword" class="admin-form-control" minlength="8" required>
+                <small style="color: #666;"><%= __('Mínimo 8 caracteres') %></small>
             </div>
+
+            <div class="admin-form-group">
+                <label for="adminConfirmPassword"><i class="fas fa-lock"></i> <%= __('Confirmar Contraseña') %></label>
+                <input type="password" id="adminConfirmPassword" class="admin-form-control" required>
+            </div>
+
+            <button type="submit" class="admin-btn" id="adminRegisterBtn">
+                <i class="fas fa-user-plus"></i> <%= __('Registrar Administrador') %>
+            </button>
+        </form>
+
+        <div class="admin-oauth">
+            <p><%= __('O registra usando:') %></p>
+            <button id="adminGoogleBtn">
+                <i class="fab fa-google"></i> Google
+            </button>
+        </div>
+
+        <div class="admin-footer">
+            <a href="/admin/contacts" class="admin-back-btn">
+                <i class="fas fa-arrow-left"></i> <%= __('Volver al Panel') %>
+            </a>
+        </div>
+    </div>
+
+    <script src="/scripts.js">
+
+        function showError(message, type = 'error') {
+            const errorContainer = document.getElementById('errorContainer');
+            const errorMessage = document.getElementById('errorMessage');
             
-            <div class="filters-actions">
-                <button id="applyFiltersBtn" class="apply-filters-btn">
-                    <i class="fas fa-filter"></i> <%= __('Filtrar') %>
-                </button>
+            if (errorContainer && errorMessage) {
+                errorMessage.innerHTML = message;
+                errorContainer.style.display = 'block';
+                errorContainer.className = type === 'error' ? 'error-container' : 'error-container success';
                 
-                <button id="resetFiltersBtn" class="reset-filters-btn">
-                    <i class="fas fa-times"></i> <%= __('Limpiar') %>
-                </button>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table id="paymentsTable">
-                <thead>
-                    <tr>
-                        <th><%= __('ID') %></th>
-                        <th><%= __('Email') %></th>
-                        <th><%= __('Servicio') %></th>
-                        <th><%= __('Monto') %></th>
-                        <th><%= __('Moneda') %></th>
-                        <th><%= __('Estado') %></th>
-                        <th><%= __('Fecha') %></th>
-                        <th><%= __('ID Transacción') %></th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <script src="/scripts.js">
-            let allPayments = [];
-            
-            async function loadPayments() {
-                try {
-                    const response = await fetch('/api/payments', {
-                        credentials: 'include' 
-                    });
-                    if (!response.ok) {
-                        throw new Error('<%= __("Error al cargar pagos") %>');
+                errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                setTimeout(() => {
+                    if (errorContainer) {
+                        errorContainer.style.display = 'none';
                     }
-                    allPayments = await response.json();
-                    renderPayments(allPayments);
+                }, 5000);
+            } else {
+                alert(message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Establecer idioma actual
+            document.getElementById('langSelector').value = '<%= lang %>';
+            
+            const adminRegisterForm = document.getElementById('adminRegisterForm');
+            const adminAlert = document.getElementById('adminAlert');
+            const adminRegisterBtn = document.getElementById('adminRegisterBtn');
+            const adminGoogleBtn = document.getElementById('adminGoogleBtn');
+
+            if (adminGoogleBtn) {
+                adminGoogleBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = '/auth/google/admin';
+                });
+            }
+
+            adminRegisterForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const originalBtnText = adminRegisterBtn.innerHTML;
+                adminRegisterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <%= __("Registrando...") %>';
+                adminRegisterBtn.disabled = true;
+
+
+                const password = document.getElementById('adminPassword').value;
+                const confirmPassword = document.getElementById('adminConfirmPassword').value;
+                
+                if (password !== confirmPassword) {
+                    showError('<%= __("Las contraseñas no coinciden") %>');
+                    adminRegisterBtn.innerHTML = originalBtnText;
+                    adminRegisterBtn.disabled = false;
+                    return;
+                }
+
+                const adminData = {
+                    fName: document.getElementById('adminFirstName').value.trim(),
+                    lName: document.getElementById('adminLastName').value.trim(),
+                    email: document.getElementById('adminEmail').value.trim(),
+                    password: password
+                };
+
+                try {
+                    const response = await fetch('/admin/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(adminData),
+                        credentials: 'include'
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showError('<%= __("Administrador registrado con éxito") %>', 'success');
+                        
+                        try {
+                            const loginResponse = await fetch('/login', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                    email: adminData.email, 
+                                    password: adminData.password
+                                })
+                            });
+                            
+                            const loginResult = await loginResponse.json();
+                            
+                            if (loginResponse.ok) {
+                                setTimeout(() => {
+                                    window.location.href = '/admin/contacts';
+                                }, 1500);
+                            } else {
+                                showError('<%= __("Registro exitoso. Por favor inicia sesión manualmente") %>');
+                                setTimeout(() => {
+                                    window.location.href = '/';
+                                }, 2000);
+                            }
+                        } catch (loginError) {
+                            console.error('Error en auto-login:', loginError);
+                            showError('<%= __("Registro exitoso. Por favor inicia sesión") %>');
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 2000);
+                        }
+                    } else {
+                        showError(result.error || '<%= __("Error al registrar administrador") %>');
+                    }
                 } catch (error) {
                     console.error('Error:', error);
-                    alert(error.message);
+                    showError('<%= __("Error de conexión con el servidor") %>');
+                } finally {
+                    adminRegisterBtn.innerHTML = originalBtnText;
+                    adminRegisterBtn.disabled = false;
                 }
-            }
-            
-            function renderPayments(payments) {
-                const tbody = document.querySelector('#paymentsTable tbody');
-                tbody.innerHTML = '';
-                
-                payments.forEach(payment => {
-                    const row = document.createElement('tr');
-                    const statusClass = `status-${payment.status || 'pending'}`;
-                    
-                    row.innerHTML = `
-                        <td>${payment.id}</td>
-                        <td>${payment.email}</td>
-                        <td>${payment.service}</td>
-                        <td>${payment.amount}</td>
-                        <td>${payment.currency}</td>
-                        <td class="${statusClass}">${getStatusText(payment.status)}</td>
-                        <td>${new Date(payment.paymentDate).toLocaleString()}</td>
-                        <td>${payment.transactionId || 'N/A'}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            }
-            
-            function getStatusText(status) {
-                switch(status) {
-                    case 'completed': return '<%= __("Completado") %>';
-                    case 'pending': return '<%= __("Pendiente") %>';
-                    case 'failed': return '<%= __("Fallido") %>';
-                    default: return '<%= __("Pendiente") %>';
-                }
-            }
-            
-            function filterPayments() {
-                const service = document.getElementById('serviceFilter').value;
-                const status = document.getElementById('statusFilter').value;
-                const dateFrom = document.getElementById('dateFromFilter').value;
-                const dateTo = document.getElementById('dateToFilter').value;
-                
-                let filtered = [...allPayments];
-                
-                if (service) {
-                    filtered = filtered.filter(p => p.service === service);
-                }
-                
-                if (status) {
-                    filtered = filtered.filter(p => p.status === status);
-                }
-                
-                if (dateFrom) {
-                    const fromDate = new Date(dateFrom);
-                    filtered = filtered.filter(p => new Date(p.paymentDate) >= fromDate);
-                }
-                
-                if (dateTo) {
-                    const toDate = new Date(dateTo);
-                    toDate.setDate(toDate.getDate() + 1);
-                    filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
-                }
-                
-                renderPayments(filtered);
-            }
-            
-            function resetFilters() {
-                document.getElementById('serviceFilter').value = '';
-                document.getElementById('statusFilter').value = '';
-                document.getElementById('dateFromFilter').value = '';
-                document.getElementById('dateToFilter').value = '';
-                renderPayments(allPayments);
-            }
-            
-            document.addEventListener('DOMContentLoaded', () => {
-                // Establecer idioma actual
-                document.getElementById('langSelector').value = '<%= lang %>';
-                
-                loadPayments();
-                
-                document.getElementById('applyFiltersBtn').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    filterPayments();
-                });
-                
-                document.getElementById('resetFiltersBtn').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    resetFilters();
-                });
-                
             });
-        </script>
-    </div>
+            
 </body>
 </html>
