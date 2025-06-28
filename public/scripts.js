@@ -655,8 +655,8 @@ document.addEventListener('DOMContentLoaded', function() {
     langSelectors.forEach(selector => {
         selector.addEventListener('change', function() {
             const lang = this.value;
-            const currentUrl = window.location.pathname + window.location.search;
-            window.location.href = '/change-lang/' + lang + '?returnUrl=' + encodeURIComponent(currentUrl);
+            const returnUrl = window.location.pathname + window.location.search;
+            window.location.href = '/change-lang/' + lang + '?returnUrl=' + encodeURIComponent(returnUrl);
         });
     });
     // ======================================================================
