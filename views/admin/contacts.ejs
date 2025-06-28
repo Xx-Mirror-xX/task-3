@@ -205,13 +205,43 @@
             top: 20px;
             right: 20px;
             z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 8px 15px;
+            border-radius: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .lang-selector-container:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        
+        .lang-globe {
+            font-size: 1.1rem;
+            color: #3498db;
         }
         
         .lang-selector {
-            padding: 8px 12px;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-            background-color: #f8f9fa;
+            padding: 6px 25px 6px 10px;
+            border: none;
+            background-color: transparent;
+            font-size: 0.9rem;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 12px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        
+        .lang-selector:focus {
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
         }
     </style>
 
@@ -226,13 +256,14 @@
 </head>
 <body>
     <div class="lang-selector-container">
-<select class="lang-selector" id="langSelector">
-    <option value="es" <%= locals.lang === 'es' ? 'selected' : '' %>>Español</option>
-    <option value="en" <%= locals.lang === 'en' ? 'selected' : '' %>>English</option>
-</select>
-
+        <i class="fas fa-globe lang-globe"></i>
+        <select class="lang-selector" id="langSelector">
+            <option value="es" <%= locals.lang === 'es' ? 'selected' : '' %>>Español</option>
+            <option value="en" <%= locals.lang === 'en' ? 'selected' : '' %>>English</option>
+        </select>
     </div>
         
+    <div class="container">
         <div class="admin-header">
             <h1><i class="fas fa-address-book"></i> <%= __('Contactos Recibidos') %></h1>
             <div class="nav-buttons">
@@ -272,7 +303,7 @@
             </table>
         </div>
         
-        <script src="/scripts.js">>
+        <script src="/scripts.js">
             let allContacts = [];
             
             async function loadContacts() {
@@ -340,6 +371,12 @@
                     e.preventDefault();
                     loadContacts();
                     document.getElementById('searchInput').value = '';
+                });
+                
+                // Manejar cambio de idioma
+                document.getElementById('langSelector').addEventListener('change', function() {
+                    const lang = this.value;
+                    window.location.href = window.location.pathname + '?lang=' + lang;
                 });
             });
         </script>
