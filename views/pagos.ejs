@@ -78,36 +78,36 @@
 <body>
     <div class="lang-selector-container">
         <select class="lang-selector" id="langSelector">
-            <option value="es" <%= locals.lang === 'es' ? 'selected' : '' %>>Español</option>
-            <option value="en" <%= locals.lang === 'en' ? 'selected' : '' %>>English</option>
+            <option value="es" <%= locals.lang === 'es' ? 'selected' : '' %>><%= __('Español') %></option>
+            <option value="en" <%= locals.lang === 'en' ? 'selected' : '' %>><%= __('English') %></option>
         </select>
     </div>
     
     <div class="container" id="paymentForm">
-        <h1 class="form-title"><%= __('Realizar Pago') %></h1>
+        <h1 class="form-title"><%= __('Make Payment') %></h1>
         
         <form id="paymentFormData">
             <div class="input-group">
                 <i class="fas fa-envelope"></i>
-                <input type="email" name="email" placeholder="<%= __('Correo electrónico') %>" required>
-                <label for="email"><%= __('Correo electrónico') %></label>
+                <input type="email" name="email" placeholder="<%= __('Email') %>" required>
+                <label for="email"><%= __('Email') %></label>
             </div>
             <div class="input-group">
                 <i class="fas fa-user"></i>
-                <input type="text" name="cardName" placeholder="<%= __('Nombre del titular') %>" required>
-                <label for="cardName"><%= __('Nombre del titular') %></label>
+                <input type="text" name="cardName" placeholder="<%= __('Cardholder Name') %>" required>
+                <label for="cardName"><%= __('Cardholder Name') %></label>
             </div>
             <div class="input-group">
                 <i class="fas fa-credit-card"></i>
-                <input type="text" name="cardNumber" placeholder="<%= __('Número de tarjeta') %>" 
+                <input type="text" name="cardNumber" placeholder="<%= __('Card Number') %>" 
                        pattern="\d{13,19}" title="<%= __('Debe tener 13-19 dígitos') %>" required>
-                <label for="cardNumber"><%= __('Número de tarjeta') %></label>
+                <label for="cardNumber"><%= __('Card Number') %></label>
             </div>
             <div class="input-group">
                 <i class="fas fa-calendar"></i>
                 <div style="display: flex; justify-content: space-between;">
                     <select name="expiryMonth" required style="width: 48%;">
-                        <option value=""><%= __('Mes') %></option>
+                        <option value=""><%= __('Month') %></option>
                         <option value="01">01</option>
                         <option value="02">02</option>
                         <option value="03">03</option>
@@ -122,7 +122,7 @@
                         <option value="12">12</option>
                     </select>
                     <select name="expiryYear" required style="width: 48%;">
-                        <option value=""><%= __('Año') %></option>
+                        <option value=""><%= __('Year') %></option>
                         <option value="2023">2023</option>
                         <option value="2024">2024</option>
                         <option value="2025">2025</option>
@@ -136,33 +136,33 @@
             </div>
             <div class="input-group">
                 <i class="fas fa-lock"></i>
-                <input type="text" name="cvv" placeholder="CVV" pattern="\d{3,4}" title="<%= __('3-4 dígitos') %>" required>
-                <label for="cvv">CVV</label>
+                <input type="text" name="cvv" placeholder="<%= __('CVV') %>" pattern="\d{3,4}" title="<%= __('3-4 dígitos') %>" required>
+                <label for="cvv"><%= __('CVV') %></label>
             </div>
             <div class="input-group">
                 <i class="fas fa-dollar-sign"></i>
-                <input type="number" name="amount" placeholder="<%= __('Monto') %>" min="1" step="0.01" value="10" required>
-                <label for="amount"><%= __('Monto') %></label>
+                <input type="number" name="amount" placeholder="<%= __('Amount') %>" min="1" step="0.01" value="10" required>
+                <label for="amount"><%= __('Amount') %></label>
             </div>
             <div class="input-group">
                 <i class="fas fa-money-bill-wave"></i>
                 <select name="currency" required>
-                    <option value=""><%= __('Seleccione moneda') %></option>
+                    <option value=""><%= __('Select currency') %></option>
                     <option value="USD">USD</option>
                     <option value="EUR">EUR</option>
                     <option value="VES">VES</option>
                 </select>
-                <label for="currency" style="top: -0.01em;"><%= __('Moneda') %></label>
+                <label for="currency" style="top: -0.01em;"><%= __('Currency') %></label>
             </div>
             
             <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></div>
             
             <div style="display: flex; justify-content: space-between; margin-top: 20px;">
                 <a href="/" class="btn" style="width: 48%; text-align: center;">
-                    <i class="fas fa-arrow-left"></i> <%= __('Volver') %>
+                    <i class="fas fa-arrow-left"></i> <%= __('Back') %>
                 </a>
                 <button class="btn" type="submit" style="width: 48%;">
-                    <%= __('Pagar') %> <i class="fas fa-credit-card"></i>
+                    <%= __('Pay') %> <i class="fas fa-credit-card"></i>
                 </button>
             </div>
         </form>
