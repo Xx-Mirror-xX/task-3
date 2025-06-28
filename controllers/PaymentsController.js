@@ -6,7 +6,7 @@ class PaymentsController {
         this.model = new PaymentsModel();
         this.apiConfig = {
             baseURL: 'https://fakepayment.onrender.com',
-            timeout: 60000, 
+            timeout: 60000,
             headers: {
                 'Authorization': `Bearer ${process.env.FAKE_PAYMENT_API_TOKEN}`,
                 'Content-Type': 'application/json'
@@ -68,7 +68,10 @@ class PaymentsController {
                     this.apiConfig
                 );
 
-                if (response.data.status === 'APPROVED') {
+
+                const responseStatus = response.data.status || response.data.full_name;
+                
+                if (responseStatus === 'APPROVED') {
                     await this.model.updatePayment(localPaymentId, {
                         transactionId: response.data.transaction_id,
                         status: 'completed'
@@ -78,26 +81,13 @@ class PaymentsController {
                         success: true,
                         paymentId: localPaymentId,
                         transactionId: response.data.transaction_id,
-                        message: req.__('Pago procesado exitosamente')
+                        message: req.__('Pago procesado exitosamente'),
+                        details: req.__('Payment successful')
                     });
                 } else {
-                    return this.handlePaymentError(response.data, res, localPaymentId, req);
+                    return this.handlePaymentResponse(response.data, res, localPaymentId, req);
                 }
             } catch (apiError) {
-                if (apiError.code === 'ECONNABORTED') {
-                    console.error(req.__('Timeout procesando pago [ID: %s]', localPaymentId));
-                    await this.model.updatePayment(localPaymentId, {
-                        status: 'timeout_error',
-                        errorDetails: req.__("La API excedió el tiempo de espera")
-                    });
-                    
-                    return res.status(504).json({
-                        success: false,
-                        paymentId: localPaymentId,
-                        error: req.__('El procesador de pagos no respondió a tiempo'),
-                        solution: req.__('Por favor intente nuevamente más tarde')
-                    });
-                }
                 return this.handleApiError(apiError, res, localPaymentId, req);
             }
         } catch (error) {
@@ -109,72 +99,91 @@ class PaymentsController {
         }
     }
 
-    handlePaymentError(apiResponse, res, localPaymentId, req) {
-        const errorMessages = {
-            'REJECTED': req.__('Pago rechazado por el procesador'),
-            'ERROR': req.__('Error en el procesamiento del pago'),
-            'INSUFFICIENT': req.__('Fondos insuficientes'),
-            'INVALID_CARD': req.__('Tarjeta inválida'),
-            'EXPIRED_CARD': req.__('Tarjeta expirada'),
-            '001': req.__('Número de tarjeta inválido'),
-            '002': req.__('Pago rechazado'),
-            '003': req.__('Error en el procesamiento'),
-            '004': req.__('Fondos insuficientes'),
-            'TIMEOUT': req.__('Tiempo de espera agotado')
+    handlePaymentResponse(apiResponse, res, localPaymentId, req) {
+        const responseMap = {
+            'APPROVED': {
+                status: 'completed',
+                message: req.__('Pago aprobado'),
+                details: req.__('Payment successful')
+            },
+            'REJECTED': {
+                status: 'rejected',
+                message: req.__('Pago rechazado'),
+                details: req.__('Código: 002')
+            },
+            'ERROR': {
+                status: 'failed',
+                message: req.__('Error en el pago'),
+                details: req.__('Código: 003')
+            },
+            'INSUFFICIENT': {
+                status: 'failed',
+                message: req.__('Fondos insuficientes'),
+                details: req.__('Código: 004')
+            }
         };
 
-        let status = 'error';
-        if (apiResponse.status) {
-            status = apiResponse.status;
-        } else if (apiResponse.error_code) {
-            status = apiResponse.error_code;
-        } else if (apiResponse.full_name) {
-            const specialNames = ['APPROVED', 'REJECTED', 'ERROR', 'INSUFFICIENT'];
-            if (specialNames.includes(apiResponse.full_name.toUpperCase())) {
-                status = apiResponse.full_name.toUpperCase();
-            }
-        }
-
-        const errorMessage = errorMessages[status] || req.__('Error al procesar el pago');
+        const responseStatus = apiResponse.status || apiResponse.full_name || 'ERROR';
+        const result = responseMap[responseStatus] || responseMap['ERROR'];
 
         this.model.updatePayment(localPaymentId, {
-            status: status.toLowerCase(),
+            status: result.status,
+            transactionId: apiResponse.transaction_id || 'N/A',
             errorDetails: JSON.stringify(apiResponse)
         });
 
-        return res.status(400).json({
+        return res.status(200).json({
             success: false,
             paymentId: localPaymentId,
-            error: errorMessage,
-            details: apiResponse
+            status: result.status,
+            message: result.message,
+            details: result.details,
+            apiResponse: apiResponse
         });
     }
 
     handleApiError(error, res, localPaymentId, req) {
-        console.error(req.__('Error con la API de pagos: %s'), error.message);
-        
         let status = 'api_error';
-        let userMessage = req.__('Error al contactar el procesador de pagos');
+        let userMessage = req.__('Error con la API de pagos');
         let statusCode = 500;
+        let errorDetails = error.message;
 
         if (error.response) {
-            statusCode = error.response.status;
-            userMessage = req.__('Error en el procesador (%s)', statusCode);
+
+            if (error.response.status === 400) {
+                userMessage = req.__('Solicitud incorrecta a la API de pagos');
+                statusCode = 400;
+                errorDetails = error.response.data || error.message;
+
+                if (error.response.data && error.response.data.error) {
+                    errorDetails = error.response.data.error;
+                }
+            } else {
+                statusCode = error.response.status;
+                userMessage = req.__('Error en el procesador (%s)', statusCode);
+                errorDetails = error.response.data || error.message;
+            }
         } else if (error.request) {
             userMessage = req.__('El procesador de pagos no respondió');
             statusCode = 503;
+        } else if (error.code === 'ECONNABORTED') {
+            userMessage = req.__('Tiempo de espera agotado');
+            statusCode = 504;
+            status = 'timeout_error';
         }
 
+        console.error(`${userMessage}: ${errorDetails}`);
+        
         this.model.updatePayment(localPaymentId, {
             status: status,
-            errorDetails: error.message
+            errorDetails: errorDetails
         });
 
         return res.status(statusCode).json({
             success: false,
             paymentId: localPaymentId,
             error: userMessage,
-            details: error.message
+            details: errorDetails
         });
     }
 
