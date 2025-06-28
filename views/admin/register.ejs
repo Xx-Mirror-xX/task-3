@@ -162,11 +162,10 @@
 </head>
 <body>
     <div class="lang-selector-container">
-<select class="lang-selector" id="langSelector">
-    <option value="es" <%= locals.lang === 'es' ? 'selected' : '' %>>Español</option>
-    <option value="en" <%= locals.lang === 'en' ? 'selected' : '' %>>English</option>
-</select>
-
+        <select class="lang-selector" id="langSelector">
+            <option value="es" <%= locals.lang === 'es' ? 'selected' : '' %>>Español</option>
+            <option value="en" <%= locals.lang === 'en' ? 'selected' : '' %>>English</option>
+        </select>
     </div>
     
     <div class="admin-container">
@@ -226,9 +225,8 @@
         </div>
     </div>
 
-<script src="/scripts.js"></script>
-<script>
-
+    <script src="/scripts.js"></script>
+    <script>
         function showError(message, type = 'error') {
             const errorContainer = document.getElementById('errorContainer');
             const errorMessage = document.getElementById('errorMessage');
@@ -252,7 +250,7 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             // Establecer idioma actual
-            document.getElementById('langSelector').value = '<%= lang %>';
+            document.getElementById('langSelector').value = '<%= locals.lang %>';
             
             const adminRegisterForm = document.getElementById('adminRegisterForm');
             const adminAlert = document.getElementById('adminAlert');
@@ -272,7 +270,6 @@
                 const originalBtnText = adminRegisterBtn.innerHTML;
                 adminRegisterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <%= __("Registrando...") %>';
                 adminRegisterBtn.disabled = true;
-
 
                 const password = document.getElementById('adminPassword').value;
                 const confirmPassword = document.getElementById('adminConfirmPassword').value;
@@ -346,6 +343,7 @@
                     adminRegisterBtn.disabled = false;
                 }
             });
-            
+        });
+    </script>
 </body>
 </html>
