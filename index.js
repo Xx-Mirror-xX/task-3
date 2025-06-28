@@ -8,7 +8,6 @@ const axios = require('axios');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const i18n = require('i18n');
-const cookieParser = require('cookie-parser');
 const app = express();
 
 // Configuración de i18n
@@ -182,8 +181,21 @@ app.use('/stylesheet', express.static(path.join(__dirname, 'public', 'stylesheet
 app.use('/img', express.static(path.join(__dirname, 'public', 'img')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/vistas', express.static(path.join(__dirname, 'vistas')));
-app.use(cookieParser());
 app.use(i18n.init);
+
+// Middleware personalizado para cookies
+app.use((req, res, next) => {
+    req.cookies = {};
+    if (req.headers.cookie) {
+        req.headers.cookie.split(';').forEach(cookie => {
+            const parts = cookie.split('=');
+            if (parts.length === 2) {
+                req.cookies[parts[0].trim()] = decodeURIComponent(parts[1]);
+            }
+        });
+    }
+    next();
+});
 
 const isProduction = process.env.NODE_ENV === 'production';
 app.use(session({
@@ -213,7 +225,7 @@ app.use((req, res, next) => {
 
 // Ruta para cambiar idioma
 app.get('/change-lang/:lang', (req, res) => {
-  res.cookie('lang', req.params.lang, { maxAge: 900000, httpOnly: true });
+  res.setHeader('Set-Cookie', `lang=${req.params.lang}; Path=/; Max-Age=900000`);
   res.redirect('back');
 });
 
