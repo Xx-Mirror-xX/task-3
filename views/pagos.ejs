@@ -53,8 +53,8 @@
 <body>
     <div class="lang-selector-container">
         <select class="lang-selector" id="langSelector">
-            <option value="es">Español</option>
-            <option value="en">English</option>
+            <option value="es" <%= lang === 'es' ? 'selected' : '' %>>Español</option>
+            <option value="en" <%= lang === 'en' ? 'selected' : '' %>>English</option>
         </select>
     </div>
     
