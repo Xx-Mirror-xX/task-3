@@ -528,6 +528,47 @@ app.post('/register', async (req, res) => {
     }
 });
 
+function formatDate(dateString, lang) {
+    const date = new Date(dateString);
+    if (lang === 'es') {
+        return date.toLocaleString('es-VE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+    } else {
+        return date.toLocaleString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        });
+    }
+}
+
+function formatCurrency(amount, currency, lang) {
+    if (lang === 'es') {
+        return new Intl.NumberFormat('es-VE', {
+            style: 'currency',
+            currency: currency,
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
+    } else {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency,
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
+    }
+}
+
 app.post('/admin/register', requireAdmin, async (req, res) => {
     try {
         const { fName, lName, email, password } = req.body;
@@ -766,23 +807,25 @@ app.get('/api/payments', requireAuth, (req, res) => {
     );
 });
 
-app.get('/api/payments/:payment_id', requireAuth, (req, res) => {
-    const paymentId = req.params.payment_id;
-    db.get(
-        "SELECT * FROM payments WHERE id = ?",
-        [paymentId],
-        (err, row) => {
+app.get('/api/payments', requireAuth, (req, res) => {
+    db.all(
+        "SELECT * FROM payments ORDER BY paymentDate DESC",
+        (err, rows) => {
             if (err) {
-                console.error('Error al obtener pago:', err);
-                return res.status(500).json({ error: req.__('Error al obtener pago') });
+                console.error('Error al obtener pagos:', err);
+                return res.status(500).json({ error: req.__('Error al obtener pagos') });
             }
-            if (!row) {
-                return res.status(404).json({ error: req.__('Pago no encontrado') });
-            }
-            res.json(row);
+            const formattedRows = rows.map(payment => ({
+                ...payment,
+                formattedAmount: formatCurrency(payment.amount, payment.currency, req.getLocale()),
+                formattedDate: formatDate(payment.paymentDate, req.getLocale())
+            }));
+            
+            res.json(formattedRows);
         }
     );
 });
+
 
 app.get('/', (req, res) => {
     res.render('index', { lang: res.locals.lang });
