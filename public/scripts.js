@@ -585,16 +585,17 @@ if (document.getElementById('paymentsTable')) {
         });
     }
     
-    function getStatusText(status) {
-        switch(status) {
-            case 'completed': return '<%= __("Completado") %>';
-            case 'pending': return '<%= __("Pendiente") %>';
-            case 'failed': return '<%= __("Fallido") %>';
-            case 'rejected': return '<%= __("Rechazado") %>';
-            case 'api_error': return '<%= __("Error API") %>';
-            default: return status;
-        }
+function getStatusText(status) {
+    switch(status) {
+        case 'completed': return '<%= __("Completado") %>';
+        case 'pending': return '<%= __("Pendiente") %>';
+        case 'failed': return '<%= __("Fallido") %>';
+        case 'rejected': return '<%= __("Rechazado") %>';
+        case 'api_error': return '<%= __("Error API") %>';
+        case 'timeout_error': return '<%= __("Tiempo de espera agotado") %>';
+        default: return status;
     }
+}
     
     function filterPayments() {
         const service = document.getElementById('serviceFilter').value;
