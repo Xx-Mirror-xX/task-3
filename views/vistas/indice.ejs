@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creating Social Network</title>
+    <title><%= __('Creating Social Network') %></title>
     
     <!-- Metadatos Open Graph -->
-    <meta property="og:title" content="Creating Social Network - Conecta y Crea">
+    <meta property="og:title" content="<%= __('Creating Social Network - Conecta y Crea') %>">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://creatingsocialnetwork.com/img/logo-social.jpg">
     <meta property="og:url" content="https://creatingsocialnetwork.com">
-    <meta property="og:description" content="Espacio digital para construir relaciones, expresarte libremente y descubrir comunidades afines. ¡Únete ahora!">
-    <meta property="og:site_name" content="Creating Social Network">
+    <meta property="og:description" content="<%= __('Espacio digital para construir relaciones, expresarte libremente y descubrir comunidades afines. ¡Únete ahora!') %>">
+    <meta property="og:site_name" content="<%= __('Creating Social Network') %>">
     <meta property="og:locale" content="es_ES">
     
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@CreatingSN">
     <meta name="twitter:creator" content="@CreatingSN">
-    <meta name="twitter:title" content="Creating Social Network - Conecta y Crea">
-    <meta name="twitter:description" content="Únete a nuestra red social para conectar, crear y crecer juntos.">
+    <meta name="twitter:title" content="<%= __('Creating Social Network - Conecta y Crea') %>">
+    <meta name="twitter:description" content="<%= __('Únete a nuestra red social para conectar, crear y crecer juntos.') %>">
     <meta name="twitter:image" content="https://creatingsocialnetwork.com/img/logo-social.jpg">
     
     <link rel="stylesheet" href="/stylesheet/styles.css">
@@ -33,8 +33,31 @@
         gtag('js', new Date());
         gtag('config', 'G-DCK5HDLZ0N');
     </script>
+    
+    <style>
+        .lang-selector-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
+        .lang-selector {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+        }
+    </style>
 </head>
 <body>
+    <div class="lang-selector-container">
+        <select class="lang-selector" id="langSelector">
+            <option value="es">Español</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+    
     <div class="div-bienvenida">
         <div class="img-bienvenida">
             <div class="div-text-bienvenida">
@@ -44,11 +67,10 @@
                         <img src="/img/logo.jpeg" alt="Creating Social Network" srcset="" style="height: 20vh;margin-left: 30px;margin-top: 50px;border-radius: 80px;">
                     </div>
                     <div class="div-info-bienveida">
-                        <h2>¡Bienvenido a Creating Social Network ! </h2>
+                        <h2><%= __('¡Bienvenido a Creating Social Network !') %></h2>
                     </div>
                     <div class="div-info-text">
-                        <span>En Creating Social Network, hemos diseñado un espacio digital donde puedes construir relaciones significativas, expresarte libremente y descubrir comunidades afines. Ya seas un usuario individual, un emprendedor o una empresa, aquí encontrarás las herramientas necesarias para crecer y conectar en el mundo digital.
-                        </span>
+                        <span><%= __('En Creating Social Network, hemos diseñado un espacio digital donde puedes construir relaciones significativas, expresarte libremente y descubrir comunidades afines. Ya seas un usuario individual, un emprendedor o una empresa, aquí encontrarás las herramientas necesarias para crecer y conectar en el mundo digital.') %></span>
                     </div>
                 </div>
             </div>
@@ -59,15 +81,15 @@
         <div class="img-Características ">
             <div class="div-info-Características ">
                 <div class="div-titulo">
-                    <h2>Características Principales</h2>
+                    <h2><%= __('Características Principales') %></h2>
                 </div>
                 <div class="div-text-Características ">
-                    <span>1. Registro rápido y sencillo – Únete en segundos y comienza a explorar.</span>
-                    <span>2. Perfiles 100% personalizables – Diseña tu perfil a tu estilo.</span>
-                    <span>3. Conexiones inteligentes – Añade amigos, sigue perfiles y únete a grupos temáticos.</span>
-                    <span>4. Comparte contenido multimedia – Publica fotos, videos, textos y más.</span>
-                    <span>5. Mensajería privada y chats grupales – Comunícate de forma directa y segura.</span>
-                    <span>6. Eventos y actividades – Organiza y participa en encuentros virtuales o presenciales.</span>
+                    <span>1. <%= __('Registro rápido y sencillo – Únete en segundos y comienza a explorar.') %></span>
+                    <span>2. <%= __('Perfiles 100% personalizables – Diseña tu perfil a tu estilo.') %></span>
+                    <span>3. <%= __('Conexiones inteligentes – Añade amigos, sigue perfiles y únete a grupos temáticos.') %></span>
+                    <span>4. <%= __('Comparte contenido multimedia – Publica fotos, videos, textos y más.') %></span>
+                    <span>5. <%= __('Mensajería privada y chats grupales – Comunícate de forma directa y segura.') %></span>
+                    <span>6. <%= __('Eventos y actividades – Organiza y participa en encuentros virtuales o presenciales.') %></span>
                 </div>
             </div>
         </div>
@@ -78,14 +100,14 @@
         <div class="img-Ventajas">
             <div class="div-info-Ventajas">
                 <div class="div-titulo">
-                    <h2>Ventajas de Usar CSN</h2>
+                    <h2><%= __('Ventajas de Usar CSN') %></h2>
                 </div>
                 <div class="div-text-Ventajas">
-                    <span>• Conecta con personas de todo el mundo – Rompe barreras geográficas.</span>
-                    <span>• Potencia tu creatividad – Comparte ideas, proyectos y pasiones.</span>
-                    <span>• Networking profesional – Encuentra oportunidades laborales y colaboraciones.</span>
-                    <span>• Marketing efectivo para empresas – Llega a tu audiencia ideal.</span>
-                    <span>• Información en tiempo real – Mantente al día con tendencias y noticias.</span>
+                    <span>• <%= __('Conecta con personas de todo el mundo – Rompe barreras geográficas.') %></span>
+                    <span>• <%= __('Potencia tu creatividad – Comparte ideas, proyectos y pasiones.') %></span>
+                    <span>• <%= __('Networking profesional – Encuentra oportunidades laborales y colaboraciones.') %></span>
+                    <span>• <%= __('Marketing efectivo para empresas – Llega a tu audiencia ideal.') %></span>
+                    <span>• <%= __('Información en tiempo real – Mantente al día con tendencias y noticias.') %></span>
                 </div>
             </div>
         </div>
@@ -96,14 +118,14 @@
         <div class="img-Beneficios">
             <div class="div-info-Beneficios">
                 <div class="div-titulo">
-                    <h2>Beneficios de Usar CSN</h2>
+                    <h2><%= __('Beneficios de Usar CSN') %></h2>
                 </div>
                 <div class="div-text-Beneficios">
-                    <span>- Comunidades activas – Únete a grupos de interés y participa en debates.</span>
-                    <span>- Interacción personalizada – Recibe notificaciones relevantes y mensajes directos.</span>
-                    <span>- Monetización flexible – Opciones de suscripción premium y publicidad.</span>
-                    <span>- Experiencia segura – Moderación proactiva contra el spam y contenido inapropiado.</span>
-                    <span>- Soporte 24/7 – Asistencia técnica rápida y eficiente.</span>
+                    <span>- <%= __('Comunidades activas – Únete a grupos de interés y participa en debates.') %></span>
+                    <span>- <%= __('Interacción personalizada – Recibe notificaciones relevantes y mensajes directos.') %></span>
+                    <span>- <%= __('Monetización flexible – Opciones de suscripción premium y publicidad.') %></span>
+                    <span>- <%= __('Experiencia segura – Moderación proactiva contra el spam y contenido inapropiado.') %></span>
+                    <span>- <%= __('Soporte 24/7 – Asistencia técnica rápida y eficiente.') %></span>
                 </div>
             </div>
         </div>
@@ -124,36 +146,46 @@
             </a>
         </div>
         
+        <button class="admin-btn"><%= __('Acceso Solo Para Admins') %></button>
 
-   <button class="admin-btn">Acceso Solo Para Admins</button>
+        <div id="adminLoginModal" class="admin-modal">
+            <div class="admin-modal-content">
+                <span class="admin-close-btn">&times;</span>
+                <h2><%= __('Ingreso de Administrador') %></h2>
+                <div style="text-align: center; margin: 20px 0;">
+                    <button id="adminGoogleBtn" style="background: #DB4437; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                        <i class="fab fa-google"></i> <%= __('Ingresar con Google') %>
+                    </button>
+                </div>
+                <p style="text-align: center;"><%= __('O') %></p>
+                <form id="adminLoginForm">
+                    <div class="admin-form-group">
+                        <label for="adminEmail"><%= __('Correo:') %></label>
+                        <input type="email" id="adminEmail" required>
+                    </div>
+                    <div class="admin-form-group">
+                        <label for="adminPassword"><%= __('Contraseña:') %></label>
+                        <input type="password" id="adminPassword" required>
+                    </div>
+                    <button type="submit" class="admin-submit-btn"><%= __('Ingresar') %></button>
+                </form>
+            </div>
+        </div>
 
-   <div id="adminLoginModal" class="admin-modal">
-       <div class="admin-modal-content">
-           <span class="admin-close-btn">&times;</span>
-           <h2>Ingreso de Administrador</h2>
-           <div style="text-align: center; margin: 20px 0;">
-               <button id="adminGoogleBtn" style="background: #DB4437; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-                   <i class="fab fa-google"></i> Ingresar con Google
-               </button>
-           </div>
-           <p style="text-align: center;">O</p>
-           <form id="adminLoginForm">
-               <div class="admin-form-group">
-                   <label for="adminEmail">Correo:</label>
-                   <input type="email" id="adminEmail" required>
-               </div>
-               <div class="admin-form-group">
-                   <label for="adminPassword">Contraseña:</label>
-                   <input type="password" id="adminPassword" required>
-               </div>
-               <button type="submit" class="admin-submit-btn">Ingresar</button>
-           </form>
-       </div>
-   </div>
-
-    <span>© 2025 Creating Social Networks C.A. Todos los derechos reservados.</span>
+        <span>© 2025 Creating Social Networks C.A. <%= __('Todos los derechos reservados.') %></span>
     </footer>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Establecer idioma actual
+            document.getElementById('langSelector').value = '<%= lang %>';
+            
+            // Cambiar idioma
+            document.getElementById('langSelector').addEventListener('change', function() {
+                window.location.href = '/change-lang/' + this.value;
+            });
+        });
+    </script>
     <script src="/scripts.js"></script>
 </body>
 </html>
