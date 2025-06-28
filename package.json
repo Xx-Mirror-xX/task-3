@@ -25,6 +25,8 @@
     "express-session": "^1.18.1",
     "googleapis": "^149.0.0",
     "helmet": "^8.1.0",
+    "i18n": "^0.15.1",
+    "l10n": "^0.2.4",
     "nodemailer": "^7.0.3",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
