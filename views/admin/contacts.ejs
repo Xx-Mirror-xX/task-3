@@ -225,13 +225,12 @@
     </script>
 </head>
 <body>
-    <div class="container">
-        <div class="lang-selector-container">
-            <select class="lang-selector" id="langSelector">
-                <option value="es">Español</option>
-                <option value="en">English</option>
-            </select>
-        </div>
+    <div class="lang-selector-container">
+        <select class="lang-selector" id="langSelector">
+            <option value="es" <%= lang === 'es' ? 'selected' : '' %>>Español</option>
+            <option value="en" <%= lang === 'en' ? 'selected' : '' %>>English</option>
+        </select>
+    </div>
         
         <div class="admin-header">
             <h1><i class="fas fa-address-book"></i> <%= __('Contactos Recibidos') %></h1>
@@ -342,10 +341,9 @@
                     document.getElementById('searchInput').value = '';
                 });
                 
-                // Cambiar idioma
-                document.getElementById('langSelector').addEventListener('change', function() {
-                    window.location.href = '/change-lang/' + this.value;
-                });
+        document.getElementById('langSelector').addEventListener('change', function() {
+            window.location.href = '/change-lang/' + this.value;
+        });
             });
         </script>
     </div>
