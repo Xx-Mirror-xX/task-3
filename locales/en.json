@@ -151,5 +151,19 @@
   "Error de autenticación": "Authentication error",
   "Error de autorización": "Authorization error",
   "Error de red": "Network error",
-  "Error de tiempo de espera": "Timeout error"
+  "Error de tiempo de espera": "Timeout error",
+  "Email": "Email",
+  "Cardholder Name": "Cardholder Name",
+  "Card Number": "Card Number",
+  "Month": "Month",
+  "Year": "Year",
+  "CVV": "CVV",
+  "Amount": "Amount",
+  "Select currency": "Select currency",
+  "Currency": "Currency",
+  "Back": "Back",
+  "Pay": "Pay",
+  "Make Payment": "Make Payment",
+  "Register New Administrator": "Register New Administrator",
+  "Fill all fields to create a new admin account": "Fill all fields to create a new admin account"
 }
