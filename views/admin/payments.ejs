@@ -280,13 +280,13 @@
 </head>
 <body>
     <div class="lang-selector-container">
-<select class="lang-selector" id="langSelector">
-    <option value="es" <%= locals.lang === 'es' ? 'selected' : '' %>>Español</option>
-    <option value="en" <%= locals.lang === 'en' ? 'selected' : '' %>>English</option>
-</select>
-
+        <select class="lang-selector" id="langSelector">
+            <option value="es" <%= locals.lang === 'es' ? 'selected' : '' %>>Español</option>
+            <option value="en" <%= locals.lang === 'en' ? 'selected' : '' %>>English</option>
+        </select>
     </div>
-        
+    
+    <div class="container">
         <div class="admin-header">
             <h1><i class="fas fa-money-bill-wave"></i> <%= __('Pagos Recibidos') %></h1>
             <div class="nav-buttons">
@@ -305,7 +305,6 @@
                 <select id="serviceFilter" class="filter-select">
                     <option value=""><%= __('Todos') %></option>
                     <option value="Servicio de Donación"><%= __('Servicio de Donación') %></option>
-                    <!-- Agrega más opciones según tus servicios -->
                 </select>
             </div>
             
@@ -316,6 +315,8 @@
                     <option value="completed"><%= __('Completado') %></option>
                     <option value="pending"><%= __('Pendiente') %></option>
                     <option value="failed"><%= __('Fallido') %></option>
+                    <option value="rejected"><%= __('Rechazado') %></option>
+                    <option value="api_error"><%= __('Error API') %></option>
                 </select>
             </div>
             
@@ -358,112 +359,7 @@
             </table>
         </div>
 
-        <script src="/scripts.js">
-            let allPayments = [];
-            
-            async function loadPayments() {
-                try {
-                    const response = await fetch('/api/payments', {
-                        credentials: 'include' 
-                    });
-                    if (!response.ok) {
-                        throw new Error('<%= __("Error al cargar pagos") %>');
-                    }
-                    allPayments = await response.json();
-                    renderPayments(allPayments);
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert(error.message);
-                }
-            }
-            
-            function renderPayments(payments) {
-                const tbody = document.querySelector('#paymentsTable tbody');
-                tbody.innerHTML = '';
-                
-                payments.forEach(payment => {
-                    const row = document.createElement('tr');
-                    const statusClass = `status-${payment.status || 'pending'}`;
-                    
-                    row.innerHTML = `
-                        <td>${payment.id}</td>
-                        <td>${payment.email}</td>
-                        <td>${payment.service}</td>
-                        <td>${payment.amount}</td>
-                        <td>${payment.currency}</td>
-                        <td class="${statusClass}">${getStatusText(payment.status)}</td>
-                        <td>${new Date(payment.paymentDate).toLocaleString()}</td>
-                        <td>${payment.transactionId || 'N/A'}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            }
-            
-            function getStatusText(status) {
-                switch(status) {
-                    case 'completed': return '<%= __("Completado") %>';
-                    case 'pending': return '<%= __("Pendiente") %>';
-                    case 'failed': return '<%= __("Fallido") %>';
-                    default: return '<%= __("Pendiente") %>';
-                }
-            }
-            
-            function filterPayments() {
-                const service = document.getElementById('serviceFilter').value;
-                const status = document.getElementById('statusFilter').value;
-                const dateFrom = document.getElementById('dateFromFilter').value;
-                const dateTo = document.getElementById('dateToFilter').value;
-                
-                let filtered = [...allPayments];
-                
-                if (service) {
-                    filtered = filtered.filter(p => p.service === service);
-                }
-                
-                if (status) {
-                    filtered = filtered.filter(p => p.status === status);
-                }
-                
-                if (dateFrom) {
-                    const fromDate = new Date(dateFrom);
-                    filtered = filtered.filter(p => new Date(p.paymentDate) >= fromDate);
-                }
-                
-                if (dateTo) {
-                    const toDate = new Date(dateTo);
-                    toDate.setDate(toDate.getDate() + 1);
-                    filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
-                }
-                
-                renderPayments(filtered);
-            }
-            
-            function resetFilters() {
-                document.getElementById('serviceFilter').value = '';
-                document.getElementById('statusFilter').value = '';
-                document.getElementById('dateFromFilter').value = '';
-                document.getElementById('dateToFilter').value = '';
-                renderPayments(allPayments);
-            }
-            
-            document.addEventListener('DOMContentLoaded', () => {
-                // Establecer idioma actual
-                document.getElementById('langSelector').value = '<%= lang %>';
-                
-                loadPayments();
-                
-                document.getElementById('applyFiltersBtn').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    filterPayments();
-                });
-                
-                document.getElementById('resetFiltersBtn').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    resetFilters();
-                });
-                
-            });
-        </script>
+        <script src="/scripts.js"></script>
     </div>
 </body>
 </html>
