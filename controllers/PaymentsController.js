@@ -6,7 +6,7 @@ class PaymentsController {
         this.model = new PaymentsModel();
         this.apiConfig = {
             baseURL: 'https://fakepayment.onrender.com',
-            timeout: 30000,
+            timeout: 60000, 
             headers: {
                 'Authorization': `Bearer ${process.env.FAKE_PAYMENT_API_TOKEN}`,
                 'Content-Type': 'application/json'
@@ -22,7 +22,7 @@ class PaymentsController {
             const missingFields = requiredFields.filter(field => !req.body[field]);
             if (missingFields.length > 0) {
                 return res.status(400).json({ 
-                    error: "Todos los campos son requeridos",
+                    error: req.__("Todos los campos son requeridos"),
                     missingFields
                 });
             }
@@ -32,16 +32,16 @@ class PaymentsController {
 
             const cleanedCardNumber = cardNumber.replace(/\s/g, '');
             if (!/^\d{13,19}$/.test(cleanedCardNumber)) {
-                return res.status(400).json({ error: "Número de tarjeta inválido" });
+                return res.status(400).json({ error: req.__("Número de tarjeta inválido") });
             }
 
             if (!/^\d{3,4}$/.test(cvv)) {
-                return res.status(400).json({ error: "CVV inválido" });
+                return res.status(400).json({ error: req.__("CVV inválido") });
             }
 
             const amountValue = parseFloat(amount);
             if (isNaN(amountValue) || amountValue <= 0) {
-                return res.status(400).json({ error: "Monto inválido" });
+                return res.status(400).json({ error: req.__("Monto inválido") });
             }
 
             const localPaymentId = await this.model.addPayment({
@@ -78,34 +78,49 @@ class PaymentsController {
                         success: true,
                         paymentId: localPaymentId,
                         transactionId: response.data.transaction_id,
-                        message: 'Pago procesado exitosamente'
+                        message: req.__('Pago procesado exitosamente')
                     });
                 } else {
-                    return this.handlePaymentError(response.data, res, localPaymentId);
+                    return this.handlePaymentError(response.data, res, localPaymentId, req);
                 }
             } catch (apiError) {
-                return this.handleApiError(apiError, res, localPaymentId);
+                if (apiError.code === 'ECONNABORTED') {
+                    console.error(req.__('Timeout procesando pago [ID: %s]', localPaymentId));
+                    await this.model.updatePayment(localPaymentId, {
+                        status: 'timeout_error',
+                        errorDetails: req.__("La API excedió el tiempo de espera")
+                    });
+                    
+                    return res.status(504).json({
+                        success: false,
+                        paymentId: localPaymentId,
+                        error: req.__('El procesador de pagos no respondió a tiempo'),
+                        solution: req.__('Por favor intente nuevamente más tarde')
+                    });
+                }
+                return this.handleApiError(apiError, res, localPaymentId, req);
             }
         } catch (error) {
-            console.error('Error al procesar pago:', error);
+            console.error(req.__('Error al procesar pago: %s'), error.message);
             return res.status(500).json({ 
-                error: 'Error interno del servidor',
+                error: req.__('Error interno del servidor'),
                 details: error.message 
             });
         }
     }
 
-    handlePaymentError(apiResponse, res, localPaymentId) {
+    handlePaymentError(apiResponse, res, localPaymentId, req) {
         const errorMessages = {
-            'REJECTED': 'Pago rechazado por el procesador',
-            'ERROR': 'Error en el procesamiento del pago',
-            'INSUFFICIENT': 'Fondos insuficientes',
-            'INVALID_CARD': 'Tarjeta inválida',
-            'EXPIRED_CARD': 'Tarjeta expirada',
-            '001': 'Número de tarjeta inválido',
-            '002': 'Pago rechazado',
-            '003': 'Error en el procesamiento',
-            '004': 'Fondos insuficientes'
+            'REJECTED': req.__('Pago rechazado por el procesador'),
+            'ERROR': req.__('Error en el procesamiento del pago'),
+            'INSUFFICIENT': req.__('Fondos insuficientes'),
+            'INVALID_CARD': req.__('Tarjeta inválida'),
+            'EXPIRED_CARD': req.__('Tarjeta expirada'),
+            '001': req.__('Número de tarjeta inválido'),
+            '002': req.__('Pago rechazado'),
+            '003': req.__('Error en el procesamiento'),
+            '004': req.__('Fondos insuficientes'),
+            'TIMEOUT': req.__('Tiempo de espera agotado')
         };
 
         let status = 'error';
@@ -120,7 +135,7 @@ class PaymentsController {
             }
         }
 
-        const errorMessage = errorMessages[status] || 'Error al procesar el pago';
+        const errorMessage = errorMessages[status] || req.__('Error al procesar el pago');
 
         this.model.updatePayment(localPaymentId, {
             status: status.toLowerCase(),
@@ -135,39 +150,32 @@ class PaymentsController {
         });
     }
 
-    handleApiError(error, res, localPaymentId) {
-        console.error('Error con la API de pagos:', error.message);
+    handleApiError(error, res, localPaymentId, req) {
+        console.error(req.__('Error con la API de pagos: %s'), error.message);
         
+        let status = 'api_error';
+        let userMessage = req.__('Error al contactar el procesador de pagos');
+        let statusCode = 500;
+
+        if (error.response) {
+            statusCode = error.response.status;
+            userMessage = req.__('Error en el procesador (%s)', statusCode);
+        } else if (error.request) {
+            userMessage = req.__('El procesador de pagos no respondió');
+            statusCode = 503;
+        }
+
         this.model.updatePayment(localPaymentId, {
-            status: 'api_error',
+            status: status,
             errorDetails: error.message
         });
 
-        if (error.response) {
-            const status = error.response.status;
-            const errorData = error.response.data || {};
-            
-            return res.status(status).json({
-                success: false,
-                paymentId: localPaymentId,
-                error: `Error en el procesador de pagos (${status})`,
-                details: errorData
-            });
-        } else if (error.request) {
-            return res.status(503).json({
-                success: false,
-                paymentId: localPaymentId,
-                error: 'El procesador de pagos no respondió',
-                details: error.message
-            });
-        } else {
-            return res.status(500).json({
-                success: false,
-                paymentId: localPaymentId,
-                error: 'Error al contactar el procesador de pagos',
-                details: error.message
-            });
-        }
+        return res.status(statusCode).json({
+            success: false,
+            paymentId: localPaymentId,
+            error: userMessage,
+            details: error.message
+        });
     }
 
     async index(req, res) {
