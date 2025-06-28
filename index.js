@@ -223,10 +223,26 @@ app.use((req, res, next) => {
   next();
 });
 
-// Ruta para cambiar idioma
+// Ruta para cambiar idioma - ARREGLADA
 app.get('/change-lang/:lang', (req, res) => {
-  res.setHeader('Set-Cookie', `lang=${req.params.lang}; Path=/; Max-Age=900000`);
-  res.redirect('back');
+  const lang = req.params.lang;
+  const validLangs = ['es', 'en'];
+  
+  if (!validLangs.includes(lang)) {
+    return res.status(400).send('Idioma no válido');
+  }
+
+  res.cookie('lang', lang, {
+    maxAge: 900000,
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: isProduction,
+    path: '/'
+  });
+  
+  // Redirigir a la página de origen manteniendo parámetros de consulta
+  const referer = req.get('referer') || '/';
+  res.redirect(referer);
 });
 
 const requireAuth = (req, res, next) => {
