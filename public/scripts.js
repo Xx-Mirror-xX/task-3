@@ -61,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function getGeolocation(ip) {
         try {
-
             const response = await fetch(`https://ip-api.com/json/${ip}?fields=country,city,isp`);
             if (response.ok) {
                 const data = await response.json();
@@ -74,7 +73,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-
             const backupResponse = await fetch(`https://ipapi.co/${ip}/json/`);
             if (backupResponse.ok) {
                 const backupData = await backupResponse.json();
@@ -132,7 +130,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const locationData = await getGeolocation(ipAddress);
                 
-
                 let locationDisplay = locationData.city + ', ' + locationData.country;
                 if (locationData.isp.includes('VPN') || locationData.isp.includes('Proxy')) {
                     locationDisplay = 'Servidor Privado (' + locationData.isp + ')';
@@ -651,13 +648,16 @@ document.addEventListener('DOMContentLoaded', function() {
         loadPayments();
     }
     
-
+    // ======================================================================
+    // CENTRALIZED LANGUAGE CHANGE HANDLING
+    // ======================================================================
     const langSelectors = document.querySelectorAll('.lang-selector');
     langSelectors.forEach(selector => {
         selector.addEventListener('change', function() {
             const lang = this.value;
-            document.cookie = `lang=${lang}; path=/; max-age=31536000`;
-            location.reload();
+            const currentUrl = window.location.pathname + window.location.search;
+            window.location.href = '/change-lang/' + lang + '?returnUrl=' + encodeURIComponent(currentUrl);
         });
     });
+    // ======================================================================
 });
