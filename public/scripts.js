@@ -256,10 +256,10 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = true;
 
             try {
-                const response = await fetch('/api/payment', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
+               const response = await fetch('/api/payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
                         email: this.email.value.trim(),
                         cardName: this.cardName.value.trim(),
                         cardNumber: cardNumber,
@@ -273,47 +273,40 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                 });
                 
-                const result = await response.json();
+const result = await response.json();
 
-                if (response.ok) {
-                    window.location.href = '/admin/payments';
-                } else {
-                    let errorMsg = result.error || '<%= __("Error al procesar el pago") %>';
-                    if (result.paymentId) {
-                        errorMsg += `<br><small>ID local: ${result.paymentId}</small>`;
-                    }
-                    
-                    if (result.details) {
-                        const errorCodes = {
-                            '001': '<%= __("Número de tarjeta inválido") %>',
-                            '002': '<%= __("Pago rechazado por el procesador") %>',
-                            '003': '<%= __("Error en el procesamiento del pago") %>',
-                            '004': '<%= __("Fondos insuficientes") %>'
-                        };
-                        
-                        if (result.details.error_code && errorCodes[result.details.error_code]) {
-                            errorMsg = errorCodes[result.details.error_code];
-                        }
-                        
-                        if (result.details.message) {
-                            errorMsg += `<br><small>${result.details.message}</small>`;
-                        }
-                    }
-                    
-                    showError(errorMsg);
-                    
-                    if (window.grecaptcha) grecaptcha.reset();
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showError('<%= __("Error de conexión con el servidor. Por favor intente nuevamente.") %>');
-                if (window.grecaptcha) grecaptcha.reset();
-            } finally {
-                submitBtn.innerHTML = originalBtnText;
-                submitBtn.disabled = false;
-            }
-        });
+if (response.ok) {
+    if (result.success) {
+        showError(`${result.message}<br><small>${result.details}</small>`, 'success');
+    } else {
+        let errorMsg = result.message;
+        if (result.details) {
+            errorMsg += `<br><small>${result.details}</small>`;
+        }
+        if (result.paymentId) {
+            errorMsg += `<br><small>${req.__('ID local')}: ${result.paymentId}</small>`;
+        }
+        showError(errorMsg);
     }
+    
+    if (window.grecaptcha) grecaptcha.reset();
+    
+    if (result.success) {
+        setTimeout(() => {
+            window.location.href = '/admin/payments';
+        }, 3000);
+    }
+} else {
+    let errorMsg = result.error || '<%= __("Error al procesar el pago") %>';
+    if (result.details) {
+        errorMsg += `<br><small>${result.details}</small>`;
+    }
+    if (result.paymentId) {
+        errorMsg += `<br><small>${req.__('ID local')}: ${result.paymentId}</small>`;
+    }
+    showError(errorMsg);
+    if (window.grecaptcha) grecaptcha.reset();
+}
 
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
