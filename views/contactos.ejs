@@ -37,7 +37,6 @@
     </script>
     
     <style>
-        /* Selector de idioma mejorado */
         .lang-selector-container {
             position: fixed;
             top: 20px;
@@ -105,6 +104,12 @@
                 <input type="email" name="email" id="contactEmail" 
                        placeholder="<%= __('Email') %>" required>
                 <label for="email"><%= __('Email') %></label>
+            </div>
+
+            <div class="input-group">
+                <i class="fas fa-comment"></i>
+                <textarea name="message" id="message" placeholder=" " required></textarea>
+                <label for="message"><%= __('Mensaje') %></label>
             </div>
             
             <div class="g-recaptcha" data-sitekey="6LcojE4rAAAAAF5Z6Ai57vMQ-cymByYnOSvOocsJ"></div>
