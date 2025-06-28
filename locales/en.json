@@ -186,5 +186,15 @@
   "Tiempo de espera agotado": "Timeout exceeded",
   "Error con la API de pagos: %s": "Error with payment API: %s",
   "Error en el procesador (%s)": "Error in processor (%s)",
-  "El procesador de pagos no respondió": "Payment processor did not respond"
+  "El procesador de pagos no respondió": "Payment processor did not respond",
+  "Pago aprobado": "Payment approved",
+  "Payment successful": "Payment successful",
+  "Pago rechazado": "Payment rejected",
+  "Código: 002": "Code: 002",
+  "Error en el pago": "Payment error",
+  "Código: 003": "Code: 003",
+  "Fondos insuficientes": "Insufficient funds",
+  "Código: 004": "Code: 004",
+  "Solicitud incorrecta a la API de pagos": "Invalid request to payment API",
+  "Error con la API de pagos": "Error with payment API"
 }
