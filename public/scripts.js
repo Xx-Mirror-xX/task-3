@@ -256,10 +256,10 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.disabled = true;
 
             try {
-               const response = await fetch('/api/payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                const response = await fetch('/api/payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
                         email: this.email.value.trim(),
                         cardName: this.cardName.value.trim(),
                         cardNumber: cardNumber,
@@ -273,40 +273,49 @@ document.addEventListener('DOMContentLoaded', function() {
                     })
                 });
                 
-const result = await response.json();
+                const result = await response.json();
 
-if (response.ok) {
-    if (result.success) {
-        showError(`${result.message}<br><small>${result.details}</small>`, 'success');
-    } else {
-        let errorMsg = result.message;
-        if (result.details) {
-            errorMsg += `<br><small>${result.details}</small>`;
-        }
-        if (result.paymentId) {
-            errorMsg += `<br><small>${req.__('ID local')}: ${result.paymentId}</small>`;
-        }
-        showError(errorMsg);
+                if (response.ok) {
+                    if (result.success) {
+
+                        showError(`${result.message}<br><small>${result.details}</small>`, 'success');
+                        
+
+                        setTimeout(() => {
+                            window.location.href = '/admin/payments';
+                        }, 3000);
+                    } else {
+
+                        let errorMsg = result.message;
+                        if (result.details) {
+                            errorMsg += `<br><small>${result.details}</small>`;
+                        }
+                        if (result.paymentId) {
+                            errorMsg += `<br><small><%= __("ID local") %>: ${result.paymentId}</small>`;
+                        }
+                        showError(errorMsg);
+                    }
+                } else {
+
+                    let errorMsg = result.error || '<%= __("Error al procesar el pago") %>';
+                    if (result.details) {
+                        errorMsg += `<br><small>${result.details}</small>`;
+                    }
+                    if (result.paymentId) {
+                        errorMsg += `<br><small><%= __("ID local") %>: ${result.paymentId}</small>`;
+                    }
+                    showError(errorMsg);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('<%= __("Error de conexión con el servidor. Por favor intente nuevamente.") %>');
+            } finally {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                if (window.grecaptcha) grecaptcha.reset();
+            }
+        });
     }
-    
-    if (window.grecaptcha) grecaptcha.reset();
-    
-    if (result.success) {
-        setTimeout(() => {
-            window.location.href = '/admin/payments';
-        }, 3000);
-    }
-} else {
-    let errorMsg = result.error || '<%= __("Error al procesar el pago") %>';
-    if (result.details) {
-        errorMsg += `<br><small>${result.details}</small>`;
-    }
-    if (result.paymentId) {
-        errorMsg += `<br><small>${req.__('ID local')}: ${result.paymentId}</small>`;
-    }
-    showError(errorMsg);
-    if (window.grecaptcha) grecaptcha.reset();
-}
 
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
@@ -537,110 +546,109 @@ if (response.ok) {
         loadContacts();
     }
 
-if (document.getElementById('paymentsTable')) {
-    let allPayments = [];
-    
-    async function loadPayments() {
-        try {
-            const response = await fetch('/api/payments', {
-                credentials: 'include' 
-            });
-            if (!response.ok) {
-                throw new Error('<%= __("Error al cargar pagos") %>');
+    if (document.getElementById('paymentsTable')) {
+        let allPayments = [];
+        
+        async function loadPayments() {
+            try {
+                const response = await fetch('/api/payments', {
+                    credentials: 'include' 
+                });
+                if (!response.ok) {
+                    throw new Error('<%= __("Error al cargar pagos") %>');
+                }
+                allPayments = await response.json();
+                renderPayments(allPayments);
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message);
             }
-            allPayments = await response.json();
-            renderPayments(allPayments);
-        } catch (error) {
-            console.error('Error:', error);
-            alert(error.message);
         }
-    }
-    
-    function renderPayments(payments) {
-        const tbody = document.querySelector('#paymentsTable tbody');
-        tbody.innerHTML = '';
         
-        payments.forEach(payment => {
-            const row = document.createElement('tr');
-            const statusClass = `status-${payment.status || 'pending'}`;
+        function renderPayments(payments) {
+            const tbody = document.querySelector('#paymentsTable tbody');
+            tbody.innerHTML = '';
             
-            row.innerHTML = `
-                <td>${payment.id}</td>
-                <td>${payment.email}</td>
-                <td>${payment.service}</td>
-                <td>${payment.formattedAmount}</td>
-                <td>${payment.currency}</td>
-                <td class="${statusClass}">${getStatusText(payment.status)}</td>
-                <td>${payment.formattedDate}</td>
-                <td>${payment.transactionId || 'N/A'}</td>
-            `;
-            tbody.appendChild(row);
+            payments.forEach(payment => {
+                const row = document.createElement('tr');
+                const statusClass = `status-${payment.status || 'pending'}`;
+                
+                row.innerHTML = `
+                    <td>${payment.id}</td>
+                    <td>${payment.email}</td>
+                    <td>${payment.service}</td>
+                    <td>${payment.formattedAmount}</td>
+                    <td>${payment.currency}</td>
+                    <td class="${statusClass}">${getStatusText(payment.status)}</td>
+                    <td>${payment.formattedDate}</td>
+                    <td>${payment.transactionId || 'N/A'}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function getStatusText(status) {
+            switch(status) {
+                case 'completed': return '<%= __("Completado") %>';
+                case 'pending': return '<%= __("Pendiente") %>';
+                case 'failed': return '<%= __("Fallido") %>';
+                case 'rejected': return '<%= __("Rechazado") %>';
+                case 'api_error': return '<%= __("Error API") %>';
+                case 'timeout_error': return '<%= __("Tiempo de espera agotado") %>';
+                default: return status;
+            }
+        }
+        
+        function filterPayments() {
+            const service = document.getElementById('serviceFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const dateFrom = document.getElementById('dateFromFilter').value;
+            const dateTo = document.getElementById('dateToFilter').value;
+            
+            let filtered = [...allPayments];
+            
+            if (service) {
+                filtered = filtered.filter(p => p.service === service);
+            }
+            
+            if (status) {
+                filtered = filtered.filter(p => p.status === status);
+            }
+            
+            if (dateFrom) {
+                const fromDate = new Date(dateFrom);
+                filtered = filtered.filter(p => new Date(p.paymentDate) >= fromDate);
+            }
+            
+            if (dateTo) {
+                const toDate = new Date(dateTo);
+                toDate.setDate(toDate.getDate() + 1); 
+                filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
+            }
+            
+            renderPayments(filtered);
+        }
+        
+        function resetFilters() {
+            document.getElementById('serviceFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('dateFromFilter').value = '';
+            document.getElementById('dateToFilter').value = '';
+            renderPayments(allPayments);
+        }
+        
+        document.getElementById('applyFiltersBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            filterPayments();
         });
+        
+        document.getElementById('resetFiltersBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            resetFilters();
+        });
+        
+        loadPayments();
     }
-    
-function getStatusText(status) {
-    switch(status) {
-        case 'completed': return '<%= __("Completado") %>';
-        case 'pending': return '<%= __("Pendiente") %>';
-        case 'failed': return '<%= __("Fallido") %>';
-        case 'rejected': return '<%= __("Rechazado") %>';
-        case 'api_error': return '<%= __("Error API") %>';
-        case 'timeout_error': return '<%= __("Tiempo de espera agotado") %>';
-        default: return status;
-    }
-}
-    
-    function filterPayments() {
-        const service = document.getElementById('serviceFilter').value;
-        const status = document.getElementById('statusFilter').value;
-        const dateFrom = document.getElementById('dateFromFilter').value;
-        const dateTo = document.getElementById('dateToFilter').value;
-        
-        let filtered = [...allPayments];
-        
-        if (service) {
-            filtered = filtered.filter(p => p.service === service);
-        }
-        
-        if (status) {
-            filtered = filtered.filter(p => p.status === status);
-        }
-        
-        if (dateFrom) {
-            const fromDate = new Date(dateFrom);
-            filtered = filtered.filter(p => new Date(p.paymentDate) >= fromDate);
-        }
-        
-        if (dateTo) {
-            const toDate = new Date(dateTo);
-            toDate.setDate(toDate.getDate() + 1); 
-            filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
-        }
-        
-        renderPayments(filtered);
-    }
-    
-    function resetFilters() {
-        document.getElementById('serviceFilter').value = '';
-        document.getElementById('statusFilter').value = '';
-        document.getElementById('dateFromFilter').value = '';
-        document.getElementById('dateToFilter').value = '';
-        renderPayments(allPayments);
-    }
-    
-    document.getElementById('applyFiltersBtn').addEventListener('click', (e) => {
-        e.preventDefault();
-        filterPayments();
-    });
-    
-    document.getElementById('resetFiltersBtn').addEventListener('click', (e) => {
-        e.preventDefault();
-        resetFilters();
-    });
-    
-    loadPayments();
-}
-    
 
     const langSelectors = document.querySelectorAll('.lang-selector');
     langSelectors.forEach(selector => {
