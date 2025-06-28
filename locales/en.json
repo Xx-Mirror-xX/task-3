@@ -165,5 +165,9 @@
   "Pay": "Pay",
   "Make Payment": "Make Payment",
   "Register New Administrator": "Register New Administrator",
-  "Fill all fields to create a new admin account": "Fill all fields to create a new admin account"
+  "Fill all fields to create a new admin account": "Fill all fields to create a new admin account",
+  "Pagos": "Payments",
+  "Iniciar Sesión": "Login",
+  "Enviar": "Send",
+  "Registrarse": "Register"
 }
