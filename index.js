@@ -7,8 +7,18 @@ const path = require('path');
 const axios = require('axios');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const i18n = require('i18n');
+const cookieParser = require('cookie-parser');
 const app = express();
 
+// Configuración de i18n
+i18n.configure({
+  locales: ['en', 'es'],
+  directory: path.join(__dirname, 'locales'),
+  defaultLocale: 'es',
+  cookie: 'lang',
+  register: global
+});
 
 const PaymentsController = require('./controllers/PaymentsController');
 const paymentsController = new PaymentsController();
@@ -172,6 +182,8 @@ app.use('/stylesheet', express.static(path.join(__dirname, 'public', 'stylesheet
 app.use('/img', express.static(path.join(__dirname, 'public', 'img')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/vistas', express.static(path.join(__dirname, 'vistas')));
+app.use(cookieParser());
+app.use(i18n.init);
 
 const isProduction = process.env.NODE_ENV === 'production';
 app.use(session({
@@ -191,6 +203,19 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+// Middleware para establecer locale en respuestas
+app.use((req, res, next) => {
+  res.locals.__ = res.__ = function() {
+    return i18n.__.apply(req, arguments);
+  };
+  next();
+});
+
+// Ruta para cambiar idioma
+app.get('/change-lang/:lang', (req, res) => {
+  res.cookie('lang', req.params.lang, { maxAge: 900000, httpOnly: true });
+  res.redirect('back');
+});
 
 const requireAuth = (req, res, next) => {
     if (req.isAuthenticated()) return next();
@@ -335,7 +360,7 @@ app.post('/admin/login', async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ 
                 success: false,
-                message: 'Todos los campos son requeridos' 
+                message: req.__('Todos los campos son requeridos') 
             });
         }
 
@@ -344,21 +369,21 @@ app.post('/admin/login', async (req, res) => {
                 console.error('Error en la consulta SQL:', err);
                 return res.status(500).json({ 
                     success: false,
-                    message: 'Error en el servidor' 
+                    message: req.__('Error en el servidor') 
                 });
             }
             
             if (!user) {
                 return res.status(401).json({ 
                     success: false,
-                    message: 'Credenciales incorrectas' 
+                    message: req.__('Credenciales incorrectas') 
                 });
             }
 
             if (!user.password) {
                 return res.status(401).json({ 
                     success: false,
-                    message: 'Este usuario no tiene contraseña configurada' 
+                    message: req.__('Este usuario no tiene contraseña configurada') 
                 });
             }
 
@@ -371,7 +396,7 @@ app.post('/admin/login', async (req, res) => {
                                 console.error('Error en req.login:', err);
                                 return res.status(500).json({ 
                                     success: false,
-                                    message: 'Error en el servidor' 
+                                    message: req.__('Error en el servidor') 
                                 });
                             }
                             req.session.save(() => {
@@ -385,14 +410,14 @@ app.post('/admin/login', async (req, res) => {
                     }
                     return res.status(401).json({ 
                         success: false,
-                        message: 'Credenciales incorrectas' 
+                        message: req.__('Credenciales incorrectas') 
                     });
                 }
 
                 if (!user.isAdmin) {
                     return res.status(403).json({ 
                         success: false,
-                        message: 'Acceso denegado - Solo para administradores' 
+                        message: req.__('Acceso denegado - Solo para administradores') 
                     });
                 }
 
@@ -401,7 +426,7 @@ app.post('/admin/login', async (req, res) => {
                         console.error('Error en req.login:', err);
                         return res.status(500).json({ 
                             success: false,
-                            message: 'Error en el servidor' 
+                            message: req.__('Error en el servidor') 
                         });
                     }
                     req.session.save(() => {
@@ -415,7 +440,7 @@ app.post('/admin/login', async (req, res) => {
                 console.error('Error en bcrypt.compare:', bcryptError);
                 return res.status(500).json({ 
                     success: false,
-                    message: 'Error al verificar contraseña' 
+                    message: req.__('Error al verificar contraseña') 
                 });
             }
         });
@@ -423,7 +448,7 @@ app.post('/admin/login', async (req, res) => {
         console.error('Error en login admin:', error);
         res.status(500).json({ 
             success: false,
-            message: 'Error en el servidor' 
+            message: req.__('Error en el servidor') 
         });
     }
 });
@@ -434,13 +459,13 @@ app.post('/register', async (req, res) => {
         const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         
         if (!fName || !lName || !email || !password || !recaptchaToken) {
-            return res.status(400).json({ error: 'Todos los campos son requeridos' });
+            return res.status(400).json({ error: req.__('Todos los campos son requeridos') });
         }
 
         const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'register');
         if (!recaptchaResult.success || recaptchaResult.score < 0.5) {
             return res.status(400).json({ 
-                error: 'Verificación de reCAPTCHA fallida',
+                error: req.__('Verificación de reCAPTCHA fallida'),
                 score: recaptchaResult.score 
             });
         }
@@ -453,20 +478,20 @@ app.post('/register', async (req, res) => {
             function(err) {
                 if (err) {
                     if (err.message.includes('UNIQUE')) {
-                        return res.status(400).json({ error: 'Email ya registrado' });
+                        return res.status(400).json({ error: req.__('Email ya registrado') });
                     }
-                    return res.status(500).json({ error: 'Error al registrar usuario' });
+                    return res.status(500).json({ error: req.__('Error al registrar usuario') });
                 }
                 res.json({ 
                     success: true, 
-                    message: 'Usuario registrado con éxito',
+                    message: req.__('Usuario registrado con éxito'),
                     email: email
                 });
             }
         );
     } catch (error) {
         console.error('Error en registro:', error);
-        res.status(500).json({ error: 'Error en el servidor' });
+        res.status(500).json({ error: req.__('Error en el servidor') });
     }
 });
 
@@ -476,7 +501,7 @@ app.post('/admin/register', requireAdmin, async (req, res) => {
         const { fName, lName, email, password } = req.body;
         
         if (!fName || !lName || !email || !password) {
-            return res.status(400).json({ error: 'Todos los campos son requeridos' });
+            return res.status(400).json({ error: req.__('Todos los campos son requeridos') });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -487,20 +512,20 @@ app.post('/admin/register', requireAdmin, async (req, res) => {
             function(err) {
                 if (err) {
                     if (err.message.includes('UNIQUE')) {
-                        return res.status(400).json({ error: 'Email ya registrado' });
+                        return res.status(400).json({ error: req.__('Email ya registrado') });
                     }
-                    return res.status(500).json({ error: 'Error al registrar administrador' });
+                    return res.status(500).json({ error: req.__('Error al registrar administrador') });
                 }
                 res.json({ 
                     success: true, 
-                    message: 'Administrador registrado con éxito',
+                    message: req.__('Administrador registrado con éxito'),
                     email: email
                 });
             }
         );
     } catch (error) {
         console.error('Error en registro de administrador:', error);
-        res.status(500).json({ error: 'Error en el servidor' });
+        res.status(500).json({ error: req.__('Error en el servidor') });
     }
 });
 
@@ -511,7 +536,7 @@ app.post('/login', async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ 
                 success: false,
-                message: 'Todos los campos son requeridos' 
+                message: req.__('Todos los campos son requeridos') 
             });
         }
 
@@ -520,28 +545,28 @@ app.post('/login', async (req, res) => {
                 console.error('Error en la consulta SQL:', err);
                 return res.status(500).json({ 
                     success: false,
-                    message: 'Error en el servidor' 
+                    message: req.__('Error en el servidor') 
                 });
             }
             
             if (!user) {
                 return res.status(401).json({ 
                     success: false,
-                    message: 'Credenciales incorrectas' 
+                    message: req.__('Credenciales incorrectas') 
                 });
             }
 
             if (user.googleId && !user.password) {
                 return res.status(401).json({ 
                     success: false,
-                    message: 'Este email está registrado con Google. Por favor inicie sesión con Google.' 
+                    message: req.__('Este email está registrado con Google. Por favor inicie sesión con Google.') 
                 });
             }
 
             if (!user.password) {
                 return res.status(401).json({ 
                     success: false,
-                    message: 'Este usuario no tiene contraseña configurada' 
+                    message: req.__('Este usuario no tiene contraseña configurada') 
                 });
             }
 
@@ -554,7 +579,7 @@ app.post('/login', async (req, res) => {
                                 console.error('Error en req.login:', err);
                                 return res.status(500).json({ 
                                     success: false,
-                                    message: 'Error en el servidor' 
+                                    message: req.__('Error en el servidor') 
                                 });
                             }
                             req.session.save(() => {
@@ -568,7 +593,7 @@ app.post('/login', async (req, res) => {
                     }
                     return res.status(401).json({ 
                         success: false,
-                        message: 'Credenciales incorrectas' 
+                        message: req.__('Credenciales incorrectas') 
                     });
                 }
 
@@ -577,7 +602,7 @@ app.post('/login', async (req, res) => {
                         console.error('Error en req.login:', err);
                         return res.status(500).json({ 
                             success: false,
-                            message: 'Error en el servidor' 
+                            message: req.__('Error en el servidor') 
                         });
                     }
                     req.session.save(() => {
@@ -591,7 +616,7 @@ app.post('/login', async (req, res) => {
                 console.error('Error en bcrypt.compare:', bcryptError);
                 return res.status(500).json({ 
                     success: false,
-                    message: 'Error al verificar contraseña' 
+                    message: req.__('Error al verificar contraseña') 
                 });
             }
         });
@@ -599,7 +624,7 @@ app.post('/login', async (req, res) => {
         console.error('Error en login:', error);
         res.status(500).json({ 
             success: false,
-            message: 'Error en el servidor' 
+            message: req.__('Error en el servidor') 
         });
     }
 });
@@ -607,11 +632,11 @@ app.post('/login', async (req, res) => {
 app.get('/logout', (req, res) => {
     req.logout((err) => {
         if (err) {
-            return res.status(500).json({ error: 'Error al cerrar sesión' });
+            return res.status(500).json({ error: req.__('Error al cerrar sesión') });
         }
         req.session.destroy(err => {
             if (err) {
-                return res.status(500).json({ error: 'Error al cerrar sesión' });
+                return res.status(500).json({ error: req.__('Error al cerrar sesión') });
             }
             res.redirect('/');
         });
@@ -624,13 +649,13 @@ app.post('/api/contact', async (req, res) => {
         const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
         if (!firstName || !lastName || !email || !message || !recaptchaToken) {
-            return res.status(400).json({ error: "Todos los campos son requeridos" });
+            return res.status(400).json({ error: req.__("Todos los campos son requeridos") });
         }
 
         const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'contact');
         if (!recaptchaResult.success || recaptchaResult.score < 0.5) {
             return res.status(400).json({ 
-                error: "Verificación de reCAPTCHA fallida",
+                error: req.__("Verificación de reCAPTCHA fallida"),
                 score: recaptchaResult.score
             });
         }
@@ -644,18 +669,18 @@ app.post('/api/contact', async (req, res) => {
             function(err) {
                 if (err) {
                     console.error('Error al guardar contacto:', err);
-                    return res.status(500).json({ error: "Error al guardar contacto" });
+                    return res.status(500).json({ error: req.__("Error al guardar contacto") });
                 }
                 res.json({ 
                     success: true, 
-                    message: "Contacto guardado exitosamente",
+                    message: req.__("Contacto guardado exitosamente"),
                     id: this.lastID
                 });
             }
         );
     } catch (error) {
         console.error('Error en /api/contact:', error);
-        res.status(500).json({ error: "Error en el servidor" });
+        res.status(500).json({ error: req.__("Error en el servidor") });
     }
 });
 
@@ -665,7 +690,7 @@ app.get('/api/contacts', requireAuth, (req, res) => {
         (err, rows) => {
             if (err) {
                 console.error('Error al obtener contactos:', err);
-                return res.status(500).json({ error: 'Error al obtener contactos' });
+                return res.status(500).json({ error: req.__('Error al obtener contactos') });
             }
             res.json(rows);
         }
@@ -678,13 +703,13 @@ app.post('/api/payment', async (req, res) => {
         const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
         if (!recaptchaToken) {
-            return res.status(400).json({ error: "Verificación de reCAPTCHA requerida" });
+            return res.status(400).json({ error: req.__("Verificación de reCAPTCHA requerida") });
         }
 
         const recaptchaResult = await verifyRecaptcha(recaptchaToken, ipAddress, 'payment');
         if (!recaptchaResult.success || recaptchaResult.score < 0.5) {
             return res.status(400).json({ 
-                error: "Verificación de reCAPTCHA fallida",
+                error: req.__("Verificación de reCAPTCHA fallida"),
                 score: recaptchaResult.score
             });
         }
@@ -692,7 +717,7 @@ app.post('/api/payment', async (req, res) => {
         return paymentsController.addPayment(req, res);
     } catch (error) {
         console.error('Error en /api/payment:', error);
-        res.status(500).json({ error: "Error en el servidor" });
+        res.status(500).json({ error: req.__("Error en el servidor") });
     }
 });
 
@@ -702,7 +727,7 @@ app.get('/api/payments', requireAuth, (req, res) => {
         (err, rows) => {
             if (err) {
                 console.error('Error al obtener pagos:', err);
-                return res.status(500).json({ error: 'Error al obtener pagos' });
+                return res.status(500).json({ error: req.__('Error al obtener pagos') });
             }
             res.json(rows);
         }
@@ -717,10 +742,10 @@ app.get('/api/payments/:payment_id', requireAuth, (req, res) => {
         (err, row) => {
             if (err) {
                 console.error('Error al obtener pago:', err);
-                return res.status(500).json({ error: 'Error al obtener pago' });
+                return res.status(500).json({ error: req.__('Error al obtener pago') });
             }
             if (!row) {
-                return res.status(404).json({ error: 'Pago no encontrado' });
+                return res.status(404).json({ error: req.__('Pago no encontrado') });
             }
             res.json(row);
         }
@@ -728,37 +753,37 @@ app.get('/api/payments/:payment_id', requireAuth, (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.render('index');
+    res.render('index', { lang: req.cookies.lang || 'es' });
 });
 
 app.get('/contactos', (req, res) => {
-    res.render('contactos');
+    res.render('contactos', { lang: req.cookies.lang || 'es' });
 });
 
 app.get('/pagos', (req, res) => {
-    res.render('pagos');
+    res.render('pagos', { lang: req.cookies.lang || 'es' });
 });
 
 app.get('/admin/contacts', requireAdmin, (req, res) => {
-    res.render('admin/contacts');
+    res.render('admin/contacts', { lang: req.cookies.lang || 'es' });
 });
 
 app.get('/admin/register', requireAdmin, (req, res) => {
-    res.render('admin/register');
+    res.render('admin/register', { lang: req.cookies.lang || 'es' });
 });
 
 app.get('/admin/payments', requireAdmin, (req, res) => {
-    res.render('admin/payments');
+    res.render('admin/payments', { lang: req.cookies.lang || 'es' });
 });
 
 
 app.get('/indice', requireAuth, (req, res) => {
-    res.render('vistas/indice');
+    res.render('vistas/indice', { lang: req.cookies.lang || 'es' });
 });
 
 
 app.use((req, res) => {
-    res.status(404).send('Página no encontrada');
+    res.status(404).send(req.__('Página no encontrada'));
 });
 
 const PORT = process.env.PORT || 3000;
