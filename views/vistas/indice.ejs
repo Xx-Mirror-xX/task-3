@@ -53,8 +53,8 @@
 <body>
     <div class="lang-selector-container">
         <select class="lang-selector" id="langSelector">
-            <option value="es">Español</option>
-            <option value="en">English</option>
+            <option value="es" <%= lang === 'es' ? 'selected' : '' %>>Español</option>
+            <option value="en" <%= lang === 'en' ? 'selected' : '' %>>English</option>
         </select>
     </div>
     
@@ -176,14 +176,8 @@
     </footer>
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Establecer idioma actual
-            document.getElementById('langSelector').value = '<%= lang %>';
-            
-            // Cambiar idioma
-            document.getElementById('langSelector').addEventListener('change', function() {
-                window.location.href = '/change-lang/' + this.value;
-            });
+        document.getElementById('langSelector').addEventListener('change', function() {
+            window.location.href = '/change-lang/' + this.value;
         });
     </script>
     <script src="/scripts.js"></script>
