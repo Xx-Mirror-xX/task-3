@@ -653,6 +653,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // ======================================================================
     const langSelectors = document.querySelectorAll('.lang-selector');
     langSelectors.forEach(selector => {
+        // Establecer el valor actual basado en la cookie
+        const langCookie = document.cookie.replace(/(?:(?:^|.*;\s*)lang\s*=\s*([^;]*).*$)|^.*$/, "$1");
+        if (langCookie) {
+            selector.value = langCookie;
+        }
+        
         selector.addEventListener('change', function() {
             const lang = this.value;
             const returnUrl = window.location.pathname + window.location.search;
