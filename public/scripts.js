@@ -563,27 +563,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        function renderPayments(payments) {
-            const tbody = document.querySelector('#paymentsTable tbody');
-            tbody.innerHTML = '';
+    function renderPayments(payments) {
+        const tbody = document.querySelector('#paymentsTable tbody');
+        tbody.innerHTML = '';
+        
+        payments.forEach(payment => {
+            const row = document.createElement('tr');
+            const statusClass = `status-${payment.status || 'pending'}`;
             
-            payments.forEach(payment => {
-                const row = document.createElement('tr');
-                const statusClass = `status-${payment.status || 'pending'}`;
-                
-                row.innerHTML = `
-                    <td>${payment.id}</td>
-                    <td>${payment.email}</td>
-                    <td>${payment.service}</td>
-                    <td>${payment.amount}</td>
-                    <td>${payment.currency}</td>
-                    <td class="${statusClass}">${getStatusText(payment.status)}</td>
-                    <td>${new Date(payment.paymentDate).toLocaleString()}</td>
-                    <td>${payment.transactionId || 'N/A'}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
+            row.innerHTML = `
+                <td>${payment.id}</td>
+                <td>${payment.email}</td>
+                <td>${payment.service}</td>
+                <td>${payment.formattedAmount}</td>
+                <td>${payment.currency}</td>
+                <td class="${statusClass}">${getStatusText(payment.status)}</td>
+                <td>${payment.formattedDate}</td>
+                <td>${payment.transactionId || 'N/A'}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
         
         function getStatusText(status) {
             switch(status) {
