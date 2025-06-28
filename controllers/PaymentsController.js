@@ -155,29 +155,62 @@ class PaymentsController {
                 statusCode = 400;
                 errorDetails = error.response.data || error.message;
 
-                if (error.response.data && error.response.data.error) {
-                    errorDetails = error.response.data.error;
+                if (e    handleApiError(error, res, localPaymentId, req) {
+        let status = 'api_error';
+        let userMessage = req.__('Error con la API de pagos');
+        let statusCode = 500;
+        let errorDetails = '';
+
+
+        if (error.response) {
+            statusCode = error.response.status;
+            
+
+            if (statusCode === 400) {
+                userMessage = req.__('Solicitud incorrecta a la API de pagos');
+                
+
+                if (error.response.data && typeof error.response.data === 'object') {
+                    if (error.response.data.error) {
+                        errorDetails = error.response.data.error;
+                    } else if (error.response.data.message) {
+                        errorDetails = error.response.data.message;
+                    } else {
+                        try {
+                            errorDetails = JSON.stringify(error.response.data);
+                        } catch {
+                            errorDetails = error.response.data.toString();
+                        }
+                    }
+                } else if (typeof error.response.data === 'string') {
+                    errorDetails = error.response.data;
                 }
             } else {
-                statusCode = error.response.status;
                 userMessage = req.__('Error en el procesador (%s)', statusCode);
                 errorDetails = error.response.data || error.message;
             }
         } else if (error.request) {
             userMessage = req.__('El procesador de pagos no respondió');
             statusCode = 503;
+            errorDetails = error.message;
         } else if (error.code === 'ECONNABORTED') {
             userMessage = req.__('Tiempo de espera agotado');
             statusCode = 504;
             status = 'timeout_error';
+            errorDetails = error.message;
+        } else {
+            errorDetails = error.message;
         }
 
-        console.error(`${userMessage}: ${errorDetails}`);
+
+        console.error(`[${statusCode}] ${userMessage}:`, errorDetails);
         
+
         this.model.updatePayment(localPaymentId, {
             status: status,
             errorDetails: errorDetails
         });
+
 
         return res.status(statusCode).json({
             success: false,
@@ -186,6 +219,7 @@ class PaymentsController {
             details: errorDetails
         });
     }
+
 
     async index(req, res) {
         if (!req.isAuthenticated() || !req.user.isAdmin) {
