@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Administrador</title>
-    <meta property="og:title" content="Registro de Administrador - Creating Social Network">
-    <meta property="og:description" content="Crea nuevas cuentas de administrador para tu plataforma">
+    <title><%= __('Registro de Administrador') %></title>
+    <meta property="og:title" content="<%= __('Registro de Administrador - Creating Social Network') %>">
+    <meta property="og:description" content="<%= __('Crea nuevas cuentas de administrador para tu plataforma') %>">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://creatingsocialnetwork.com/admin/register.ejs">
     <meta property="og:image" content="https://creatingsocialnetwork.com/images/register-og.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Registro de Administrador - Creating Social Network">
-    <meta name="twitter:description" content="Gestión de cuentas administrativas">
+    <meta name="twitter:title" content="<%= __('Registro de Administrador - Creating Social Network') %>">
+    <meta name="twitter:description" content="<%= __('Gestión de cuentas administrativas') %>">
     <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/register-twitter.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="stylesheet" href="/stylesheet/styles.css">
@@ -144,13 +144,34 @@
             align-items: center;
             justify-content: center;
         }
+        
+        .lang-selector-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
+        .lang-selector {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+        }
  </style>
 </head>
 <body>
+    <div class="lang-selector-container">
+        <select class="lang-selector" id="langSelector">
+            <option value="es">Español</option>
+            <option value="en">English</option>
+        </select>
+    </div>
+    
     <div class="admin-container">
         <div class="admin-header">
-            <h1><i class="fas fa-user-shield"></i> Registrar Nuevo Administrador</h1>
-            <p>Complete todos los campos para crear una nueva cuenta de administrador</p>
+            <h1><i class="fas fa-user-shield"></i> <%= __('Registrar Nuevo Administrador') %></h1>
+            <p><%= __('Complete todos los campos para crear una nueva cuenta de administrador') %></p>
         </div>
 
         <div id="adminAlert" class="admin-alert"></div>
@@ -160,38 +181,38 @@
 
         <form id="adminRegisterForm">
             <div class="admin-form-group">
-                <label for="adminFirstName"><i class="fas fa-user"></i> Nombre</label>
+                <label for="adminFirstName"><i class="fas fa-user"></i> <%= __('Nombre') %></label>
                 <input type="text" id="adminFirstName" class="admin-form-control" required>
             </div>
 
             <div class="admin-form-group">
-                <label for="adminLastName"><i class="fas fa-user"></i> Apellido</label>
+                <label for="adminLastName"><i class="fas fa-user"></i> <%= __('Apellido') %></label>
                 <input type="text" id="adminLastName" class="admin-form-control" required>
             </div>
 
             <div class="admin-form-group">
-                <label for="adminEmail"><i class="fas fa-envelope"></i> Email</label>
+                <label for="adminEmail"><i class="fas fa-envelope"></i> <%= __('Email') %></label>
                 <input type="email" id="adminEmail" class="admin-form-control" required>
             </div>
 
             <div class="admin-form-group">
-                <label for="adminPassword"><i class="fas fa-lock"></i> Contraseña</label>
+                <label for="adminPassword"><i class="fas fa-lock"></i> <%= __('Contraseña') %></label>
                 <input type="password" id="adminPassword" class="admin-form-control" minlength="8" required>
-                <small style="color: #666;">Mínimo 8 caracteres</small>
+                <small style="color: #666;"><%= __('Mínimo 8 caracteres') %></small>
             </div>
 
             <div class="admin-form-group">
-                <label for="adminConfirmPassword"><i class="fas fa-lock"></i> Confirmar Contraseña</label>
+                <label for="adminConfirmPassword"><i class="fas fa-lock"></i> <%= __('Confirmar Contraseña') %></label>
                 <input type="password" id="adminConfirmPassword" class="admin-form-control" required>
             </div>
 
             <button type="submit" class="admin-btn" id="adminRegisterBtn">
-                <i class="fas fa-user-plus"></i> Registrar Administrador
+                <i class="fas fa-user-plus"></i> <%= __('Registrar Administrador') %>
             </button>
         </form>
 
         <div class="admin-oauth">
-            <p>O registra usando:</p>
+            <p><%= __('O registra usando:') %></p>
             <button id="adminGoogleBtn">
                 <i class="fab fa-google"></i> Google
             </button>
@@ -199,7 +220,7 @@
 
         <div class="admin-footer">
             <a href="/admin/contacts" class="admin-back-btn">
-                <i class="fas fa-arrow-left"></i> Volver al Panel
+                <i class="fas fa-arrow-left"></i> <%= __('Volver al Panel') %>
             </a>
         </div>
     </div>
@@ -227,6 +248,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Establecer idioma actual
+            document.getElementById('langSelector').value = '<%= lang %>';
+            
             const adminRegisterForm = document.getElementById('adminRegisterForm');
             const adminAlert = document.getElementById('adminAlert');
             const adminRegisterBtn = document.getElementById('adminRegisterBtn');
@@ -243,7 +267,7 @@
                 e.preventDefault();
                 
                 const originalBtnText = adminRegisterBtn.innerHTML;
-                adminRegisterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Registrando...';
+                adminRegisterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <%= __("Registrando...") %>';
                 adminRegisterBtn.disabled = true;
 
 
@@ -251,7 +275,7 @@
                 const confirmPassword = document.getElementById('adminConfirmPassword').value;
                 
                 if (password !== confirmPassword) {
-                    showError('Las contraseñas no coinciden');
+                    showError('<%= __("Las contraseñas no coinciden") %>');
                     adminRegisterBtn.innerHTML = originalBtnText;
                     adminRegisterBtn.disabled = false;
                     return;
@@ -277,7 +301,7 @@
                     const result = await response.json();
 
                     if (response.ok) {
-                        showError('Administrador registrado con éxito', 'success');
+                        showError('<%= __("Administrador registrado con éxito") %>', 'success');
                         
                         try {
                             const loginResponse = await fetch('/login', {
@@ -296,28 +320,33 @@
                                     window.location.href = '/admin/contacts';
                                 }, 1500);
                             } else {
-                                showError('Registro exitoso. Por favor inicia sesión manualmente');
+                                showError('<%= __("Registro exitoso. Por favor inicia sesión manualmente") %>');
                                 setTimeout(() => {
                                     window.location.href = '/';
                                 }, 2000);
                             }
                         } catch (loginError) {
                             console.error('Error en auto-login:', loginError);
-                            showError('Registro exitoso. Por favor inicia sesión');
+                            showError('<%= __("Registro exitoso. Por favor inicia sesión") %>');
                             setTimeout(() => {
                                 window.location.href = '/';
                             }, 2000);
                         }
                     } else {
-                        showError(result.error || 'Error al registrar administrador');
+                        showError(result.error || '<%= __("Error al registrar administrador") %>');
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    showError('Error de conexión con el servidor');
+                    showError('<%= __("Error de conexión con el servidor") %>');
                 } finally {
                     adminRegisterBtn.innerHTML = originalBtnText;
                     adminRegisterBtn.disabled = false;
                 }
+            });
+            
+            // Cambiar idioma
+            document.getElementById('langSelector').addEventListener('change', function() {
+                window.location.href = '/change-lang/' + this.value;
             });
         });
     </script>
