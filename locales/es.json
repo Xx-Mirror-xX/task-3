@@ -1,6 +1,6 @@
 {
   "Español": "Español",
-  "English": "Ingles",
+  "English": "Inglés",
   "Panel de Pagos": "Panel de Pagos",
   "Pagos Recibidos": "Pagos Recibidos",
   "Contactos": "Contactos",
@@ -151,5 +151,19 @@
   "Error de autenticación": "Error de autenticación",
   "Error de autorización": "Error de autorización",
   "Error de red": "Error de red",
-  "Error de tiempo de espera": "Error de tiempo de espera"
+  "Error de tiempo de espera": "Error de tiempo de espera",
+  "Email": "Email",
+  "Cardholder Name": "Nombre del titular",
+  "Card Number": "Número de tarjeta",
+  "Month": "Mes",
+  "Year": "Año",
+  "CVV": "CVV",
+  "Amount": "Monto",
+  "Select currency": "Seleccione moneda",
+  "Currency": "Moneda",
+  "Back": "Volver",
+  "Pay": "Pagar",
+  "Make Payment": "Realizar Pago",
+  "Register New Administrator": "Registrar Nuevo Administrador",
+  "Fill all fields to create a new admin account": "Complete todos los campos para crear una nueva cuenta de administrador"
 }
