@@ -544,25 +544,25 @@ document.addEventListener('DOMContentLoaded', function() {
         loadContacts();
     }
 
-    if (document.getElementById('paymentsTable')) {
-        let allPayments = [];
-        
-        async function loadPayments() {
-            try {
-                const response = await fetch('/api/payments', {
-                    credentials: 'include' 
-                });
-                if (!response.ok) {
-                    throw new Error('<%= __("Error al cargar pagos") %>');
-                }
-                allPayments = await response.json();
-                renderPayments(allPayments);
-            } catch (error) {
-                console.error('Error:', error);
-                alert(error.message);
+if (document.getElementById('paymentsTable')) {
+    let allPayments = [];
+    
+    async function loadPayments() {
+        try {
+            const response = await fetch('/api/payments', {
+                credentials: 'include' 
+            });
+            if (!response.ok) {
+                throw new Error('<%= __("Error al cargar pagos") %>');
             }
+            allPayments = await response.json();
+            renderPayments(allPayments);
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.message);
         }
-        
+    }
+    
     function renderPayments(payments) {
         const tbody = document.querySelector('#paymentsTable tbody');
         tbody.innerHTML = '';
@@ -584,75 +584,73 @@ document.addEventListener('DOMContentLoaded', function() {
             tbody.appendChild(row);
         });
     }
-        
-        function getStatusText(status) {
-            switch(status) {
-                case 'completed': return '<%= __("Completado") %>';
-                case 'pending': return '<%= __("Pendiente") %>';
-                case 'failed': return '<%= __("Fallido") %>';
-                case 'rejected': return '<%= __("Rechazado") %>';
-                case 'api_error': return '<%= __("Error API") %>';
-                default: return status;
-            }
+    
+    function getStatusText(status) {
+        switch(status) {
+            case 'completed': return '<%= __("Completado") %>';
+            case 'pending': return '<%= __("Pendiente") %>';
+            case 'failed': return '<%= __("Fallido") %>';
+            case 'rejected': return '<%= __("Rechazado") %>';
+            case 'api_error': return '<%= __("Error API") %>';
+            default: return status;
         }
-        
-        function filterPayments() {
-            const service = document.getElementById('serviceFilter').value;
-            const status = document.getElementById('statusFilter').value;
-            const dateFrom = document.getElementById('dateFromFilter').value;
-            const dateTo = document.getElementById('dateToFilter').value;
-            
-            let filtered = [...allPayments];
-            
-            if (service) {
-                filtered = filtered.filter(p => p.service === service);
-            }
-            
-            if (status) {
-                filtered = filtered.filter(p => p.status === status);
-            }
-            
-            if (dateFrom) {
-                const fromDate = new Date(dateFrom);
-                filtered = filtered.filter(p => new Date(p.paymentDate) >= fromDate);
-            }
-            
-            if (dateTo) {
-                const toDate = new Date(dateTo);
-                toDate.setDate(toDate.getDate() + 1); 
-                filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
-            }
-            
-            renderPayments(filtered);
-        }
-        
-        function resetFilters() {
-            document.getElementById('serviceFilter').value = '';
-            document.getElementById('statusFilter').value = '';
-            document.getElementById('dateFromFilter').value = '';
-            document.getElementById('dateToFilter').value = '';
-            renderPayments(allPayments);
-        }
-        
-        document.getElementById('applyFiltersBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            filterPayments();
-        });
-        
-        document.getElementById('resetFiltersBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            resetFilters();
-        });
-        
-        loadPayments();
     }
     
-    // ======================================================================
-    // CENTRALIZED LANGUAGE CHANGE HANDLING
-    // ======================================================================
+    function filterPayments() {
+        const service = document.getElementById('serviceFilter').value;
+        const status = document.getElementById('statusFilter').value;
+        const dateFrom = document.getElementById('dateFromFilter').value;
+        const dateTo = document.getElementById('dateToFilter').value;
+        
+        let filtered = [...allPayments];
+        
+        if (service) {
+            filtered = filtered.filter(p => p.service === service);
+        }
+        
+        if (status) {
+            filtered = filtered.filter(p => p.status === status);
+        }
+        
+        if (dateFrom) {
+            const fromDate = new Date(dateFrom);
+            filtered = filtered.filter(p => new Date(p.paymentDate) >= fromDate);
+        }
+        
+        if (dateTo) {
+            const toDate = new Date(dateTo);
+            toDate.setDate(toDate.getDate() + 1); 
+            filtered = filtered.filter(p => new Date(p.paymentDate) <= toDate);
+        }
+        
+        renderPayments(filtered);
+    }
+    
+    function resetFilters() {
+        document.getElementById('serviceFilter').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('dateFromFilter').value = '';
+        document.getElementById('dateToFilter').value = '';
+        renderPayments(allPayments);
+    }
+    
+    document.getElementById('applyFiltersBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        filterPayments();
+    });
+    
+    document.getElementById('resetFiltersBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        resetFilters();
+    });
+    
+    loadPayments();
+}
+    
+
     const langSelectors = document.querySelectorAll('.lang-selector');
     langSelectors.forEach(selector => {
-        // Establecer el valor actual basado en la cookie
+
         const langCookie = document.cookie.replace(/(?:(?:^|.*;\s*)lang\s*=\s*([^;]*).*$)|^.*$/, "$1");
         if (langCookie) {
             selector.value = langCookie;
@@ -664,5 +662,5 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = '/change-lang/' + lang + '?returnUrl=' + encodeURIComponent(returnUrl);
         });
     });
-    // ======================================================================
+
 });
