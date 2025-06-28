@@ -284,28 +284,28 @@ document.addEventListener('DOMContentLoaded', function() {
                         setTimeout(() => {
                             window.location.href = '/admin/payments';
                         }, 3000);
+            } else {
+
+                let errorMsg = result.error || '<%= __("Error al procesar el pago") %>';
+
+                if (result.details) {
+
+                    if (typeof result.details === 'object') {
+                        try {
+                            errorMsg += `<br><small>${JSON.stringify(result.details)}</small>`;
+                        } catch {
+                            errorMsg += `<br><small>${result.details.toString()}</small>`;
+                        }
                     } else {
-
-                        let errorMsg = result.message;
-                        if (result.details) {
-                            errorMsg += `<br><small>${result.details}</small>`;
-                        }
-                        if (result.paymentId) {
-                            errorMsg += `<br><small><%= __("ID local") %>: ${result.paymentId}</small>`;
-                        }
-                        showError(errorMsg);
-                    }
-                } else {
-
-                    let errorMsg = result.error || '<%= __("Error al procesar el pago") %>';
-                    if (result.details) {
                         errorMsg += `<br><small>${result.details}</small>`;
                     }
-                    if (result.paymentId) {
-                        errorMsg += `<br><small><%= __("ID local") %>: ${result.paymentId}</small>`;
-                    }
-                    showError(errorMsg);
                 }
+                if (result.paymentId) {
+                    errorMsg += `<br><small><%= __("ID local") %>: ${result.paymentId}</small>`;
+                }
+                
+                showError(errorMsg);
+            }
             } catch (error) {
                 console.error('Error:', error);
                 showError('<%= __("Error de conexión con el servidor. Por favor intente nuevamente.") %>');
