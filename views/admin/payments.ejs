@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Pagos</title>
-    <meta property="og:title" content="Panel de Pagos - Creating Social Network">
-    <meta property="og:description" content="Administra transacciones y pagos en tu panel de administración">
+    <title><%= __('Panel de Pagos') %></title>
+    <meta property="og:title" content="<%= __('Panel de Pagos - Creating Social Network') %>">
+    <meta property="og:description" content="<%= __('Administra transacciones y pagos en tu panel de administración') %>">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://creatingsocialnetwork.com/admin/payments.ejs">
     <meta property="og:image" content="https://creatingsocialnetwork.com/images/payments-og.jpg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Panel de Pagos - Creating Social Network">
-    <meta name="twitter:description" content="Gestión profesional de transacciones financieras">
+    <meta name="twitter:title" content="<%= __('Panel de Pagos - Creating Social Network') %>">
+    <meta name="twitter:description" content="<%= __('Gestión profesional de transacciones financieras') %>">
     <meta name="twitter:image" content="https://creatingsocialnetwork.com/images/payments-twitter.jpg">
     <link rel="stylesheet" href="/stylesheet/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -223,6 +223,7 @@
             padding: 20px;
             max-width: 1600px;
             margin: 0 auto;
+            position: relative;
         }
         
         .table-container {
@@ -237,59 +238,80 @@
             gap: 10px;
             margin-left: auto;
         }
+        
+        .lang-selector-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+        
+        .lang-selector {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="lang-selector-container">
+            <select class="lang-selector" id="langSelector">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+        
         <div class="admin-header">
-            <h1><i class="fas fa-money-bill-wave"></i> Pagos Recibidos</h1>
+            <h1><i class="fas fa-money-bill-wave"></i> <%= __('Pagos Recibidos') %></h1>
             <div class="nav-buttons">
                 <a href="/admin/contacts" class="nav-btn contacts-btn">
-                    <i class="fas fa-address-book"></i> Contactos
+                    <i class="fas fa-address-book"></i> <%= __('Contactos') %>
                 </a>
                 <a href="/logout" class="nav-btn logout-btn">
-                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                    <i class="fas fa-sign-out-alt"></i> <%= __('Cerrar sesión') %>
                 </a>
             </div>
         </div>
         
         <div class="filters-container">
             <div class="filter-group">
-                <label class="filter-label">Servicio:</label>
+                <label class="filter-label"><%= __('Servicio') %>:</label>
                 <select id="serviceFilter" class="filter-select">
-                    <option value="">Todos</option>
-                    <option value="Servicio de Donación">Servicio de Donación</option>
+                    <option value=""><%= __('Todos') %></option>
+                    <option value="Servicio de Donación"><%= __('Servicio de Donación') %></option>
                     <!-- Agrega más opciones según tus servicios -->
                 </select>
             </div>
             
             <div class="filter-group">
-                <label class="filter-label">Estado:</label>
+                <label class="filter-label"><%= __('Estado') %>:</label>
                 <select id="statusFilter" class="filter-select">
-                    <option value="">Todos</option>
-                    <option value="completed">Completado</option>
-                    <option value="pending">Pendiente</option>
-                    <option value="failed">Fallido</option>
+                    <option value=""><%= __('Todos') %></option>
+                    <option value="completed"><%= __('Completado') %></option>
+                    <option value="pending"><%= __('Pendiente') %></option>
+                    <option value="failed"><%= __('Fallido') %></option>
                 </select>
             </div>
             
             <div class="filter-group">
-                <label class="filter-label">Fecha desde:</label>
+                <label class="filter-label"><%= __('Fecha desde') %>:</label>
                 <input type="date" id="dateFromFilter" class="filter-input">
             </div>
             
             <div class="filter-group">
-                <label class="filter-label">Fecha hasta:</label>
+                <label class="filter-label"><%= __('Fecha hasta') %>:</label>
                 <input type="date" id="dateToFilter" class="filter-input">
             </div>
             
             <div class="filters-actions">
                 <button id="applyFiltersBtn" class="apply-filters-btn">
-                    <i class="fas fa-filter"></i> Filtrar
+                    <i class="fas fa-filter"></i> <%= __('Filtrar') %>
                 </button>
                 
                 <button id="resetFiltersBtn" class="reset-filters-btn">
-                    <i class="fas fa-times"></i> Limpiar
+                    <i class="fas fa-times"></i> <%= __('Limpiar') %>
                 </button>
             </div>
         </div>
@@ -298,14 +320,14 @@
             <table id="paymentsTable">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Email</th>
-                        <th>Servicio</th>
-                        <th>Monto</th>
-                        <th>Moneda</th>
-                        <th>Estado</th>
-                        <th>Fecha</th>
-                        <th>ID Transacción</th>
+                        <th><%= __('ID') %></th>
+                        <th><%= __('Email') %></th>
+                        <th><%= __('Servicio') %></th>
+                        <th><%= __('Monto') %></th>
+                        <th><%= __('Moneda') %></th>
+                        <th><%= __('Estado') %></th>
+                        <th><%= __('Fecha') %></th>
+                        <th><%= __('ID Transacción') %></th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -321,7 +343,7 @@
                         credentials: 'include' 
                     });
                     if (!response.ok) {
-                        throw new Error('Error al cargar pagos');
+                        throw new Error('<%= __("Error al cargar pagos") %>');
                     }
                     allPayments = await response.json();
                     renderPayments(allPayments);
@@ -355,10 +377,10 @@
             
             function getStatusText(status) {
                 switch(status) {
-                    case 'completed': return 'Completado';
-                    case 'pending': return 'Pendiente';
-                    case 'failed': return 'Fallido';
-                    default: return 'Pendiente';
+                    case 'completed': return '<%= __("Completado") %>';
+                    case 'pending': return '<%= __("Pendiente") %>';
+                    case 'failed': return '<%= __("Fallido") %>';
+                    default: return '<%= __("Pendiente") %>';
                 }
             }
             
@@ -401,6 +423,9 @@
             }
             
             document.addEventListener('DOMContentLoaded', () => {
+                // Establecer idioma actual
+                document.getElementById('langSelector').value = '<%= lang %>';
+                
                 loadPayments();
                 
                 document.getElementById('applyFiltersBtn').addEventListener('click', (e) => {
@@ -411,6 +436,11 @@
                 document.getElementById('resetFiltersBtn').addEventListener('click', (e) => {
                     e.preventDefault();
                     resetFilters();
+                });
+                
+                // Cambiar idioma
+                document.getElementById('langSelector').addEventListener('change', function() {
+                    window.location.href = '/change-lang/' + this.value;
                 });
             });
         </script>
